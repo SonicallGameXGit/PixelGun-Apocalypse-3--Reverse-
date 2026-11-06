@@ -74,6 +74,8 @@ pub struct ColliderInstance {
     pub is_trigger: bool,
     /// GameObject layer (queries filter by layer mask).
     pub layer: u32,
+    /// GameObject tag (`assets::tag_name` numbering), e.g. "Metal" on map geometry.
+    pub tag: u32,
 }
 
 /// A `Ladder` MonoBehaviour: its trigger volume and `Ladder.Start`'s climb direction.
@@ -288,6 +290,7 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
                 shape,
                 is_trigger: data["m_IsTrigger"].as_bool().unwrap_or(false),
                 layer: node["layer"].as_u64().unwrap_or(0) as u32,
+                tag: node["tag"].as_u64().unwrap_or(0) as u32,
             });
         }
 

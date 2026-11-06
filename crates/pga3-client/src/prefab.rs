@@ -1,6 +1,7 @@
-//! Runtime instances of prefabs from `assets/data/prefabs/resources/<name>.json`: the GameObject
-//! hierarchy (local transforms, active flags, layers), its renderers (MeshRenderer and
-//! SkinnedMeshRenderer) and its legacy `Animation` components.
+//! Runtime instances of prefabs from `assets/data/prefabs/` (`resources/<name>.json`, the
+//! `Resources.Load` prefabs, and `resources.assets/*.json`, prefabs referenced by scripts such as
+//! bullets): the GameObject hierarchy (local transforms, active flags, layers), its renderers
+//! (MeshRenderer and SkinnedMeshRenderer) and its legacy `Animation` components.
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -137,7 +138,12 @@ impl Trs {
 impl PrefabInstance {
     /// Loads `data/prefabs/resources/<name>.json` and builds its animations from `clips`.
     pub fn load(assets: &Path, name: &str, clips: &mut ClipLibrary) -> Result<PrefabInstance> {
-        let json = load_json(&assets.join(format!("data/prefabs/resources/{name}.json")))?;
+        PrefabInstance::load_file(assets, &format!("prefabs/resources/{name}.json"), clips)
+    }
+
+    /// Loads a prefab file given relative to `assets/data/`.
+    pub fn load_file(assets: &Path, path: &str, clips: &mut ClipLibrary) -> Result<PrefabInstance> {
+        let json = load_json(&assets.join("data").join(path))?;
         let nodes_json = json["nodes"].as_array().context("prefab has no nodes")?;
 
         let mut node_by_ref = HashMap::new();
@@ -314,6 +320,43 @@ impl PrefabInstance {
         true
     }
 
+    /// Fields of the first `script` MonoBehaviour on a node.
+    pub fn script_fields(&self, node: usize, script: &str) -> Option<&Value> {
+        self.json["nodes"][node]["components"]
+            .as_array()?
+            .iter()
+            .find(|c| c["script"] == script)
+            .map(|c| &c["fields"])
+    }
+
+    /// `Transform.localToWorldMatrix` from the current local transforms (`world` is only
+    /// refreshed by `update_world`; scripts read transforms mid-frame).
+    pub fn world_of(&self, node: usize) -> Mat4 {
+        if let Some(m) = self.world_override[node] {
+            return m;
+        }
+        let local = self.nodes[node].local.matrix();
+        match self.nodes[node].parent {
+            Some(parent) => self.world_of(parent) * local,
+            None => local,
+        }
+    }
+
+    /// `Transform.rotation` (world) of a node.
+    pub fn world_rotation(&self, node: usize) -> Quat {
+        let (_, rotation, _) = self.world_of(node).to_scale_rotation_translation();
+        rotation.normalize()
+    }
+
+    /// `Transform.rotation = rotation`: sets the local rotation relative to the parent.
+    pub fn set_world_rotation(&mut self, node: usize, rotation: Quat) {
+        let parent = match self.nodes[node].parent {
+            Some(parent) => self.world_rotation(parent),
+            None => Quat::IDENTITY,
+        };
+        self.nodes[node].local.rotation = (parent.inverse() * rotation).normalize();
+    }
+
     pub fn animation_on(&mut self, node: usize) -> Option<&mut Animation> {
         self.animations.iter_mut().find(|a| a.node == node)
     }
@@ -393,6 +436,39 @@ impl PrefabInstance {
             }
         }
     }
+}
+
+/// Maps every GameObject and component ref of the `prefabs/resources.assets/*.json` prefabs to
+/// that file (relative to `assets/data/`), so script fields such as `Bullet` or
+/// `projectile` (refs to a prefab's GameObject or one of its components) find their prefab.
+pub fn resource_prefab_index(assets: &Path) -> Result<HashMap<String, String>> {
+    let directory = assets.join("data/prefabs/resources.assets");
+    let mut index = HashMap::new();
+    let mut entries: Vec<_> = std::fs::read_dir(&directory)
+        .with_context(|| format!("reading {}", directory.display()))?
+        .collect::<Result<_, _>>()?;
+    entries.sort_by_key(|e| e.file_name());
+    for entry in entries {
+        let name = entry.file_name().to_string_lossy().to_string();
+        if !name.ends_with(".json") {
+            continue;
+        }
+        let path = format!("prefabs/resources.assets/{name}");
+        let json = load_json(&entry.path())?;
+        for node in json["nodes"].as_array().into_iter().flatten() {
+            let refs = std::iter::once(&node["ref"]).chain(
+                node["components"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .map(|c| &c["ref"]),
+            );
+            for reference in refs.filter_map(Value::as_str) {
+                index.insert(reference.to_string(), path.clone());
+            }
+        }
+    }
+    Ok(index)
 }
 
 fn find_path(nodes: &[Node], from: usize, path: &str) -> Option<usize> {

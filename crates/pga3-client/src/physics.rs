@@ -108,6 +108,8 @@ pub struct SweepHit {
 struct TriangleInfo {
     trigger: bool,
     layer: u32,
+    /// GameObject tag of the collider (`assets::tag_name` numbering).
+    tag: u32,
     /// Lowest grid cell the triangle is listed in.
     min_cell: [i32; 3],
 }
@@ -122,6 +124,21 @@ pub struct CollisionWorld {
     triangles: Vec<Triangle>,
     info: Vec<TriangleInfo>,
     cells: HashMap<[i32; 3], Vec<u32>>,
+    /// Inclusive range of grid cells holding triangles.
+    cell_bounds: Option<([i32; 3], [i32; 3])>,
+    /// Tag given to the triangles of the colliders added next (`add_mesh` / `add_box`).
+    pub collider_tag: u32,
+}
+
+/// `RaycastHit` of `CollisionWorld::raycast`.
+#[derive(Clone, Copy, Debug)]
+pub struct RayHit {
+    pub distance: f32,
+    pub point: Vec3,
+    /// Face normal of the hit triangle (PhysX reports the face normal for mesh hits).
+    pub normal: Vec3,
+    /// Tag of the hit collider's GameObject.
+    pub tag: u32,
 }
 
 fn cell_of(p: Vec3) -> [i32; 3] {
@@ -138,6 +155,8 @@ impl CollisionWorld {
             triangles: Vec::new(),
             info: Vec::new(),
             cells: HashMap::new(),
+            cell_bounds: None,
+            collider_tag: 0,
         }
     }
 
@@ -151,9 +170,17 @@ impl CollisionWorld {
         let info = TriangleInfo {
             trigger,
             layer,
+            tag: self.collider_tag,
             min_cell: min,
         };
         let max = cell_of(triangle.a.max(triangle.b).max(triangle.c));
+        self.cell_bounds = Some(match self.cell_bounds {
+            None => (min, max),
+            Some((lo, hi)) => (
+                [lo[0].min(min[0]), lo[1].min(min[1]), lo[2].min(min[2])],
+                [hi[0].max(max[0]), hi[1].max(max[1]), hi[2].max(max[2])],
+            ),
+        });
         for x in min[0]..=max[0] {
             for y in min[1]..=max[1] {
                 for z in min[2]..=max[2] {
@@ -353,6 +380,95 @@ impl CollisionWorld {
         )
     }
 
+    /// `Physics.Raycast(origin, direction, out hit, maxDistance)` with the default layer mask
+    /// (`QueryFilter::DEFAULT_RAYCAST`): the closest front face along the ray. `direction` need not
+    /// be normalised (Unity normalises it); `max_distance` may be infinite. Back faces are culled
+    /// (`queriesHitBackfaces` is off), so a ray starting inside a closed collider does not hit it.
+    pub fn raycast(&self, origin: Vec3, direction: Vec3, max_distance: f32) -> Option<RayHit> {
+        let direction = direction.normalize_or_zero();
+        let (lo, hi) = self.cell_bounds?;
+        if direction == Vec3::ZERO || max_distance.is_nan() || max_distance < 0.0 {
+            return None;
+        }
+        // Clip the ray to the grid's bounds (slab test), then walk its cells in order
+        // (Amanatides & Woo).
+        let bounds_min = Vec3::new(lo[0] as f32, lo[1] as f32, lo[2] as f32) * CELL;
+        let bounds_max =
+            Vec3::new((hi[0] + 1) as f32, (hi[1] + 1) as f32, (hi[2] + 1) as f32) * CELL;
+        let mut enter = 0.0f32;
+        let mut exit = max_distance;
+        for axis in 0..3 {
+            if direction[axis] == 0.0 {
+                if origin[axis] < bounds_min[axis] || origin[axis] > bounds_max[axis] {
+                    return None;
+                }
+                continue;
+            }
+            let t0 = (bounds_min[axis] - origin[axis]) / direction[axis];
+            let t1 = (bounds_max[axis] - origin[axis]) / direction[axis];
+            enter = enter.max(t0.min(t1));
+            exit = exit.min(t0.max(t1));
+        }
+        if enter > exit {
+            return None;
+        }
+        let start = origin + direction * enter;
+        let mut cell = cell_of(start);
+        let mut step = [0i32; 3];
+        let mut next = Vec3::splat(f32::INFINITY);
+        let mut delta = Vec3::splat(f32::INFINITY);
+        for axis in 0..3 {
+            cell[axis] = cell[axis].clamp(lo[axis], hi[axis]);
+            if direction[axis] == 0.0 {
+                continue;
+            }
+            step[axis] = if direction[axis] > 0.0 { 1 } else { -1 };
+            let wall = cell_of_axis(cell[axis], step[axis]) * CELL;
+            next[axis] = (wall - origin[axis]) / direction[axis];
+            delta[axis] = CELL / direction[axis].abs();
+        }
+        let mut best: Option<RayHit> = None;
+        loop {
+            if let Some(list) = self.cells.get(&cell) {
+                for &index in list {
+                    let info = self.info[index as usize];
+                    if !info.passes(QueryFilter::DEFAULT_RAYCAST) {
+                        continue;
+                    }
+                    let triangle = &self.triangles[index as usize];
+                    let Some(t) = ray_triangle(origin, direction, triangle) else {
+                        continue;
+                    };
+                    if t <= max_distance && best.is_none_or(|b| t < b.distance) {
+                        best = Some(RayHit {
+                            distance: t,
+                            point: origin + direction * t,
+                            normal: triangle.normal,
+                            tag: info.tag,
+                        });
+                    }
+                }
+            }
+            // Leave the cell through its nearest boundary.
+            let axis = if next.x < next.y {
+                if next.x < next.z { 0 } else { 2 }
+            } else if next.y < next.z {
+                1
+            } else {
+                2
+            };
+            let leave = next[axis];
+            if best.is_some_and(|b| b.distance <= leave) || leave > exit {
+                return best;
+            }
+            cell[axis] += step[axis];
+            if cell[axis] < lo[axis] || cell[axis] > hi[axis] {
+                return best;
+            }
+            next[axis] += delta[axis];
+        }
+    }
+
     /// PhysX `computePenetration` of a capsule against the mesh triangles, as `computeMTD`
     /// uses it: contacts of front-facing triangles inside the capsule, combined per axis as in
     /// `GuMTD.cpp processContacts`. Returns (push-out direction, depth).
@@ -427,6 +543,42 @@ fn keep_triangle(
     alignment == best_alignment && distance < best_distance
 }
 
+/// World coordinate (in cells) of the boundary a ray stepping `step` leaves `cell` through.
+fn cell_of_axis(cell: i32, step: i32) -> f32 {
+    if step > 0 {
+        (cell + 1) as f32
+    } else {
+        cell as f32
+    }
+}
+
+/// Ray / front face of a triangle (Möller–Trumbore): the distance along unit `direction`.
+fn ray_triangle(origin: Vec3, direction: Vec3, triangle: &Triangle) -> Option<f32> {
+    if triangle.normal.dot(direction) >= 0.0 {
+        return None;
+    }
+    let e1 = triangle.b - triangle.a;
+    let e2 = triangle.c - triangle.a;
+    let p = direction.cross(e2);
+    let determinant = e1.dot(p);
+    if determinant.abs() < 1e-12 {
+        return None;
+    }
+    let inverse = 1.0 / determinant;
+    let s = origin - triangle.a;
+    let u = s.dot(p) * inverse;
+    if !(0.0..=1.0).contains(&u) {
+        return None;
+    }
+    let q = s.cross(e1);
+    let v = direction.dot(q) * inverse;
+    if v < 0.0 || u + v > 1.0 {
+        return None;
+    }
+    let t = e2.dot(q) * inverse;
+    (t >= 0.0).then_some(t)
+}
+
 /// Builds the collision world of a scene: every enabled collider on an active GameObject.
 pub fn build_world(assets: &Path, scene: &Scene) -> Result<CollisionWorld> {
     let mut world = CollisionWorld::new();
@@ -444,6 +596,7 @@ pub fn build_world(assets: &Path, scene: &Scene) -> Result<CollisionWorld> {
                     meshes.insert(mesh_asset, (positions, indices));
                 }
                 let (positions, indices) = &meshes[mesh_asset.as_str()];
+                world.collider_tag = collider.tag;
                 world.add_mesh(
                     collider.world,
                     positions,
@@ -452,15 +605,19 @@ pub fn build_world(assets: &Path, scene: &Scene) -> Result<CollisionWorld> {
                     collider.layer,
                 );
             }
-            ColliderShape::Box { center, size } => world.add_box(
-                collider.world,
-                *center,
-                *size,
-                collider.is_trigger,
-                collider.layer,
-            ),
+            ColliderShape::Box { center, size } => {
+                world.collider_tag = collider.tag;
+                world.add_box(
+                    collider.world,
+                    *center,
+                    *size,
+                    collider.is_trigger,
+                    collider.layer,
+                );
+            }
         }
     }
+    world.collider_tag = 0;
     Ok(world)
 }
 
@@ -1125,6 +1282,59 @@ mod tests {
             .sphere_cast(Vec3::new(1.0, 3.0, 0.0), 0.2, -Vec3::Y, 10.0)
             .expect("hit");
         assert!((hit.distance - 2.8).abs() < 1e-4, "{hit:?}");
+    }
+
+    #[test]
+    fn raycast_hits_closest_front_face_with_its_tag() {
+        let mut world = floor_world();
+        world.collider_tag = 20000;
+        world.add_box(
+            Mat4::IDENTITY,
+            Vec3::new(0.0, 1.0, 2.5),
+            Vec3::new(1.0, 1.0, 1.0),
+            false,
+            FLOOR_LAYER,
+        );
+        // Along +Z the tagged box (front face z = 2) comes before the wall (z = 5).
+        let hit = world
+            .raycast(Vec3::new(0.0, 1.0, -3.0), Vec3::Z * 7.0, f32::INFINITY)
+            .expect("hit");
+        assert!((hit.distance - 5.0).abs() < 1e-4, "{hit:?}");
+        assert!((hit.point - Vec3::new(0.0, 1.0, 2.0)).length() < 1e-4);
+        assert!((hit.normal + Vec3::Z).length() < 1e-4);
+        assert_eq!(hit.tag, 20000);
+        // Beside it, the untagged wall; short of it, nothing.
+        let hit = world
+            .raycast(Vec3::new(3.0, 1.0, -3.0), Vec3::Z, 100.0)
+            .expect("hit");
+        assert!((hit.distance - 8.0).abs() < 1e-4 && hit.tag == 0, "{hit:?}");
+        assert!(
+            world
+                .raycast(Vec3::new(3.0, 1.0, -3.0), Vec3::Z, 7.9)
+                .is_none()
+        );
+        // Straight down onto the floor (zero x/z direction components).
+        let hit = world
+            .raycast(Vec3::new(-7.3, 3.0, 1.1), -Vec3::Y, 10.0)
+            .expect("hit");
+        assert!((hit.distance - 3.0).abs() < 1e-4, "{hit:?}");
+    }
+
+    #[test]
+    fn raycast_from_inside_a_box_misses_it() {
+        let world = floor_world();
+        // Starting inside the floor slab going up: only back faces are ahead.
+        assert!(
+            world
+                .raycast(Vec3::new(0.0, -0.5, 0.0), Vec3::Y, 50.0)
+                .is_none()
+        );
+        // Leaving the wall through its back face towards +Z: nothing beyond.
+        assert!(
+            world
+                .raycast(Vec3::new(0.0, 2.0, 5.5), Vec3::Z, 50.0)
+                .is_none()
+        );
     }
 
     #[test]

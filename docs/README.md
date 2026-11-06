@@ -12,9 +12,10 @@ Existing:
 - `unknowns.md`: open questions.
 - `gameplay/movement.md`: player movement, input, mouse look, camera bob, CharacterController model (decompiled `FPScontroller` & co.).
 - `gameplay/animation.md`: legacy clips, the native `Animation` component (Play/CrossFade/update), skinning, built-in meshes, `WeaponAnimation`/`CharacterAnimation` ports.
+- `gameplay/weapons.md`: `WeaponManager` (switching, room tokens), `WeaponScript` (aiming, firing, reloading, recoil), bullets, rockets, crosshair, sniper scope.
 
 Planned:
 
-- `gameplay/`: weapons, damage, ladders, modes, progression, balance tables.
+- `gameplay/`: damage, modes, progression, balance tables, audio.
 
 Tooling for reading the original code (wasm2c + IL2CPP names): `tools/re/README.md`.

@@ -235,8 +235,10 @@ pub struct Player {
     pub rotation_y: f32,
     pub minimum_y: f32,
     pub maximum_y: f32,
-    /// `Main Camera` local position (moved by `CameraBob`).
+    /// `Main Camera` local position (moved by `CameraBob`) and local rotation (turned by the
+    /// weapons' camera recoil, `WeaponScript.cameraRecoilDo`).
     pub camera_local_position: Vec3,
+    pub camera_local_rotation: Quat,
     /// `WeaponManager` local position (moved by `WalkSway`), under the Weapon Camera.
     pub weapon_local_position: Vec3,
     /// `CharacterController.velocity`: displacement of the last `Move` / its delta time.
@@ -301,6 +303,21 @@ fn component<'a>(nodes: &'a [Value], node: &str, script_or_type: &str) -> Result
 fn local_position(nodes: &[Value], node: &str) -> Result<Vec3> {
     let t = &component(nodes, node, "Transform")?["data"]["m_LocalPosition"];
     Ok(Vec3::new(f32_of(&t["x"]), f32_of(&t["y"]), f32_of(&t["z"])))
+}
+
+fn local_rotation(nodes: &[Value], node: &str) -> Result<Quat> {
+    let r = &component(nodes, node, "Transform")?["data"]["m_LocalRotation"];
+    let q = Quat::from_xyzw(
+        f32_of(&r["x"]),
+        f32_of(&r["y"]),
+        f32_of(&r["z"]),
+        f32_of(&r["w"]),
+    );
+    Ok(if q.length_squared() > 0.0 {
+        q.normalize()
+    } else {
+        Quat::IDENTITY
+    })
 }
 
 fn bob_from_fields(fields: &Value, midpoint: Vec3) -> Bob {
@@ -442,6 +459,7 @@ impl Player {
             minimum_y: f32_of(&look["minimumY"]),
             maximum_y: f32_of(&look["maximumY"]),
             camera_local_position,
+            camera_local_rotation: local_rotation(nodes, "Main Camera")?,
             weapon_local_position,
             controller_velocity: Vec3::ZERO,
             mouse_sensitivity: DEFAULT_MOUSE_SENSITIVITY,
@@ -508,15 +526,21 @@ impl Player {
         self.movement.velocity = Vec3::ZERO;
     }
 
-    pub fn camera_rotation(&self) -> Quat {
+    /// World rotation of `LookObject` (root yaw, then `FPSMouseLook` pitch).
+    pub fn look_rotation(&self) -> Quat {
         self.rotation * Quat::from_rotation_x((-self.rotation_y).to_radians())
+    }
+
+    /// World rotation of the Main Camera: LookObject, then its own local rotation.
+    pub fn camera_rotation(&self) -> Quat {
+        self.look_rotation() * self.camera_local_rotation
     }
 
     /// World position of the Main Camera: root → LookObject → Main Camera.
     pub fn camera_position(&self) -> Vec3 {
         self.position
             + self.rotation * self.look_local_position
-            + self.camera_rotation() * self.camera_local_position
+            + self.look_rotation() * self.camera_local_position
     }
 
     fn up(&self) -> Vec3 {
@@ -631,7 +655,9 @@ impl Player {
     }
 
     /// `FPSMouseLook.Update` on the root (axes 1: yaw) and on LookObject (axes 2: pitch). The
-    /// sensitivity is `RoomMultiplayerMenu.sens` (x0.25 while aiming; aiming is not in yet).
+    /// sensitivity is `RoomMultiplayerMenu.sens`, x0.25 while the cached `weapScript.aimed`; that
+    /// cache is the first selected weapon's script and is never refreshed, and the first weapon
+    /// (the Machete) cannot aim, so the factor never applies (docs/gameplay/weapons.md).
     fn mouse_look(&mut self, input: &FrameInput) {
         let sensitivity = self.mouse_sensitivity;
         self.rotation *= Quat::from_rotation_y((input.mouse_x * sensitivity).to_radians());

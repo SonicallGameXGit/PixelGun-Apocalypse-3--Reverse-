@@ -1,14 +1,19 @@
 //! Pixel Gun Apocalypse 3 open-source client.
 //!
-//! Current milestone: animations. Loads a map from `assets/data/scenes/`, renders it with the
+//! Current milestone: weapons. Loads a map from `assets/data/scenes/`, renders it with the
 //! original shading and spawns the local player (original movement and collision) at a spawn
-//! point with its animated first-person weapon; a free-fly camera is available for inspection
-//! and shows the player's animated third-person body.
+//! point with its first-person weapons (switching, aiming, firing, reloading, bullets and
+//! rockets); a free-fly camera is available for inspection and shows the player's animated
+//! third-person body.
 //!
 //! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--stats]
-//! [--screenshot out.png [--wait SECONDS]]`
+//! [--weapon KEY] [--fire] [--screenshot out.png [--wait SECONDS]]`
+//! (`--weapon` presses that number key on the first frame, `--fire` holds the fire button and
+//! clicks every 30 frames: for screenshots of the weapons.)
 //! Controls: click = capture mouse, Esc = release / quit, F = walk/fly toggle, Tab = next spawn.
 //! Walking (original keys): WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone.
+//! Weapons (original keys): left mouse fire, right mouse aim, R reload, 1-6 / mouse wheel /
+//! M, N select, O auto-fire toggle.
 //! Flying: WASD, Space/C up/down, Shift fast.
 
 mod anim;
@@ -20,9 +25,12 @@ mod physics;
 mod player;
 mod prefab;
 mod primitives;
+mod projectiles;
 mod render;
 mod scene;
 mod skin;
+mod unity;
+mod weapons;
 
 use std::num::NonZeroU32;
 use std::path::PathBuf;
@@ -41,17 +49,21 @@ use glutin_winit::{DisplayBuilder, GlWindow};
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use winit::application::ApplicationHandler;
 use winit::dpi::LogicalSize;
-use winit::event::{DeviceEvent, DeviceId, ElementState, KeyEvent, MouseButton, WindowEvent};
+use winit::event::{
+    DeviceEvent, DeviceId, ElementState, KeyEvent, MouseButton, MouseScrollDelta, WindowEvent,
+};
 use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 
-use character::{CharacterAnimation, CharacterInput, WeaponInput, WeaponManager};
+use character::{CharacterAnimation, CharacterInput};
 use physics::CollisionWorld;
 use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
 use prefab::PrefabInstance;
+use projectiles::{ProjectileEvent, Projectiles, Templates};
 use render::{PrefabModels, SceneRenderer, View};
 use scene::Scene;
+use weapons::{WeaponContext, WeaponEvent, WeaponInput, WeaponManager};
 
 /// Player prefab spawned by the client (as `Player::from_prefab`).
 const PLAYER_PREFAB: &str = "german";
@@ -69,6 +81,10 @@ struct Args {
     wait: f32,
     /// Print frame-time statistics every second.
     stats: bool,
+    /// Number key pressed on the first frame.
+    weapon: Option<usize>,
+    /// Hold the fire button (and click every 30 frames).
+    fire: bool,
 }
 
 fn parse_args() -> Result<Args> {
@@ -80,6 +96,8 @@ fn parse_args() -> Result<Args> {
         screenshot: None,
         wait: 0.0,
         stats: false,
+        weapon: None,
+        fire: false,
     };
     let mut iter = std::env::args().skip(1);
     while let Some(arg) = iter.next() {
@@ -96,6 +114,14 @@ fn parse_args() -> Result<Args> {
             "--fly" => args.fly = true,
             "--wait" => args.wait = iter.next().context("--wait SECONDS")?.parse()?,
             "--stats" => args.stats = true,
+            "--weapon" => {
+                let key: usize = iter.next().context("--weapon KEY")?.parse()?;
+                if key > 9 {
+                    bail!("--weapon takes a number key, 0-9");
+                }
+                args.weapon = Some(key);
+            }
+            "--fire" => args.fire = true,
             "--screenshot" => {
                 args.screenshot = Some(PathBuf::from(iter.next().context("--screenshot PATH")?))
             }
@@ -152,6 +178,17 @@ struct Input {
     key_s: bool,
     key_d: bool,
     key_r: bool,
+    /// Mouse buttons (only while the cursor is captured) and the weapon keys.
+    fire_held: bool,
+    fire_pressed: bool,
+    aim_pressed: bool,
+    reload_pressed: bool,
+    auto_fire_pressed: bool,
+    number_pressed: [bool; 10],
+    /// `Input.GetAxis("Mouse ScrollWheel")` of this frame.
+    scroll: f32,
+    key_m: bool,
+    key_n: bool,
 }
 
 /// The local player's prefab instance as the owner sees it (`localObjectsToDeactivate` applied):
@@ -164,6 +201,10 @@ struct LocalAvatar {
     weapon_camera: Option<usize>,
     /// Moved by `WalkSway` (`Player::weapon_local_position`).
     weapon_manager: Option<usize>,
+    /// Prefabs the weapons spawn, their GPU models, and the live instances.
+    templates: Templates,
+    template_models: Vec<PrefabModels>,
+    projectiles: Projectiles,
 }
 
 /// The same prefab as other players see it (`LookObject` hidden): the animated third-person
@@ -365,19 +406,29 @@ fn load_avatars(
     }
     local.play_automatically();
     remote.play_automatically();
-    let weapons = character::weapon_manager_awake(&mut local);
+    let custom_tags = assets::load_tags(assets)?;
+    let weapons = weapons::weapon_manager_awake(&mut local, &custom_tags);
     let character = CharacterAnimation::start(&mut remote, &mut clips);
+    let spawned_refs = weapons.as_ref().map(spawned_prefabs).unwrap_or_default();
+    let templates = Templates::load(assets, &spawned_refs, custom_tags, &mut clips)?;
+    let template_models = templates
+        .list
+        .iter()
+        .map(|t| renderer.prepare_prefab(gl, &t.prefab))
+        .collect::<Result<Vec<_>>>()?;
     let local_models = renderer.prepare_prefab(gl, &local)?;
     let remote_models = renderer.prepare_prefab(gl, &remote)?;
     println!(
-        "{PLAYER_PREFAB}: {} renderers ({} skipped), {} animations; weapon {:?}",
+        "{PLAYER_PREFAB}: {} renderers ({} skipped), {} animations; weapons {:?}",
         local.renderers.len(),
         local.skipped_renderers,
         local.animations.len(),
-        weapons
-            .as_ref()
-            .and_then(|w| w.all_weapons.get(w.index))
-            .map(|&n| local.nodes[n].name.clone())
+        weapons.as_ref().map(|w| w
+            .scripts
+            .iter()
+            .flatten()
+            .map(|s| s.name.as_str())
+            .collect::<Vec<_>>())
     );
     Ok((
         LocalAvatar {
@@ -387,6 +438,9 @@ fn load_avatars(
             prefab: local,
             models: local_models,
             weapons,
+            templates,
+            template_models,
+            projectiles: Projectiles::default(),
         },
         BodyView {
             prefab: remote,
@@ -394,6 +448,24 @@ fn load_avatars(
             character,
         },
     ))
+}
+
+/// The bullet / projectile prefab refs of every weapon.
+fn spawned_prefabs(manager: &WeaponManager) -> Vec<String> {
+    manager
+        .scripts
+        .iter()
+        .flatten()
+        .flat_map(|s| {
+            [
+                s.machine_gun.bullet.clone(),
+                s.shot_gun.bullet.clone(),
+                s.grenade_launcher.projectile.clone(),
+                s.knife.bullet.clone(),
+            ]
+        })
+        .flatten()
+        .collect()
 }
 
 fn place_at_spawn(player: &mut Player, camera: &mut FlyCamera, scene: &Scene, index: usize) {
@@ -445,6 +517,12 @@ impl Running {
         i.jump_pressed = false;
         i.crouch_pressed = false;
         i.prone_pressed = false;
+        i.fire_pressed = false;
+        i.aim_pressed = false;
+        i.reload_pressed = false;
+        i.auto_fire_pressed = false;
+        i.number_pressed = [false; 10];
+        i.scroll = 0.0;
     }
 
     /// One Unity frame for the local player: FixedUpdate steps, Update, LateUpdate.
@@ -464,29 +542,95 @@ impl Running {
             // Unity's Mouse Y grows upwards; window coordinates grow downwards.
             mouse_y: -dy as f32 * MOUSE_AXIS_SENSITIVITY,
         };
-        self.step_player(dt, &input);
+        let weapon_input = WeaponInput {
+            mouse_x: input.mouse_x,
+            mouse_y: input.mouse_y,
+            vertical: input.vertical,
+            velocity_y: 0.0,
+            fire_held: i.fire_held,
+            fire_down: i.fire_pressed,
+            aim_down: i.aim_pressed,
+            reload_down: i.reload_pressed,
+            auto_fire_toggle_down: i.auto_fire_pressed,
+            number_down: i.number_pressed,
+            scroll: i.scroll,
+            next_held: i.key_m,
+            previous_held: i.key_n,
+        };
+        self.step_player(dt, &input, weapon_input);
         self.camera.position = self.player.camera_position();
         self.camera.look(self.player.camera_rotation());
     }
 
-    /// FixedUpdate steps, Update, the animation pass, LateUpdate.
-    fn step_player(&mut self, dt: f32, input: &FrameInput) {
+    /// FixedUpdate steps, Update, coroutines, the animation pass, LateUpdate.
+    fn step_player(&mut self, dt: f32, input: &FrameInput, mut weapon_input: WeaponInput) {
+        let local = &mut self.local;
         self.fixed_time += dt;
         while self.fixed_time >= FIXED_DELTA_TIME {
             self.fixed_time -= FIXED_DELTA_TIME;
             self.player
                 .fixed_update(&self.world, &self.scene.ladders, input);
+            local.projectiles.fixed_update(
+                &local.templates,
+                &self.world,
+                FIXED_DELTA_TIME,
+                self.player.time,
+            );
         }
         self.player.update(&self.world, dt, input.vertical, input);
-        if let Some(weapons) = &self.local.weapons {
-            let weapon_input = WeaponInput {
-                mouse_x: input.mouse_x,
-                mouse_y: input.mouse_y,
-                vertical: input.vertical,
-                velocity_y: self.player.controller_velocity.y,
+        let time = self.player.time;
+        weapons::sync_avatar(
+            &mut local.prefab,
+            &self.player,
+            local.main_camera,
+            local.weapon_manager,
+        );
+        // Objects spawned last frame run Start, then every Update.
+        local
+            .projectiles
+            .update(&local.templates, &self.world, dt, time);
+        if let Some(weapons) = &mut local.weapons {
+            weapon_input.velocity_y = self.player.controller_velocity.y;
+            let mut ctx = WeaponContext {
+                prefab: &mut local.prefab,
+                player: &mut self.player,
+                world: &self.world,
+                input: &weapon_input,
+                dt,
+                time,
             };
-            weapons.update(&mut self.local.prefab, &weapon_input, dt);
+            weapons.update(&mut ctx);
+            // WaitForSeconds resumes after every Update.
+            weapons.run_coroutines(&mut ctx);
+            for event in weapons.events.drain(..) {
+                match event {
+                    WeaponEvent::Spawn {
+                        prefab,
+                        position,
+                        rotation,
+                        velocity,
+                    } => match local.templates.find(&prefab) {
+                        Some(template) => local.projectiles.spawn(
+                            &local.templates,
+                            template,
+                            position,
+                            rotation,
+                            velocity,
+                        ),
+                        None => eprintln!("weapon spawned unknown prefab {prefab}"),
+                    },
+                    // Audio is not implemented yet.
+                    WeaponEvent::Sound(_) => {}
+                }
+            }
         }
+        for event in local.projectiles.events.drain(..) {
+            if let ProjectileEvent::Damage { amount, point, tag } = event {
+                // No damage receivers (PlayerDamage, zombies) yet.
+                let _ = (amount, point, tag);
+            }
+        }
+        local.projectiles.end_frame(time);
         // Unity evaluates animations between Update and LateUpdate.
         self.local.prefab.update_animations();
         self.body.prefab.update_animations();
@@ -513,7 +657,11 @@ impl Running {
         self.camera.position += wish.normalize_or_zero() * speed * dt;
         // The player keeps being simulated without input, so the body seen from the fly camera
         // stands (and animates) where it was left.
-        self.step_player(dt.min(MAXIMUM_DELTA_TIME), &FrameInput::default());
+        self.step_player(
+            dt.min(MAXIMUM_DELTA_TIME),
+            &FrameInput::default(),
+            WeaponInput::default(),
+        );
     }
 
     /// `CharacterAnimation.LateUpdate`, then the transforms rendering uses.
@@ -538,19 +686,13 @@ impl Running {
             character.late_update(&mut self.body.prefab, &input);
         }
         let root = Mat4::from_rotation_translation(self.player.rotation, self.player.position);
-        let camera = Mat4::from_rotation_translation(
-            self.player.camera_rotation(),
-            self.player.camera_position(),
+        self.body.prefab.world_override[0] = Some(root);
+        weapons::sync_avatar(
+            &mut self.local.prefab,
+            &self.player,
+            self.local.main_camera,
+            self.local.weapon_manager,
         );
-        for prefab in [&mut self.local.prefab, &mut self.body.prefab] {
-            prefab.world_override[0] = Some(root);
-        }
-        if let Some(node) = self.local.main_camera {
-            self.local.prefab.world_override[node] = Some(camera);
-        }
-        if let Some(node) = self.local.weapon_manager {
-            self.local.prefab.nodes[node].local.position = self.player.weapon_local_position;
-        }
         self.local.prefab.update_world();
         self.body.prefab.update_world();
     }
@@ -575,6 +717,22 @@ impl Running {
         };
         let (w, h) = (size.width, size.height);
         self.renderer.draw(&self.gl, &view, w, h);
+        // Spawned bullets and rockets (Default layer, seen by the Main Camera and the fly
+        // camera).
+        let local = &self.local;
+        for (template, root) in local.projectiles.instances(&local.templates) {
+            self.renderer.draw_models(
+                &self.gl,
+                &view,
+                w,
+                h,
+                &local.templates.list[template].prefab,
+                &local.template_models[template],
+                u32::MAX,
+                false,
+                Some(root),
+            );
+        }
         match self.mode {
             Mode::Walk => {
                 let local = &self.local;
@@ -591,6 +749,7 @@ impl Running {
                     &local.models,
                     main_mask,
                     false,
+                    None,
                 );
                 // Weapon Camera (depth 2, clear flags Depth only, culling mask = layer 9).
                 if let Some(node) = local.weapon_camera
@@ -614,7 +773,13 @@ impl Running {
                         &local.models,
                         camera.culling_mask,
                         camera.clear_flags == 3,
+                        None,
                     );
+                }
+                // OnGUI (SniperScope, WeaponCrosshair) over the cameras.
+                if let Some(weapons) = &self.local.weapons {
+                    let quads = weapons.on_gui(&mut self.local.prefab, w as f32, h as f32);
+                    self.renderer.draw_gui(&self.gl, &quads, w, h);
                 }
             }
             Mode::Fly => {
@@ -627,6 +792,7 @@ impl Running {
                     &self.body.models,
                     u32::MAX,
                     false,
+                    None,
                 );
             }
         }
@@ -663,12 +829,38 @@ impl ApplicationHandler for App {
                     app.surface.resize(&app.context, w, h);
                 }
             }
-            WindowEvent::Focused(false) => app.set_grab(false),
-            WindowEvent::MouseInput {
-                state: ElementState::Pressed,
-                button: MouseButton::Left,
-                ..
-            } => app.set_grab(true),
+            WindowEvent::Focused(false) => {
+                app.set_grab(false);
+                app.input.fire_held = false;
+            }
+            WindowEvent::MouseInput { state, button, .. } => {
+                let pressed = state == ElementState::Pressed;
+                let i = &mut app.input;
+                if !i.grabbed {
+                    // The first click only captures the cursor.
+                    if pressed && button == MouseButton::Left {
+                        app.set_grab(true);
+                    }
+                    return;
+                }
+                match button {
+                    MouseButton::Left => {
+                        i.fire_held = pressed;
+                        i.fire_pressed |= pressed;
+                    }
+                    MouseButton::Right => i.aim_pressed |= pressed,
+                    _ => {}
+                }
+            }
+            WindowEvent::MouseWheel { delta, .. } if app.input.grabbed => {
+                // Unity reports one wheel notch as 0.1 on the "Mouse ScrollWheel" axis; only the
+                // sign matters to WeaponManager.
+                let lines = match delta {
+                    MouseScrollDelta::LineDelta(_, y) => y,
+                    MouseScrollDelta::PixelDelta(p) => p.y as f32,
+                };
+                app.input.scroll += lines * 0.1;
+            }
             WindowEvent::KeyboardInput {
                 event:
                     KeyEvent {
@@ -687,7 +879,23 @@ impl ApplicationHandler for App {
                     KeyCode::KeyS => i.key_s = pressed,
                     KeyCode::KeyA => i.key_a = pressed,
                     KeyCode::KeyD => i.key_d = pressed,
-                    KeyCode::KeyR => i.key_r = pressed,
+                    KeyCode::KeyR => {
+                        i.key_r = pressed;
+                        i.reload_pressed |= down;
+                    }
+                    KeyCode::KeyO => i.auto_fire_pressed |= down,
+                    KeyCode::KeyM => i.key_m = pressed,
+                    KeyCode::KeyN => i.key_n = pressed,
+                    KeyCode::Digit0 => i.number_pressed[0] |= down,
+                    KeyCode::Digit1 => i.number_pressed[1] |= down,
+                    KeyCode::Digit2 => i.number_pressed[2] |= down,
+                    KeyCode::Digit3 => i.number_pressed[3] |= down,
+                    KeyCode::Digit4 => i.number_pressed[4] |= down,
+                    KeyCode::Digit5 => i.number_pressed[5] |= down,
+                    KeyCode::Digit6 => i.number_pressed[6] |= down,
+                    KeyCode::Digit7 => i.number_pressed[7] |= down,
+                    KeyCode::Digit8 => i.number_pressed[8] |= down,
+                    KeyCode::Digit9 => i.number_pressed[9] |= down,
                     _ => {}
                 }
                 match code {
@@ -749,6 +957,16 @@ impl ApplicationHandler for App {
                 let now = Instant::now();
                 let dt = (now - app.last_frame).as_secs_f32().min(0.1);
                 app.last_frame = now;
+                if app.frames == 0
+                    && let Some(key) = self.args.weapon
+                {
+                    app.input.number_pressed[key] = true;
+                }
+                if self.args.fire {
+                    app.input.fire_held = true;
+                    // Single-fire weapons need clicks.
+                    app.input.fire_pressed |= app.frames % 30 == 0;
+                }
                 app.update(dt);
                 app.render();
                 app.frames += 1;

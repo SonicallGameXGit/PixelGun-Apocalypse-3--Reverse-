@@ -1,9 +1,7 @@
 //! Ports of the game scripts that drive animations (spec: `docs/gameplay/animation.md`):
-//! `WeaponManager.Awake` / `TakeFirstWeapon`, `WeaponScript.selectWeapon`, `WeaponAnimation`
-//! (first-person hands), the motion part of `WeaponScript.Update` (`Aiming`, `RotationRealism`,
-//! `SmoothMove`) and `CharacterAnimation` (third-person body).
+//! `WeaponAnimation` (first-person hands, driven by `weapons.rs`) and `CharacterAnimation`
+//! (third-person body).
 
-use glam::{EulerRot, Quat, Vec3};
 use serde_json::Value;
 
 use crate::anim::{ClipLibrary, WrapMode};
@@ -11,10 +9,6 @@ use crate::assets::f32_of;
 use crate::prefab::PrefabInstance;
 
 /// `WeaponAnimation`: clip names and speeds of one first-person weapon.
-#[allow(
-    dead_code,
-    reason = "Shoot/Reload/TakeOut are used by WeaponScript firing and weapon switching (not ported yet)"
-)]
 #[derive(Clone, Debug)]
 pub struct WeaponAnimation {
     /// Node carrying the component and its `Animation`.
@@ -33,7 +27,7 @@ fn text(value: &Value) -> String {
 }
 
 impl WeaponAnimation {
-    fn from_fields(node: usize, f: &Value) -> WeaponAnimation {
+    pub fn from_fields(node: usize, f: &Value) -> WeaponAnimation {
         WeaponAnimation {
             node,
             idle: text(&f["Idle"]),
@@ -55,7 +49,6 @@ impl WeaponAnimation {
     }
 
     /// `Fire`: Rewind(Shoot), speed = FireAnimationSpeed, Play(Shoot).
-    #[allow(dead_code, reason = "called by WeaponScript (not ported yet)")]
     pub fn fire(&self, prefab: &mut PrefabInstance) {
         if let Some(animation) = prefab.animation_on(self.node) {
             animation.rewind(&self.shoot);
@@ -65,7 +58,6 @@ impl WeaponAnimation {
     }
 
     /// `Reloading(reloadTime)`: Stop(Reload), speed = clip length / reloadTime, Rewind, Play.
-    #[allow(dead_code, reason = "called by WeaponScript (not ported yet)")]
     pub fn reloading(&self, prefab: &mut PrefabInstance, reload_time: f32) {
         if let Some(animation) = prefab.animation_on(self.node) {
             animation.stop(&self.reload);
@@ -94,225 +86,10 @@ impl WeaponAnimation {
     }
 
     /// `takeOut`: as `takeIn` with TakeOut.
-    #[allow(dead_code, reason = "called by WeaponScript (not ported yet)")]
     pub fn take_out(&self, prefab: &mut PrefabInstance) {
         let clip = self.take_out.clone();
         self.take(prefab, &clip);
     }
-}
-
-/// The motion settings and state of one `WeaponScript` (the weapon's GameObject, child of
-/// `WeaponManager`). Firing, reloading and aiming input are not ported yet.
-#[derive(Clone, Debug)]
-pub struct WeaponScript {
-    pub node: usize,
-    /// `Aim.smoothTime` (+0x40 +20): `Aiming` lerps the position at `deltaTime / smoothTime`.
-    aim_smooth_time: f32,
-    /// `defaultPosition` (`Start`: the GameObject's local position).
-    default_position: Vec3,
-    /// `RotRealism.RotationAmplitude` / `.smooth` (ints).
-    rotation_amplitude: i32,
-    rotation_smooth: i32,
-    /// `SmoothMovement.maxAmount` / `.Smooth` (int).
-    smooth_max_amount: f32,
-    smooth_speed: i32,
-}
-
-/// What `WeaponScript.Update` reads each frame.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct WeaponInput {
-    /// `CF2Input.GetAxis("Mouse X")`, `("Mouse Y")`, `("Vertical")`.
-    pub mouse_x: f32,
-    pub mouse_y: f32,
-    pub vertical: f32,
-    /// `CharacterController.velocity.y`.
-    pub velocity_y: f32,
-}
-
-fn int_of(value: &Value) -> i32 {
-    value.as_i64().unwrap_or(0) as i32
-}
-
-impl WeaponScript {
-    fn from_fields(prefab: &PrefabInstance, node: usize, f: &Value) -> WeaponScript {
-        WeaponScript {
-            node,
-            aim_smooth_time: f32_of(&f["Aim"]["smoothTime"]),
-            default_position: prefab.nodes[node].local.position,
-            rotation_amplitude: int_of(&f["RotRealism"]["RotationAmplitude"]),
-            rotation_smooth: int_of(&f["RotRealism"]["smooth"]),
-            smooth_max_amount: f32_of(&f["SmoothMovement"]["maxAmount"]),
-            smooth_speed: int_of(&f["SmoothMovement"]["Smooth"]),
-        }
-    }
-
-    /// The motion part of `WeaponScript.Update` (`f29942`): `Aiming`, `RotationRealism`,
-    /// `SmoothMove`, in that order, on the weapon GameObject's local transform.
-    pub fn update(&self, prefab: &mut PrefabInstance, input: &WeaponInput, dt: f32) {
-        let local = &mut prefab.nodes[self.node].local;
-
-        // Aiming (`f29943`), not-aimed branch: currentPosition = defaultPosition (the camera FOV
-        // lerps to defaultFov, which nothing changes while not aiming).
-        let t = (dt / self.aim_smooth_time).clamp(0.0, 1.0);
-        local.position = local.position.lerp(self.default_position, t);
-
-        // RotationRealism (`f29944`): tilt against the mouse beyond a 0.1 dead zone.
-        let amplitude = self.rotation_amplitude as f32;
-        let angle_y = if input.mouse_x.abs() > 0.1 {
-            amplitude * input.mouse_x
-        } else {
-            0.0
-        };
-        let angle_x = if input.mouse_y.abs() > 0.1 {
-            -amplitude * input.mouse_y
-        } else {
-            0.0
-        };
-        // Quaternion.Euler(x, y, 0).
-        let target = Quat::from_euler(
-            EulerRot::YXZ,
-            angle_y.to_radians(),
-            angle_x.to_radians(),
-            0.0,
-        );
-        let t = (dt * self.rotation_smooth as f32).clamp(0.0, 1.0);
-        // Transform.localRotation stores a normalised quaternion.
-        local.rotation = local.rotation.slerp(target, t).normalize();
-
-        // SmoothMove (`f29945`): offsets from the vertical speed and the forward axis.
-        let max = self.smooth_max_amount;
-        let mut offset_y = 0.0;
-        if input.velocity_y > max + 1.0 {
-            offset_y = -max;
-        }
-        if input.velocity_y < -max - 1.0 {
-            offset_y = max;
-        }
-        let offset_z = (-input.vertical).clamp(-max, max);
-        let target = local.position + Vec3::new(0.0, offset_y, offset_z);
-        let t = (dt * self.smooth_speed as f32).clamp(0.0, 1.0);
-        local.position = local.position.lerp(target, t);
-    }
-}
-
-/// First-person weapons of a player prefab (`WeaponManager` and its weapons).
-pub struct WeaponManager {
-    /// `allWeapons`: the WeaponScript GameObjects.
-    pub all_weapons: Vec<usize>,
-    pub index: usize,
-    /// The `WeaponAnimation` of each weapon (`GetComponentInChildren`, may be missing).
-    pub weapon_animations: Vec<Option<WeaponAnimation>>,
-    /// The `WeaponScript` of each weapon.
-    pub weapon_scripts: Vec<Option<WeaponScript>>,
-}
-
-impl WeaponManager {
-    pub fn selected_animation(&self) -> Option<&WeaponAnimation> {
-        self.weapon_animations.get(self.index)?.as_ref()
-    }
-
-    /// `WeaponScript.Update` of every active weapon.
-    pub fn update(&self, prefab: &mut PrefabInstance, input: &WeaponInput, dt: f32) {
-        for script in self.weapon_scripts.iter().flatten() {
-            if prefab.active_in_hierarchy(script.node) {
-                script.update(prefab, input, dt);
-            }
-        }
-    }
-}
-
-/// First enabled `WeaponAnimation` at or below `root` on an active GameObject
-/// (`GetComponentInChildren<WeaponAnimation>()`, depth-first).
-fn weapon_animation_in_children(prefab: &PrefabInstance, root: usize) -> Option<WeaponAnimation> {
-    let mut stack = vec![root];
-    while let Some(node) = stack.pop() {
-        if !prefab.active_in_hierarchy(node) {
-            continue;
-        }
-        if let Some(c) = prefab
-            .scripts(node, "WeaponAnimation")
-            .find(|c| c["enabled"] != false)
-        {
-            return Some(WeaponAnimation::from_fields(node, &c["fields"]));
-        }
-        stack.extend(prefab.nodes[node].children.iter().rev());
-    }
-    None
-}
-
-/// `WeaponManager.Awake`: activates every child (their `Awake` runs: `WeaponAnimation.Awake`
-/// plays Idle), deactivates them all again, then `TakeFirstWeapon(allWeapons[index])` activates
-/// that weapon and sends it `selectWeapon` (→ `WeaponAnimation.takeIn`).
-pub fn weapon_manager_awake(prefab: &mut PrefabInstance) -> Option<WeaponManager> {
-    let (node, component) = prefab.find_scripts("WeaponManager").into_iter().next()?;
-    let fields = component["fields"].clone();
-    let children = prefab.nodes[node].children.clone();
-
-    for &child in &children {
-        prefab.nodes[child].active_self = true;
-    }
-    let mut awoken = Vec::new();
-    for &child in &children {
-        let mut stack = vec![child];
-        while let Some(n) = stack.pop() {
-            if !prefab.active_in_hierarchy(n) {
-                continue;
-            }
-            if let Some(c) = prefab
-                .scripts(n, "WeaponAnimation")
-                .find(|c| c["enabled"] != false)
-            {
-                awoken.push(WeaponAnimation::from_fields(n, &c["fields"]));
-            }
-            stack.extend(prefab.nodes[n].children.iter().rev());
-        }
-    }
-    for weapon_animation in &awoken {
-        weapon_animation.awake(prefab);
-    }
-
-    let all_weapons: Vec<usize> = fields["allWeapons"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(|r| prefab.node_of_ref(r))
-        .collect();
-    // WeaponScript.Awake (while active) caches GetComponentInChildren<WeaponAnimation>.
-    let weapon_animations: Vec<Option<WeaponAnimation>> = all_weapons
-        .iter()
-        .map(|&w| weapon_animation_in_children(prefab, w))
-        .collect();
-    for &child in &children {
-        prefab.nodes[child].active_self = false;
-    }
-    for &weapon in &all_weapons {
-        prefab.nodes[weapon].active_self = false;
-    }
-
-    // `Start` runs on first activation, before anything moved the weapon: defaultPosition is
-    // the prefab's local position.
-    let weapon_scripts = all_weapons
-        .iter()
-        .map(|&w| {
-            let fields = prefab.scripts(w, "WeaponScript").next()?["fields"].clone();
-            Some(WeaponScript::from_fields(prefab, w, &fields))
-        })
-        .collect();
-    let index = fields["index"].as_u64().unwrap_or(0) as usize;
-    let manager = WeaponManager {
-        all_weapons,
-        index,
-        weapon_animations,
-        weapon_scripts,
-    };
-    // TakeFirstWeapon: SetActive(true), SendMessage("selectWeapon").
-    if let Some(&weapon) = manager.all_weapons.get(index) {
-        prefab.nodes[weapon].active_self = true;
-        if let Some(weapon_animation) = manager.selected_animation() {
-            weapon_animation.take_in(prefab);
-        }
-    }
-    Some(manager)
 }
 
 /// `CharacterAnimation.Action`.
@@ -542,98 +319,5 @@ impl CharacterAnimation {
                 }
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::assets::find_assets_dir;
-
-    #[test]
-    fn weapon_script_sways_with_mouse_and_movement() {
-        let assets = find_assets_dir().unwrap();
-        let mut clips = ClipLibrary::new(&assets).unwrap();
-        let mut prefab = PrefabInstance::load(&assets, "german", &mut clips).unwrap();
-        let manager = weapon_manager_awake(&mut prefab).unwrap();
-        let script = manager.weapon_scripts[manager.index].clone().unwrap();
-        let default = prefab.nodes[script.node].local.position;
-        let dt = 1.0 / 60.0;
-        // Mouse right: the weapon turns towards Euler(0, amplitude · x, 0) = 2° · 1.
-        let turning = WeaponInput {
-            mouse_x: 1.0,
-            ..Default::default()
-        };
-        for _ in 0..120 {
-            manager.update(&mut prefab, &turning, dt);
-        }
-        let (y, x, _) = prefab.nodes[script.node]
-            .local
-            .rotation
-            .to_euler(EulerRot::YXZ);
-        assert!(
-            (y.to_degrees() - 2.0).abs() < 1e-3 && x.abs() < 1e-5,
-            "{y} {x}"
-        );
-        // Walking forward pulls the weapon back: Aiming (towards the default at dt / 0.05) and
-        // SmoothMove (z - 0.1 at dt · 3) settle in between.
-        let walking = WeaponInput {
-            vertical: 1.0,
-            ..Default::default()
-        };
-        for _ in 0..120 {
-            manager.update(&mut prefab, &walking, dt);
-        }
-        let z = prefab.nodes[script.node].local.position.z - default.z;
-        assert!(z < -0.005 && z > -0.1, "{z}");
-        // Idle again: back to the default position and rotation.
-        for _ in 0..300 {
-            manager.update(&mut prefab, &WeaponInput::default(), dt);
-        }
-        let local = prefab.nodes[script.node].local;
-        assert!((local.position - default).length() < 1e-4);
-        assert!(
-            local.rotation.angle_between(Quat::IDENTITY) < 1e-3,
-            "{:?}",
-            local.rotation
-        );
-    }
-
-    #[test]
-    fn first_weapon_takes_in_then_stops() {
-        let assets = find_assets_dir().unwrap();
-        let mut clips = ClipLibrary::new(&assets).unwrap();
-        let mut prefab = PrefabInstance::load(&assets, "german", &mut clips).unwrap();
-        let manager = weapon_manager_awake(&mut prefab).unwrap();
-        let weapon = manager.selected_animation().unwrap().clone();
-        let take_in = weapon.take_in.clone();
-        let length = {
-            let animation = prefab.animation_on(weapon.node).unwrap();
-            assert!(animation.is_playing(&take_in));
-            assert!(
-                !animation.is_playing(&weapon.idle),
-                "Play(TakeIn) stops Idle"
-            );
-            let state = &animation.states[animation.state_index(&take_in).unwrap()];
-            assert_eq!(state.speed, weapon.take_in_out_speed);
-            state.clip.length()
-        };
-        let poses =
-            |prefab: &PrefabInstance| -> Vec<_> { prefab.nodes.iter().map(|n| n.local).collect() };
-        prefab.update_animations();
-        let start = poses(&prefab);
-        prefab.begin_frame(0.1);
-        prefab.update_animations();
-        assert_ne!(start, poses(&prefab), "TakeIn moves the hands");
-        // Past the end (length / speed), Once stops the state.
-        prefab.begin_frame(length / weapon.take_in_out_speed);
-        prefab.update_animations();
-        assert!(
-            !prefab
-                .animation_on(weapon.node)
-                .unwrap()
-                .is_playing(&take_in)
-        );
-        eprintln!("TakeIn length {length}");
     }
 }

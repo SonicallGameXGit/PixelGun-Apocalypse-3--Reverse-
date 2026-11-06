@@ -19,6 +19,7 @@ use crate::prefab::{MeshSource, PrefabInstance};
 use crate::primitives::Primitive;
 use crate::scene::{FogMode, Scene};
 use crate::skin::{SkinData, load_skin};
+use crate::weapons::GuiQuad;
 
 /// Shared part of the lit vertex shaders: `lit_outputs` does the projection, UVs, ambient and
 /// fog of the compiled `Mobile/Diffuse` / `Diffuse` vertex programs.
@@ -127,6 +128,74 @@ void main() {
         discard;
     }
     frag_color = c;
+}
+"#;
+
+/// `Mobile/Particles/Additive` (Unity's built-in fixed-function shader: `Blend SrcAlpha One`,
+/// `Cull Off`, `ZWrite Off`, `Fog { Color (0,0,0,0) }`, `combine texture * primary`). Meshes
+/// without vertex colours give `primary` = white.
+const ADDITIVE_VS: &str = r#"#version 330 core
+in vec3 a_position;
+in vec3 a_normal;
+in vec2 a_uv;
+uniform mat4 u_object_to_world;
+uniform mat4 u_view_proj;
+uniform vec4 u_main_st;
+uniform int u_fog_mode;
+uniform vec4 u_fog_params;
+out vec2 v_uv;
+out float v_fog;
+void main() {
+    gl_Position = u_view_proj * (u_object_to_world * vec4(a_position, 1.0));
+    v_uv = a_uv * u_main_st.xy + u_main_st.zw;
+    float z = gl_Position.z;
+    if (u_fog_mode == 1) {
+        v_fog = z * u_fog_params.z + u_fog_params.w;
+    } else if (u_fog_mode == 2) {
+        v_fog = exp2(-z * u_fog_params.y);
+    } else if (u_fog_mode == 3) {
+        float t = z * u_fog_params.x;
+        v_fog = exp2(-t * t);
+    } else {
+        v_fog = 1.0;
+    }
+}
+"#;
+
+const ADDITIVE_FS: &str = r#"#version 330 core
+in vec2 v_uv;
+in float v_fog;
+uniform sampler2D u_main_tex;
+out vec4 frag_color;
+void main() {
+    vec4 c = texture(u_main_tex, v_uv);
+    // Fog towards the shader's fog colour, black.
+    frag_color = vec4(c.rgb * clamp(v_fog, 0.0, 1.0), c.a);
+}
+"#;
+
+/// `OnGUI` textures (`GUI.Box` with a background-only style, `GUI.DrawTexture`): GUI pixels,
+/// origin at the top left, tinted by `GUI.color`, alpha blended.
+const GUI_VS: &str = r#"#version 330 core
+in vec2 a_position;
+uniform vec4 u_rect;
+uniform vec2 u_screen;
+out vec2 v_uv;
+void main() {
+    vec2 pixel = u_rect.xy + a_position * u_rect.zw;
+    gl_Position = vec4(pixel.x / u_screen.x * 2.0 - 1.0, 1.0 - pixel.y / u_screen.y * 2.0, 0.0, 1.0);
+    // Texture row 0 (uploaded flipped) is the bottom; GUI y grows downwards.
+    v_uv = vec2(a_position.x, 1.0 - a_position.y);
+}
+"#;
+
+const GUI_FS: &str = r#"#version 330 core
+in vec2 v_uv;
+uniform sampler2D u_main_tex;
+uniform vec4 u_tint;
+out vec4 frag_color;
+void main() {
+    frag_color = texture(u_main_tex, v_uv) * u_tint;
 }
 "#;
 
@@ -241,6 +310,10 @@ pub struct SceneRenderer {
     skinned: Program,
     decal: Program,
     sky: Program,
+    additive: Program,
+    gui: Program,
+    /// Unit quad (0..1) for `gui`.
+    gui_quad: GpuMesh,
     resources: Resources,
     materials: HashMap<String, Material>,
     /// `QualitySettings.blendWeights` of the active level.
@@ -399,6 +472,8 @@ struct ModelDraw {
     color: Vec4,
     /// Bind poses for skinned renderers.
     bind_poses: Option<Vec<Mat4>>,
+    /// `Mobile/Particles/Additive` (drawn after the opaque models).
+    additive: bool,
 }
 
 /// GPU-side data of a `PrefabInstance`, from `SceneRenderer::prepare_prefab`.
@@ -493,6 +568,34 @@ impl SceneRenderer {
             &["u_view_proj", "u_main_tex"],
         )?;
 
+        let additive = Program::new(
+            gl,
+            ADDITIVE_VS,
+            ADDITIVE_FS,
+            &attributes,
+            &[
+                "u_object_to_world",
+                "u_view_proj",
+                "u_main_st",
+                "u_main_tex",
+                "u_fog_mode",
+                "u_fog_params",
+            ],
+        )?;
+        let gui = Program::new(
+            gl,
+            GUI_VS,
+            GUI_FS,
+            &["a_position"],
+            &["u_rect", "u_screen", "u_main_tex", "u_tint"],
+        )?;
+        let gui_quad = upload_mesh(
+            gl,
+            &[0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0],
+            &[2],
+            &[vec![0, 1, 2, 0, 2, 3]],
+        )?;
+
         let materials = load_materials(assets)?;
         let white = upload_texture(gl, 1, 1, &[255, 255, 255, 255], &TextureInfo::default())?;
         let mut loader = Resources {
@@ -526,7 +629,9 @@ impl SceneRenderer {
                     ShaderKind::MobileDiffuse => (Pass::Lit, Vec4::ONE),
                     ShaderKind::Diffuse => (Pass::Lit, material.color("_Color")),
                     ShaderKind::BlendedDecal => (Pass::Decal, material.color("_Color")),
-                    ShaderKind::Skybox | ShaderKind::Unsupported => {
+                    ShaderKind::Skybox
+                    | ShaderKind::ParticlesAdditive
+                    | ShaderKind::Unsupported => {
                         *stats
                             .unsupported_shaders
                             .entry(material.shader_name.clone())
@@ -615,6 +720,9 @@ impl SceneRenderer {
             skinned,
             decal,
             sky,
+            additive,
+            gui,
+            gui_quad,
             resources: loader,
             materials,
             skin_bones: crate::skin::quality_bone_count(assets)?,
@@ -816,13 +924,13 @@ impl SceneRenderer {
                 else {
                     continue;
                 };
-                let color = match material.shader {
-                    ShaderKind::MobileDiffuse => Vec4::ONE,
-                    ShaderKind::Diffuse => material.color("_Color"),
-                    // Prefab renderers with other shaders are transparent particle effects
-                    // (`Mobile/Particles/Additive`, `Legacy Shaders/Particles/Alpha Blended`);
-                    // drawing them as opaque Diffuse would be wrong, so they are skipped and
-                    // reported until those shaders are ported.
+                let (color, additive) = match material.shader {
+                    ShaderKind::MobileDiffuse => (Vec4::ONE, false),
+                    ShaderKind::Diffuse => (material.color("_Color"), false),
+                    ShaderKind::ParticlesAdditive => (Vec4::ONE, true),
+                    // Other prefab shaders are transparent particle effects (`Legacy
+                    // Shaders/Particles/Alpha Blended`); drawing them as opaque Diffuse would be
+                    // wrong, so they are skipped and reported until those shaders are ported.
                     _ => {
                         *self
                             .stats
@@ -844,6 +952,7 @@ impl SceneRenderer {
                     main_st,
                     color,
                     bind_poses: bind_poses.clone(),
+                    additive,
                 });
             }
         }
@@ -870,7 +979,8 @@ impl SceneRenderer {
 
     /// Draws the renderers of `prefab` whose GameObject is active and whose layer is in the
     /// camera's culling mask. `clear_depth` = camera clear flags "Depth only" (3), as the
-    /// player's `Weapon Camera` uses.
+    /// player's `Weapon Camera` uses. `root` places the prefab's root elsewhere (instances of a
+    /// shared template: its root world matrix is replaced, the rest of the hierarchy follows).
     #[allow(clippy::too_many_arguments)]
     pub fn draw_models(
         &self,
@@ -882,6 +992,7 @@ impl SceneRenderer {
         models: &PrefabModels,
         culling_mask: u32,
         clear_depth: bool,
+        root: Option<Mat4>,
     ) {
         let aspect = width as f32 / height.max(1) as f32;
         let (view_matrix, projection) = view.matrices(aspect);
@@ -890,6 +1001,11 @@ impl SceneRenderer {
             let r = &prefab.renderers[renderer];
             let layer = prefab.nodes[r.node].layer;
             r.enabled && culling_mask & (1 << layer) != 0 && prefab.active_in_hierarchy(r.node)
+        };
+        let relocate = root.map(|m| m * prefab.world[0].inverse());
+        let world_of = |node: usize| match relocate {
+            Some(m) => m * prefab.world[node],
+            None => prefab.world[node],
         };
         unsafe {
             gl.viewport(0, 0, width as i32, height as i32);
@@ -907,11 +1023,15 @@ impl SceneRenderer {
             let p = &self.lit;
             gl.use_program(Some(p.handle));
             self.set_lighting(gl, p, &view_proj);
-            for d in models.draws.iter().filter(|d| d.bind_poses.is_none()) {
+            for d in models
+                .draws
+                .iter()
+                .filter(|d| d.bind_poses.is_none() && !d.additive)
+            {
                 if !visible(d.renderer) {
                     continue;
                 }
-                let world = prefab.world[prefab.renderers[d.renderer].node];
+                let world = world_of(prefab.renderers[d.renderer].node);
                 let normal = Mat3::from_mat4(world).inverse().transpose();
                 gl.front_face(if world.determinant() < 0.0 {
                     glow::CCW
@@ -949,7 +1069,7 @@ impl SceneRenderer {
                 for (i, bind_pose) in bind_poses.iter().enumerate().take(MAX_BONES) {
                     let bone = skin.bones.get(i).copied().flatten();
                     let matrix = match bone {
-                        Some(node) => prefab.world[node] * *bind_pose,
+                        Some(node) => world_of(node) * *bind_pose,
                         None => Mat4::IDENTITY,
                     };
                     palette[i * 16..i * 16 + 16].copy_from_slice(&matrix.to_cols_array());
@@ -957,7 +1077,87 @@ impl SceneRenderer {
                 gl.uniform_matrix_4_f32_slice(p.u("u_bones"), false, &palette);
                 self.draw_model(gl, p, d);
             }
+
+            // Mobile/Particles/Additive: Blend SrcAlpha One, ZWrite Off, Cull Off.
+            if models
+                .draws
+                .iter()
+                .any(|d| d.additive && visible(d.renderer))
+            {
+                let p = &self.additive;
+                gl.use_program(Some(p.handle));
+                gl.uniform_matrix_4_f32_slice(
+                    p.u("u_view_proj"),
+                    false,
+                    &view_proj.to_cols_array(),
+                );
+                gl.uniform_1_i32(p.u("u_fog_mode"), self.fog_mode);
+                let f = self.fog_params;
+                gl.uniform_4_f32(p.u("u_fog_params"), f.x, f.y, f.z, f.w);
+                gl.uniform_1_i32(p.u("u_main_tex"), 0);
+                gl.disable(glow::CULL_FACE);
+                gl.enable(glow::BLEND);
+                gl.blend_func(glow::SRC_ALPHA, glow::ONE);
+                gl.depth_mask(false);
+                for d in models.draws.iter().filter(|d| d.additive) {
+                    if !visible(d.renderer) {
+                        continue;
+                    }
+                    let world = world_of(prefab.renderers[d.renderer].node);
+                    gl.uniform_matrix_4_f32_slice(
+                        p.u("u_object_to_world"),
+                        false,
+                        &world.to_cols_array(),
+                    );
+                    let s = d.main_st;
+                    gl.uniform_4_f32(p.u("u_main_st"), s.x, s.y, s.z, s.w);
+                    gl.bind_texture(glow::TEXTURE_2D, Some(d.texture));
+                    gl.bind_vertex_array(Some(d.vao));
+                    gl.draw_elements(glow::TRIANGLES, d.count, glow::UNSIGNED_INT, d.offset);
+                }
+                gl.depth_mask(true);
+                gl.disable(glow::BLEND);
+                gl.enable(glow::CULL_FACE);
+            }
             gl.bind_vertex_array(None);
+        }
+    }
+
+    /// Draws `OnGUI` quads over the frame (`GuiQuad::rect` in GUI pixels of a `width` ×
+    /// `height` screen).
+    pub fn draw_gui(&mut self, gl: &glow::Context, quads: &[GuiQuad], width: u32, height: u32) {
+        if quads.is_empty() {
+            return;
+        }
+        let textures: Vec<glow::Texture> = quads
+            .iter()
+            .map(|q| self.resources.texture(gl, Some(&q.texture)))
+            .collect();
+        let p = &self.gui;
+        unsafe {
+            gl.viewport(0, 0, width as i32, height as i32);
+            gl.disable(glow::DEPTH_TEST);
+            gl.disable(glow::CULL_FACE);
+            gl.enable(glow::BLEND);
+            gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
+            gl.active_texture(glow::TEXTURE0);
+            gl.use_program(Some(p.handle));
+            gl.uniform_2_f32(p.u("u_screen"), width as f32, height as f32);
+            gl.uniform_1_i32(p.u("u_main_tex"), 0);
+            gl.bind_vertex_array(Some(self.gui_quad.vao));
+            let (offset, count) = self.gui_quad.submeshes[0];
+            for (quad, texture) in quads.iter().zip(textures) {
+                let [x, y, w, h] = quad.rect;
+                gl.uniform_4_f32(p.u("u_rect"), x, y, w, h);
+                let c = quad.color;
+                gl.uniform_4_f32(p.u("u_tint"), c.x, c.y, c.z, c.w);
+                gl.bind_texture(glow::TEXTURE_2D, Some(texture));
+                gl.draw_elements(glow::TRIANGLES, count, glow::UNSIGNED_INT, offset);
+            }
+            gl.bind_vertex_array(None);
+            gl.disable(glow::BLEND);
+            gl.enable(glow::DEPTH_TEST);
+            gl.enable(glow::CULL_FACE);
         }
     }
 
