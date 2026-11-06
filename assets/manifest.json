@@ -1,0 +1,6512 @@
+[
+    {
+        "path": "audio/AugFire.m4a",
+        "type": "AudioClip",
+        "name": "AugFire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 291
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.5400000214576721,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/AutomaticRifleFire.m4a",
+        "type": "AudioClip",
+        "name": "AutomaticRifleFire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 283
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.024580478668213,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Creature Footstep 01.m4a",
+        "type": "AudioClip",
+        "name": "Creature Footstep 01",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 270
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.203469380736351,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Creature Footstep 01__286.m4a",
+        "type": "AudioClip",
+        "name": "Creature Footstep 01",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 286
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.203469380736351,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Creature Footstep 02.m4a",
+        "type": "AudioClip",
+        "name": "Creature Footstep 02",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 277
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.203469380736351,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Creature Footstep 02__314.m4a",
+        "type": "AudioClip",
+        "name": "Creature Footstep 02",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 314
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.203469380736351,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Creature Footstep 03.m4a",
+        "type": "AudioClip",
+        "name": "Creature Footstep 03",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 269
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.203469380736351,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Creature Footstep 03__297.m4a",
+        "type": "AudioClip",
+        "name": "Creature Footstep 03",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 297
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.203469380736351,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Creature Footstep 04.m4a",
+        "type": "AudioClip",
+        "name": "Creature Footstep 04",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 279
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.203469380736351,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Creature Footstep 04__300.m4a",
+        "type": "AudioClip",
+        "name": "Creature Footstep 04",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 300
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.203469380736351,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/FIRE ZOMBIE GOOD.m4a",
+        "type": "AudioClip",
+        "name": "FIRE ZOMBIE GOOD",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 280
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.3549206256866455,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Fire grenade launcher.m4a",
+        "type": "AudioClip",
+        "name": "Fire grenade launcher",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 313
+        },
+        "audio": {
+            "channels": 2,
+            "frequency": 44100,
+            "length": 0.5331065654754639,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Fire rocket launcher.m4a",
+        "type": "AudioClip",
+        "name": "Fire rocket launcher",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 271
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.8726303577423096,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/FlashLightOnOff.m4a",
+        "type": "AudioClip",
+        "name": "FlashLightOnOff",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 278
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.5900226831436157,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/GrenadeExplode.m4a",
+        "type": "AudioClip",
+        "name": "GrenadeExplode",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 307
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.9388662576675415,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Hit Sound.m4a",
+        "type": "AudioClip",
+        "name": "Hit Sound",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 289
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.5244444608688354,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/ImpactSound.m4a",
+        "type": "AudioClip",
+        "name": "ImpactSound",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 274
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 2.063673496246338,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/NearExplosionA.m4a",
+        "type": "AudioClip",
+        "name": "NearExplosionA",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 275
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 2.0212697982788086,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Pistol Fire.m4a",
+        "type": "AudioClip",
+        "name": "Pistol Fire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 282
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.5929705500602722,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/PistolFire.m4a",
+        "type": "AudioClip",
+        "name": "PistolFire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 287
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.6109750270843506,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Pixel Explosion - roket.m4a",
+        "type": "AudioClip",
+        "name": "Pixel Explosion - roket",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 268
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.9142857193946838,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Reload 1.m4a",
+        "type": "AudioClip",
+        "name": "Reload 1",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 285
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.8644671440124512,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Reload 2.m4a",
+        "type": "AudioClip",
+        "name": "Reload 2",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 272
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.5028117895126343,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/RocketLauncherFire.m4a",
+        "type": "AudioClip",
+        "name": "RocketLauncherFire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 308
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 5.258389949798584,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Shotgun_2.m4a",
+        "type": "AudioClip",
+        "name": "Shotgun_2",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 296
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.9142857193946838,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/Sniper Rifle Fire.m4a",
+        "type": "AudioClip",
+        "name": "Sniper Rifle Fire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 294
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.332244873046875,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/SniperFire.m4a",
+        "type": "AudioClip",
+        "name": "SniperFire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 309
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.143582820892334,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/SuperPunch.m4a",
+        "type": "AudioClip",
+        "name": "SuperPunch",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 273
+        },
+        "audio": {
+            "channels": 2,
+            "frequency": 44100,
+            "length": 2.063673496246338,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/WeaponChange.m4a",
+        "type": "AudioClip",
+        "name": "WeaponChange",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 310
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.6997959017753601,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/ZOMBIE CHANGE GUN.m4a",
+        "type": "AudioClip",
+        "name": "ZOMBIE CHANGE GUN",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 290
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 2.711768627166748,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/death.m4a",
+        "type": "AudioClip",
+        "name": "death",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 276
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.1834920644760132,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/dryfire.m4a",
+        "type": "AudioClip",
+        "name": "dryfire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 312
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.361224502325058,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/explode launcher.m4a",
+        "type": "AudioClip",
+        "name": "explode launcher",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 299
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.123265266418457,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/explode1.ogg.m4a",
+        "type": "AudioClip",
+        "name": "explode1.ogg",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 284
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 2.5,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/explosion rocket.m4a",
+        "type": "AudioClip",
+        "name": "explosion rocket",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 302
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 8.150203704833984,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/fire Machine gun fire.m4a",
+        "type": "AudioClip",
+        "name": "fire Machine gun fire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 298
+        },
+        "audio": {
+            "channels": 2,
+            "frequency": 44100,
+            "length": 1.7441496849060059,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/fire Shotgun fire.m4a",
+        "type": "AudioClip",
+        "name": "fire Shotgun fire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 305
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.6798185706138611,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/fire melee_fire.m4a",
+        "type": "AudioClip",
+        "name": "fire melee_fire",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 311
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.2673015892505646,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/glauncher-1.m4a",
+        "type": "AudioClip",
+        "name": "glauncher-1",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 295
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.4966213703155518,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/idle zombie.mp3 STOMAC.m4a",
+        "type": "AudioClip",
+        "name": "idle zombie.mp3 STOMAC",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 306
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 8.672653198242188,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/muzica lobby.m4a",
+        "type": "AudioClip",
+        "name": "muzica lobby",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 138
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 22.760339736938477,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/pistol_damage wal.m4a",
+        "type": "AudioClip",
+        "name": "pistol_damage wal",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 304
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.6562585234642029,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/reload Sniper.m4a",
+        "type": "AudioClip",
+        "name": "reload Sniper",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 288
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.3586394786834717,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/reload rocket launcher.m4a",
+        "type": "AudioClip",
+        "name": "reload rocket launcher",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 292
+        },
+        "audio": {
+            "channels": 2,
+            "frequency": 44100,
+            "length": 2.9243991374969482,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/reload_Haavy_.m4a",
+        "type": "AudioClip",
+        "name": "reload(Haavy)",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 303
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 2.25,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/rocket fly.m4a",
+        "type": "AudioClip",
+        "name": "rocket fly",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 301
+        },
+        "audio": {
+            "channels": 2,
+            "frequency": 44100,
+            "length": 9.48244857788086,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/sniper_shoot.m4a",
+        "type": "AudioClip",
+        "name": "sniper_shoot",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 281
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 0.4707936644554138,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "audio/zombie_die1.m4a",
+        "type": "AudioClip",
+        "name": "zombie_die1",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 293
+        },
+        "audio": {
+            "channels": 1,
+            "frequency": 44100,
+            "length": 1.4478003978729248,
+            "compression": "7"
+        }
+    },
+    {
+        "path": "fonts/A A A A A ebrimabd.ttf",
+        "type": "Font",
+        "name": "A A A A A ebrimabd",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 151
+        }
+    },
+    {
+        "path": "fonts/Apocalypse.ttf",
+        "type": "Font",
+        "name": "Apocalypse",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 143
+        }
+    },
+    {
+        "path": "fonts/Jupiter.ttf",
+        "type": "Font",
+        "name": "Jupiter",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 147
+        }
+    },
+    {
+        "path": "fonts/_ fortness 2.ttf",
+        "type": "Font",
+        "name": "_ fortness 2",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 144
+        }
+    },
+    {
+        "path": "fonts/_ fortness 2__149.ttf",
+        "type": "Font",
+        "name": "_ fortness 2",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 149
+        }
+    },
+    {
+        "path": "fonts/_-_IMPACT.ttf",
+        "type": "Font",
+        "name": "_-_IMPACT",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 150
+        }
+    },
+    {
+        "path": "fonts/cool Example Font.ttf",
+        "type": "Font",
+        "name": "cool Example Font",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 148
+        }
+    },
+    {
+        "path": "fonts/ebrima.ttf",
+        "type": "Font",
+        "name": "ebrima",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 142
+        }
+    },
+    {
+        "path": "fonts/font team fortness 2 miniclip.ttf",
+        "type": "Font",
+        "name": "font team fortness 2 miniclip",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 146
+        }
+    },
+    {
+        "path": "fonts/lOOBYmENU.ttf",
+        "type": "Font",
+        "name": "lOOBYmENU",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 315
+        }
+    },
+    {
+        "path": "fonts/paco games  GroundContr.ttf",
+        "type": "Font",
+        "name": "paco games  GroundContr",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 145
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_0.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_0",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 39
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_113.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_113",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 40
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_123.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_123",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 41
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_145.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_145",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 42
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_156.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_156",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 43
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_157.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_157",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 44
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_160.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_160",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 45
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_17.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_17",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 46
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_35.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_35",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 47
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_40.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_40",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 48
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_58.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_58",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 49
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_62.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_62",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 50
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_66.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_66",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 51
+        }
+    },
+    {
+        "path": "models/BSP_Object.model_73.obj",
+        "type": "Mesh",
+        "name": "BSP_Object.model_73",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 52
+        }
+    },
+    {
+        "path": "models/Base_mesh.obj",
+        "type": "Mesh",
+        "name": "Base_mesh",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 163
+        }
+    },
+    {
+        "path": "models/Body.obj",
+        "type": "Mesh",
+        "name": "Body",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 173
+        }
+    },
+    {
+        "path": "models/Box005.obj",
+        "type": "Mesh",
+        "name": "Box005",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 165
+        }
+    },
+    {
+        "path": "models/Box005__166.obj",
+        "type": "Mesh",
+        "name": "Box005",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 166
+        }
+    },
+    {
+        "path": "models/CirclePlane12v.obj",
+        "type": "Mesh",
+        "name": "CirclePlane12v",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 159
+        }
+    },
+    {
+        "path": "models/Cube.001.obj",
+        "type": "Mesh",
+        "name": "Cube.001",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 167
+        }
+    },
+    {
+        "path": "models/Cube.obj",
+        "type": "Mesh",
+        "name": "Cube",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 172
+        }
+    },
+    {
+        "path": "models/Cylinder_001.obj",
+        "type": "Mesh",
+        "name": "Cylinder_001",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 168
+        }
+    },
+    {
+        "path": "models/Icosphere.obj",
+        "type": "Mesh",
+        "name": "Icosphere",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 158
+        }
+    },
+    {
+        "path": "models/Object001.obj",
+        "type": "Mesh",
+        "name": "Object001",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 164
+        }
+    },
+    {
+        "path": "models/Object007.obj",
+        "type": "Mesh",
+        "name": "Object007",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 161
+        }
+    },
+    {
+        "path": "models/Object009.obj",
+        "type": "Mesh",
+        "name": "Object009",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 171
+        }
+    },
+    {
+        "path": "models/Sniper.obj",
+        "type": "Mesh",
+        "name": "Sniper",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 169
+        }
+    },
+    {
+        "path": "models/SpecialForces_03_mesh.obj",
+        "type": "Mesh",
+        "name": "SpecialForces_03_mesh",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 176
+        }
+    },
+    {
+        "path": "models/Sphere.obj",
+        "type": "Mesh",
+        "name": "Sphere",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 160
+        }
+    },
+    {
+        "path": "models/Terrorist_01_mesh.obj",
+        "type": "Mesh",
+        "name": "Terrorist_01_mesh",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 175
+        }
+    },
+    {
+        "path": "models/Terrorist_02_mesh.obj",
+        "type": "Mesh",
+        "name": "Terrorist_02_mesh",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 174
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_0.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_0",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 67
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_0__11.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_0",
+        "source": {
+            "file": "sharedassets8.assets",
+            "path_id": 11
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_0__12.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_0",
+        "source": {
+            "file": "sharedassets6.assets",
+            "path_id": 12
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_0__20.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_0",
+        "source": {
+            "file": "sharedassets9.assets",
+            "path_id": 20
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_0__30.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_0",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 30
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_0__43.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_0",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 43
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_0__45.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_0",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 45
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_0__52.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_0",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 52
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_1.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_1",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 44
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_10.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_10",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 68
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_100.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_100",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 54
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_101.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_101",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 55
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_102.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_102",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 56
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_103.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_103",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 57
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_104.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_104",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 58
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_105.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_105",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 59
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_106.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_106",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 60
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_107.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_107",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 61
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_108.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_108",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 62
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_109.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_109",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 63
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_10__45.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_10",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 45
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_11.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_11",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 69
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_110.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_110",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 65
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_111.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_111",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 66
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_112.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_112",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 67
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_113.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_113",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 68
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_114.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_114",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 69
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_11__46.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_11",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 46
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_11__64.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_11",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 64
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_12.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_12",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 70
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_12__47.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_12",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 47
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_13.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_13",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 48
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_13__70.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_13",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 70
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_14.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_14",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 49
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_15.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_15",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 50
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_15__71.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_15",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 71
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_16.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_16",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 51
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_16__72.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_16",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 72
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_17.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_17",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 52
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_17__73.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_17",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 73
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_18.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_18",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 74
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_19.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_19",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 75
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_1__13.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_1",
+        "source": {
+            "file": "sharedassets6.assets",
+            "path_id": 13
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_1__53.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_1",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 53
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_2.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_2",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 71
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_20.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_20",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 77
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_21.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_21",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 78
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_23.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_23",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 79
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_25.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_25",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 80
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_27.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_27",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 81
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_29.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_29",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 82
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_2__53.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_2",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 53
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_2__76.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_2",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 76
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_3.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_3",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 72
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_30.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_30",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 84
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_31.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_31",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 85
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_32.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_32",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 86
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_33.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_33",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 87
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_34.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_34",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 88
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_35.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_35",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 89
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_36.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_36",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 90
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_37.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_37",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 91
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_38.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_38",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 92
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_39.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_39",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 93
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_3__54.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_3",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 54
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_3__83.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_3",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 83
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_4.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_4",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 73
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_40.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_40",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 95
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_41.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_41",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 96
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_42.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_42",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 97
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_43.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_43",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 98
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_44.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_44",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 99
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_45.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_45",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 100
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_46.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_46",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 101
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_47.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_47",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 102
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_48.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_48",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 103
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_49.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_49",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 104
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_4__55.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_4",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 55
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_4__94.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_4",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 94
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_5.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_5",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 74
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_50.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_50",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 106
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_51.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_51",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 107
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_52.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_52",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 108
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_53.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_53",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 109
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_54.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_54",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 110
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_55.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_55",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 111
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_56.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_56",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 112
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_57.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_57",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 113
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_58.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_58",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 114
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_59.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_59",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 115
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_5__105.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_5",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 105
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_6.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_6",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 75
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_60.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_60",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 117
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_61.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_61",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 118
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_62.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_62",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 119
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_63.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_63",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 120
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_64.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_64",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 121
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_65.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_65",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 31
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_65__122.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_65",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 122
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_66.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_66",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 32
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_66__123.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_66",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 123
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_67.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_67",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 124
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_68.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_68",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 125
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_69.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_69",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 126
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_6__116.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_6",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 116
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_7.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_7",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 76
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_70.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_70",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 128
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_71.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_71",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 129
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_72.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_72",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 130
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_73.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_73",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 131
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_74.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_74",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 132
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_75.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_75",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 133
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_76.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_76",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 134
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_77.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_77",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 135
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_78.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_78",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 136
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_79.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_79",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 137
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_7__127.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_7",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 127
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_8.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_8",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 77
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_80.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_80",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 138
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_81.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_81",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 139
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_82.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_82",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 140
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_83.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_83",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 141
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_84.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_84",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 142
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_85.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_85",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 143
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_86.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_86",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 144
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_87.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_87",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 145
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_88.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_88",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 146
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_89.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_89",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 147
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_9.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_9",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 78
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_90.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_90",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 149
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_91.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_91",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 150
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_92.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_92",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 151
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_93.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_93",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 152
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_94.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_94",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 153
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_95.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_95",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 154
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_96.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_96",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 155
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_97.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_97",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 156
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_98.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_98",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 157
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_99.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_99",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 158
+        }
+    },
+    {
+        "path": "models/VBSP_Object.model_9__148.obj",
+        "type": "Mesh",
+        "name": "VBSP_Object.model_9",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 148
+        }
+    },
+    {
+        "path": "models/missile.obj",
+        "type": "Mesh",
+        "name": "missile",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 162
+        }
+    },
+    {
+        "path": "models/rocket launcher.obj",
+        "type": "Mesh",
+        "name": "rocket launcher",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 170
+        }
+    },
+    {
+        "path": "textures/1 . SimpleMilitary_JungleCommando_Black.png",
+        "type": "Texture2D",
+        "name": "1 . SimpleMilitary_JungleCommando_Black",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 156
+        },
+        "size": [
+            512,
+            512
+        ]
+    },
+    {
+        "path": "textures/1 SimpleZombies_Nazi_Grey.png",
+        "type": "Texture2D",
+        "name": "1 SimpleZombies_Nazi_Grey",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 114
+        },
+        "size": [
+            512,
+            512
+        ]
+    },
+    {
+        "path": "textures/1 log_acacia.png",
+        "type": "Texture2D",
+        "name": "1 log_acacia",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 35
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/1.png",
+        "type": "Texture2D",
+        "name": "1",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 34
+        },
+        "size": [
+            1483,
+            705
+        ]
+    },
+    {
+        "path": "textures/10.png",
+        "type": "Texture2D",
+        "name": "10",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 72
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/11.png",
+        "type": "Texture2D",
+        "name": "11",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 100
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/12.png",
+        "type": "Texture2D",
+        "name": "12",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 22
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/13.png",
+        "type": "Texture2D",
+        "name": "13",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 88
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/14.png",
+        "type": "Texture2D",
+        "name": "14",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 95
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/15.png",
+        "type": "Texture2D",
+        "name": "15",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 25
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/16.png",
+        "type": "Texture2D",
+        "name": "16",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 71
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/17.png",
+        "type": "Texture2D",
+        "name": "17",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 28
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/18.png",
+        "type": "Texture2D",
+        "name": "18",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 36
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/19.png",
+        "type": "Texture2D",
+        "name": "19",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 96
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/1__112.png",
+        "type": "Texture2D",
+        "name": "1",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 112
+        },
+        "size": [
+            103,
+            121
+        ]
+    },
+    {
+        "path": "textures/1_hand mercenary.png",
+        "type": "Texture2D",
+        "name": "1_hand mercenary",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 84
+        },
+        "size": [
+            128,
+            256
+        ]
+    },
+    {
+        "path": "textures/2 SF Title 1.png",
+        "type": "Texture2D",
+        "name": "2 SF Title 1",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 149
+        },
+        "size": [
+            256,
+            64
+        ]
+    },
+    {
+        "path": "textures/2.png",
+        "type": "Texture2D",
+        "name": "2",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 33
+        },
+        "size": [
+            103,
+            124
+        ]
+    },
+    {
+        "path": "textures/20.png",
+        "type": "Texture2D",
+        "name": "20",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 59
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/21.png",
+        "type": "Texture2D",
+        "name": "21",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 67
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/22.png",
+        "type": "Texture2D",
+        "name": "22",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 37
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/23.png",
+        "type": "Texture2D",
+        "name": "23",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 93
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/24.png",
+        "type": "Texture2D",
+        "name": "24",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 38
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/25.png",
+        "type": "Texture2D",
+        "name": "25",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 123
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/26.png",
+        "type": "Texture2D",
+        "name": "26",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 64
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/27.png",
+        "type": "Texture2D",
+        "name": "27",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 53
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/28.png",
+        "type": "Texture2D",
+        "name": "28",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 43
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/29.png",
+        "type": "Texture2D",
+        "name": "29",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 56
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/2__65.png",
+        "type": "Texture2D",
+        "name": "2",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 65
+        },
+        "size": [
+            1804,
+            1004
+        ]
+    },
+    {
+        "path": "textures/2___hand german.png",
+        "type": "Texture2D",
+        "name": "2___hand german",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 91
+        },
+        "size": [
+            128,
+            256
+        ]
+    },
+    {
+        "path": "textures/3 SF Window 1.png",
+        "type": "Texture2D",
+        "name": "3 SF Window 1",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 141
+        },
+        "size": [
+            512,
+            256
+        ]
+    },
+    {
+        "path": "textures/3.png",
+        "type": "Texture2D",
+        "name": "3",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 124
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/30.png",
+        "type": "Texture2D",
+        "name": "30",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 40
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/31.png",
+        "type": "Texture2D",
+        "name": "31",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 20
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/32.png",
+        "type": "Texture2D",
+        "name": "32",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 84
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/33.png",
+        "type": "Texture2D",
+        "name": "33",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 105
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/34.png",
+        "type": "Texture2D",
+        "name": "34",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 109
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/35.png",
+        "type": "Texture2D",
+        "name": "35",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 19
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/36.png",
+        "type": "Texture2D",
+        "name": "36",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 108
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/37.png",
+        "type": "Texture2D",
+        "name": "37",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 48
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/38.png",
+        "type": "Texture2D",
+        "name": "38",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 115
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/39.png",
+        "type": "Texture2D",
+        "name": "39",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 101
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/4.png",
+        "type": "Texture2D",
+        "name": "4",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 76
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/40.png",
+        "type": "Texture2D",
+        "name": "40",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 54
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/41.png",
+        "type": "Texture2D",
+        "name": "41",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 92
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/42.png",
+        "type": "Texture2D",
+        "name": "42",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 125
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/43.png",
+        "type": "Texture2D",
+        "name": "43",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 45
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/44.png",
+        "type": "Texture2D",
+        "name": "44",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 50
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/45.png",
+        "type": "Texture2D",
+        "name": "45",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 29
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/46.png",
+        "type": "Texture2D",
+        "name": "46",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 102
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/47.png",
+        "type": "Texture2D",
+        "name": "47",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 122
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/48.png",
+        "type": "Texture2D",
+        "name": "48",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 73
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/49.png",
+        "type": "Texture2D",
+        "name": "49",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 63
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/5.png",
+        "type": "Texture2D",
+        "name": "5",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 94
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/50.png",
+        "type": "Texture2D",
+        "name": "50",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 30
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/6.png",
+        "type": "Texture2D",
+        "name": "6",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 116
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/7.png",
+        "type": "Texture2D",
+        "name": "7",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 113
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/8-bit-pixel-art-explosion-on-a-red-background_149610872.png",
+        "type": "Texture2D",
+        "name": "8-bit-pixel-art-explosion-on-a-red-background_149610872",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 128
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/8.png",
+        "type": "Texture2D",
+        "name": "8",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 39
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/9.png",
+        "type": "Texture2D",
+        "name": "9",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 32
+        },
+        "size": [
+            112,
+            133
+        ]
+    },
+    {
+        "path": "textures/ActionBar_Background.png",
+        "type": "Texture2D",
+        "name": "ActionBar_Background",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 148
+        },
+        "size": [
+            622,
+            84
+        ]
+    },
+    {
+        "path": "textures/ActionBar_SpellSlot.png",
+        "type": "Texture2D",
+        "name": "ActionBar_SpellSlot",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 86
+        },
+        "size": [
+            58,
+            58
+        ]
+    },
+    {
+        "path": "textures/ActionBar_SpellSlot_CooldownOverlay.png",
+        "type": "Texture2D",
+        "name": "ActionBar_SpellSlot_CooldownOverlay",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 26
+        },
+        "size": [
+            59,
+            59
+        ]
+    },
+    {
+        "path": "textures/ActionBar_SpellSlot_PressOverlay.png",
+        "type": "Texture2D",
+        "name": "ActionBar_SpellSlot_PressOverlay",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 89
+        },
+        "size": [
+            59,
+            59
+        ]
+    },
+    {
+        "path": "textures/BlackScreen.png",
+        "type": "Texture2D",
+        "name": "BlackScreen",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 132
+        },
+        "size": [
+            128,
+            32
+        ]
+    },
+    {
+        "path": "textures/Bloody_Screen.png",
+        "type": "Texture2D",
+        "name": "Bloody_Screen",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 108
+        },
+        "size": [
+            512,
+            256
+        ]
+    },
+    {
+        "path": "textures/Bloody_Screen_minecraft.png",
+        "type": "Texture2D",
+        "name": "Bloody_Screen_minecraft",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 112
+        },
+        "size": [
+            1024,
+            512
+        ]
+    },
+    {
+        "path": "textures/BlueSquareButton.png",
+        "type": "Texture2D",
+        "name": "BlueSquareButton",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 151
+        },
+        "size": [
+            256,
+            104
+        ]
+    },
+    {
+        "path": "textures/Bridge_material_0.png",
+        "type": "Texture2D",
+        "name": "Bridge_material_0",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 140
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Bridge_material_1.png",
+        "type": "Texture2D",
+        "name": "Bridge_material_1",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 137
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Bridge_material_10.png",
+        "type": "Texture2D",
+        "name": "Bridge_material_10",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 144
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Bridge_material_11.png",
+        "type": "Texture2D",
+        "name": "Bridge_material_11",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 88
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Bridge_material_4.png",
+        "type": "Texture2D",
+        "name": "Bridge_material_4",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 138
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Bridge_material_7.png",
+        "type": "Texture2D",
+        "name": "Bridge_material_7",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 118
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Bullet Hole.png",
+        "type": "Texture2D",
+        "name": "Bullet Hole",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 155
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/ButtonIn.png",
+        "type": "Texture2D",
+        "name": "ButtonIn",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 147
+        },
+        "size": [
+            128,
+            32
+        ]
+    },
+    {
+        "path": "textures/ButtonPress.png",
+        "type": "Texture2D",
+        "name": "ButtonPress",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 122
+        },
+        "size": [
+            128,
+            32
+        ]
+    },
+    {
+        "path": "textures/ColorFlare.png",
+        "type": "Texture2D",
+        "name": "ColorFlare",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 152
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Crosshair 16x15.png",
+        "type": "Texture2D",
+        "name": "Crosshair 16x15",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 95
+        },
+        "size": [
+            16,
+            16
+        ]
+    },
+    {
+        "path": "textures/Crosshair.png",
+        "type": "Texture2D",
+        "name": "Crosshair",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 96
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/CrosshairTexture.png",
+        "type": "Texture2D",
+        "name": "CrosshairTexture",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 93
+        },
+        "size": [
+            16,
+            16
+        ]
+    },
+    {
+        "path": "textures/CrosshairTexture__110.png",
+        "type": "Texture2D",
+        "name": "CrosshairTexture",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 110
+        },
+        "size": [
+            16,
+            16
+        ]
+    },
+    {
+        "path": "textures/Crosshair_red.png",
+        "type": "Texture2D",
+        "name": "Crosshair_red",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 86
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Default-Particle.png",
+        "type": "Texture2D",
+        "name": "Default-Particle",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 16
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/DialogBox_Background.png",
+        "type": "Texture2D",
+        "name": "DialogBox_Background",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 129
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Extra_SpellSlot_Background.png",
+        "type": "Texture2D",
+        "name": "Extra_SpellSlot_Background",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 87
+        },
+        "size": [
+            52,
+            52
+        ]
+    },
+    {
+        "path": "textures/Facebook-button.png",
+        "type": "Texture2D",
+        "name": "Facebook-button",
+        "source": {
+            "file": "sharedassets4.assets",
+            "path_id": 3
+        },
+        "size": [
+            256,
+            81
+        ]
+    },
+    {
+        "path": "textures/Fight.png",
+        "type": "Texture2D",
+        "name": "Fight",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 103
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/Fireball.png",
+        "type": "Texture2D",
+        "name": "Fireball",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 111
+        },
+        "size": [
+            256,
+            128
+        ]
+    },
+    {
+        "path": "textures/Flashlight.png",
+        "type": "Texture2D",
+        "name": "Flashlight",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 82
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/Flower_Grass.png",
+        "type": "Texture2D",
+        "name": "Flower_Grass",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 50
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/GameMenu_Button.png",
+        "type": "Texture2D",
+        "name": "GameMenu_Button",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 120
+        },
+        "size": [
+            247,
+            46
+        ]
+    },
+    {
+        "path": "textures/GlassImpactTest.png",
+        "type": "Texture2D",
+        "name": "GlassImpactTest",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 126
+        },
+        "size": [
+            512,
+            512
+        ]
+    },
+    {
+        "path": "textures/Glow.png",
+        "type": "Texture2D",
+        "name": "Glow",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 85
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/GlowDot.png",
+        "type": "Texture2D",
+        "name": "GlowDot",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 139
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Google-Play-Store-2-300x216.png",
+        "type": "Texture2D",
+        "name": "Google-Play-Store-2-300x216",
+        "source": {
+            "file": "sharedassets4.assets",
+            "path_id": 2
+        },
+        "size": [
+            256,
+            84
+        ]
+    },
+    {
+        "path": "textures/Grass block flower.png",
+        "type": "Texture2D",
+        "name": "Grass block flower",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 44
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Heatwave.png",
+        "type": "Texture2D",
+        "name": "Heatwave",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 119
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/HitMarkTexture.png",
+        "type": "Texture2D",
+        "name": "HitMarkTexture",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 107
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/InputFieldBackground.png",
+        "type": "Texture2D",
+        "name": "InputFieldBackground",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 17
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/LaserBeam.png",
+        "type": "Texture2D",
+        "name": "LaserBeam",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 101
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/LaserTrail.png",
+        "type": "Texture2D",
+        "name": "LaserTrail",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 135
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Lock.png",
+        "type": "Texture2D",
+        "name": "Lock",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 99
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Low Poly Gun Pack Texture.png",
+        "type": "Texture2D",
+        "name": "Low Poly Gun Pack Texture",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 87
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/MobaActionBar_SpellSlot_Background.png",
+        "type": "Texture2D",
+        "name": "MobaActionBar_SpellSlot_Background",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 114
+        },
+        "size": [
+            58,
+            58
+        ]
+    },
+    {
+        "path": "textures/MuzzleFlash_1.png",
+        "type": "Texture2D",
+        "name": "MuzzleFlash_1",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 124
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/MuzzleFlash_Sniper.png",
+        "type": "Texture2D",
+        "name": "MuzzleFlash_Sniper",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 157
+        },
+        "size": [
+            512,
+            512
+        ]
+    },
+    {
+        "path": "textures/Night_01B_back.png",
+        "type": "Texture2D",
+        "name": "Night_01B_back",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 79
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Night_01B_down.png",
+        "type": "Texture2D",
+        "name": "Night_01B_down",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 41
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Night_01B_front.png",
+        "type": "Texture2D",
+        "name": "Night_01B_front",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 46
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Night_01B_left.png",
+        "type": "Texture2D",
+        "name": "Night_01B_left",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 21
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Night_01B_right.png",
+        "type": "Texture2D",
+        "name": "Night_01B_right",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 49
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Night_01B_up.png",
+        "type": "Texture2D",
+        "name": "Night_01B_up",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 110
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Pain_material_14.png",
+        "type": "Texture2D",
+        "name": "Pain_material_14",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 26
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Pain_material_15.png",
+        "type": "Texture2D",
+        "name": "Pain_material_15",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 36
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Pain_material_16.png",
+        "type": "Texture2D",
+        "name": "Pain_material_16",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 38
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Pain_material_17.png",
+        "type": "Texture2D",
+        "name": "Pain_material_17",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 42
+        },
+        "size": [
+            128,
+            64
+        ]
+    },
+    {
+        "path": "textures/Pain_material_19.png",
+        "type": "Texture2D",
+        "name": "Pain_material_19",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 29
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Pain_material_20.png",
+        "type": "Texture2D",
+        "name": "Pain_material_20",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 40
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Pain_material_21.png",
+        "type": "Texture2D",
+        "name": "Pain_material_21",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 33
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Pain_material_22.png",
+        "type": "Texture2D",
+        "name": "Pain_material_22",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 34
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Pain_material_23.png",
+        "type": "Texture2D",
+        "name": "Pain_material_23",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 39
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/PartyUnitFrame_Avatar_Background.png",
+        "type": "Texture2D",
+        "name": "PartyUnitFrame_Avatar_Background",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 125
+        },
+        "size": [
+            49,
+            49
+        ]
+    },
+    {
+        "path": "textures/Pistol2.png",
+        "type": "Texture2D",
+        "name": "Pistol2",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 78
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/RateUs.png",
+        "type": "Texture2D",
+        "name": "RateUs",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 69
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/Rectangle.png",
+        "type": "Texture2D",
+        "name": "Rectangle",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 142
+        },
+        "size": [
+            128,
+            32
+        ]
+    },
+    {
+        "path": "textures/Rifle2.png",
+        "type": "Texture2D",
+        "name": "Rifle2",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 89
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/Scaz.png",
+        "type": "Texture2D",
+        "name": "Scaz",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 27
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/Scaz_material_36.png",
+        "type": "Texture2D",
+        "name": "Scaz_material_36",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 51
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Shockwave.png",
+        "type": "Texture2D",
+        "name": "Shockwave",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 136
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/Smoke.png",
+        "type": "Texture2D",
+        "name": "Smoke",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 92
+        },
+        "size": [
+            256,
+            128
+        ]
+    },
+    {
+        "path": "textures/Sniper.png",
+        "type": "Texture2D",
+        "name": "Sniper",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 120
+        },
+        "size": [
+            256,
+            128
+        ]
+    },
+    {
+        "path": "textures/SniperScopeTexture.png",
+        "type": "Texture2D",
+        "name": "SniperScopeTexture",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 130
+        },
+        "size": [
+            1024,
+            576
+        ]
+    },
+    {
+        "path": "textures/SpellSlot_Type0_HoverOverlay.png",
+        "type": "Texture2D",
+        "name": "SpellSlot_Type0_HoverOverlay",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 106
+        },
+        "size": [
+            59,
+            59
+        ]
+    },
+    {
+        "path": "textures/SpellSlot_Type1_Background.png",
+        "type": "Texture2D",
+        "name": "SpellSlot_Type1_Background",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 109
+        },
+        "size": [
+            81,
+            81
+        ]
+    },
+    {
+        "path": "textures/SpriteAtlasTexture-SF-256x512-fmt4.png",
+        "type": "Texture2D",
+        "name": "SpriteAtlasTexture-SF-256x512-fmt4",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 15
+        },
+        "size": [
+            256,
+            512
+        ]
+    },
+    {
+        "path": "textures/Sunny_01A_back.png",
+        "type": "Texture2D",
+        "name": "Sunny_01A_back",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 41
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Sunny_01A_down.png",
+        "type": "Texture2D",
+        "name": "Sunny_01A_down",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 35
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Sunny_01A_front.png",
+        "type": "Texture2D",
+        "name": "Sunny_01A_front",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 49
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Sunny_01A_left.png",
+        "type": "Texture2D",
+        "name": "Sunny_01A_left",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 39
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Sunny_01A_right.png",
+        "type": "Texture2D",
+        "name": "Sunny_01A_right",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 58
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Sunny_01A_up.png",
+        "type": "Texture2D",
+        "name": "Sunny_01A_up",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 43
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Top.png",
+        "type": "Texture2D",
+        "name": "Top",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 31
+        },
+        "size": [
+            486,
+            51
+        ]
+    },
+    {
+        "path": "textures/TopMenu_Button 2 verde.png",
+        "type": "Texture2D",
+        "name": "TopMenu_Button 2 verde",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 154
+        },
+        "size": [
+            256,
+            64
+        ]
+    },
+    {
+        "path": "textures/TopMenu_Button.png",
+        "type": "Texture2D",
+        "name": "TopMenu_Button",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 123
+        },
+        "size": [
+            236,
+            57
+        ]
+    },
+    {
+        "path": "textures/UISprite.png",
+        "type": "Texture2D",
+        "name": "UISprite",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 74
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/UnitFrame_Health_Bar.png",
+        "type": "Texture2D",
+        "name": "UnitFrame_Health_Bar",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 90
+        },
+        "size": [
+            231,
+            30
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_Debris Generic.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_Debris Generic",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 150
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_DoubleFlames A8.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_DoubleFlames A8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 115
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_FlameMine A8.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_FlameMine A8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 102
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_GlowCircle A8.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_GlowCircle A8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 121
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_GlowPalet A8.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_GlowPalet A8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 117
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_GroundGlow A8.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_GroundGlow A8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 146
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_NukeFlames.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_NukeFlames",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 133
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_SmallDots A8.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_SmallDots A8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 106
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_SmallDots Inversed A8.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_SmallDots Inversed A8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 127
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_SmokeLoopAlpha.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_SmokeLoopAlpha",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 75
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/WFXM_T_SmokeSpikeStretched A8.png",
+        "type": "Texture2D",
+        "name": "WFXM_T_SmokeSpikeStretched A8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 100
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/Window.png",
+        "type": "Texture2D",
+        "name": "Window",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 81
+        },
+        "size": [
+            128,
+            32
+        ]
+    },
+    {
+        "path": "textures/Window_Background.png",
+        "type": "Texture2D",
+        "name": "Window_Background",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 80
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/Window_Header.png",
+        "type": "Texture2D",
+        "name": "Window_Header",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 134
+        },
+        "size": [
+            315,
+            58
+        ]
+    },
+    {
+        "path": "textures/_SimpleMilitary_GermanSoldier_White.png",
+        "type": "Texture2D",
+        "name": "_SimpleMilitary_GermanSoldier_White",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 116
+        },
+        "size": [
+            512,
+            512
+        ]
+    },
+    {
+        "path": "textures/__1 button show.png",
+        "type": "Texture2D",
+        "name": "__1 button show",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 51
+        },
+        "size": [
+            256,
+            64
+        ]
+    },
+    {
+        "path": "textures/__2 button hover.png",
+        "type": "Texture2D",
+        "name": "__2 button hover",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 61
+        },
+        "size": [
+            256,
+            64
+        ]
+    },
+    {
+        "path": "textures/__back text.png",
+        "type": "Texture2D",
+        "name": "__back text",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 82
+        },
+        "size": [
+            58,
+            58
+        ]
+    },
+    {
+        "path": "textures/__backround windows.png",
+        "type": "Texture2D",
+        "name": "__backround windows",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 85
+        },
+        "size": [
+            1024,
+            512
+        ]
+    },
+    {
+        "path": "textures/block patrat maro.png",
+        "type": "Texture2D",
+        "name": "block patrat maro",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 42
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/block patrat some.png",
+        "type": "Texture2D",
+        "name": "block patrat some",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 44
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/block patrat.png",
+        "type": "Texture2D",
+        "name": "block patrat",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 36
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/book 2.png",
+        "type": "Texture2D",
+        "name": "book 2",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 52
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/bookshelf.png",
+        "type": "Texture2D",
+        "name": "bookshelf",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 41
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/box cufar back.png",
+        "type": "Texture2D",
+        "name": "box cufar back",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 48
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/box cufar face.png",
+        "type": "Texture2D",
+        "name": "box cufar face",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 41
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/box fata.png",
+        "type": "Texture2D",
+        "name": "box fata",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 64
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/box or ground.png",
+        "type": "Texture2D",
+        "name": "box or ground",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 63
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/box soba.png",
+        "type": "Texture2D",
+        "name": "box soba ",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 40
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/bridge.png",
+        "type": "Texture2D",
+        "name": "bridge",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 68
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/castle.png",
+        "type": "Texture2D",
+        "name": "castle",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 52
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/chorus_flower.png",
+        "type": "Texture2D",
+        "name": "chorus_flower",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 39
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/chorus_plant.png",
+        "type": "Texture2D",
+        "name": "chorus_plant",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 53
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/coal_block.png",
+        "type": "Texture2D",
+        "name": "coal_block",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 37
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/coarse_dirt.png",
+        "type": "Texture2D",
+        "name": "coarse_dirt",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 21
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/crafting_table_top.png",
+        "type": "Texture2D",
+        "name": "crafting_table_top",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 61
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/crash.png",
+        "type": "Texture2D",
+        "name": "crash",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 121
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/crosshair__99.png",
+        "type": "Texture2D",
+        "name": "crosshair",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 99
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/daylight_detector_side.png",
+        "type": "Texture2D",
+        "name": "daylight_detector_side",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 32
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/dirt.png",
+        "type": "Texture2D",
+        "name": "dirt",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 44
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/discord.png",
+        "type": "Texture2D",
+        "name": "discord",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 91
+        },
+        "size": [
+            263,
+            300
+        ]
+    },
+    {
+        "path": "textures/dispenser_front_vertical.png",
+        "type": "Texture2D",
+        "name": "dispenser_front_vertical",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 59
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/door.png",
+        "type": "Texture2D",
+        "name": "door",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 42
+        },
+        "size": [
+            64,
+            128
+        ]
+    },
+    {
+        "path": "textures/door_acacia_lower.png",
+        "type": "Texture2D",
+        "name": "door_acacia_lower",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 47
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/door_spruce_lower.png",
+        "type": "Texture2D",
+        "name": "door_spruce_lower",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 46
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/door_wood_lower.png",
+        "type": "Texture2D",
+        "name": "door_wood_lower",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 57
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/dropper_front_vertical maro.png",
+        "type": "Texture2D",
+        "name": "dropper_front_vertical maro",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 46
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/dropper_front_vertical.png",
+        "type": "Texture2D",
+        "name": "dropper_front_vertical",
+        "source": {
+            "file": "sharedassets6.assets",
+            "path_id": 11
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/end_stone.png",
+        "type": "Texture2D",
+        "name": "end_stone",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 26
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/endframe_top.png",
+        "type": "Texture2D",
+        "name": "endframe_top",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 29
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/esca.png",
+        "type": "Texture2D",
+        "name": "esca",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 45
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/facebook_bun.png",
+        "type": "Texture2D",
+        "name": "facebook_bun",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 117
+        },
+        "size": [
+            300,
+            300
+        ]
+    },
+    {
+        "path": "textures/flameA.png",
+        "type": "Texture2D",
+        "name": "flameA",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 97
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/glowstone.png",
+        "type": "Texture2D",
+        "name": "glowstone",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 43
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/gold_ore.png",
+        "type": "Texture2D",
+        "name": "gold_ore",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 38
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/google play.png",
+        "type": "Texture2D",
+        "name": "google play",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 18
+        },
+        "size": [
+            128,
+            115
+        ]
+    },
+    {
+        "path": "textures/grass_side.png",
+        "type": "Texture2D",
+        "name": "grass_side",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 23
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/grass_side_snowed.png",
+        "type": "Texture2D",
+        "name": "grass_side_snowed",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 49
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/gravel.png",
+        "type": "Texture2D",
+        "name": "gravel",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 50
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/gray-square-button-50203.png",
+        "type": "Texture2D",
+        "name": "gray-square-button-50203",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 143
+        },
+        "size": [
+            256,
+            144
+        ]
+    },
+    {
+        "path": "textures/ground patrat whyte.png",
+        "type": "Texture2D",
+        "name": "ground patrat whyte",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 55
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/gun_4_rocke tinta.png",
+        "type": "Texture2D",
+        "name": "gun_4_rocke tinta",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 94
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/hands.png",
+        "type": "Texture2D",
+        "name": "hands",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 145
+        },
+        "size": [
+            128,
+            256
+        ]
+    },
+    {
+        "path": "textures/hitmarker_red.png",
+        "type": "Texture2D",
+        "name": "hitmarker_red",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 105
+        },
+        "size": [
+            128,
+            128
+        ]
+    },
+    {
+        "path": "textures/ladder.png",
+        "type": "Texture2D",
+        "name": "ladder",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 28
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/leaves_acacia.png",
+        "type": "Texture2D",
+        "name": "leaves_acacia",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 33
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/loading.png",
+        "type": "Texture2D",
+        "name": "loading",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 55
+        },
+        "size": [
+            2048,
+            1024
+        ]
+    },
+    {
+        "path": "textures/log_big_oak.png",
+        "type": "Texture2D",
+        "name": "log_big_oak",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 48
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/map1_material_18.png",
+        "type": "Texture2D",
+        "name": "map1_material_18",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 25
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "textures/menu BlueSquareButton 1.png",
+        "type": "Texture2D",
+        "name": "menu BlueSquareButton 1",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 78
+        },
+        "size": [
+            256,
+            104
+        ]
+    },
+    {
+        "path": "textures/minecraftministone_material_29.png",
+        "type": "Texture2D",
+        "name": "minecraftministone_material_29",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 153
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/minecraftministone_material_31.png",
+        "type": "Texture2D",
+        "name": "minecraftministone_material_31",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 131
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/mycelium_top.png",
+        "type": "Texture2D",
+        "name": "mycelium_top",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 34
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/new_Dirt.png",
+        "type": "Texture2D",
+        "name": "new_Dirt",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 51
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/pete.png",
+        "type": "Texture2D",
+        "name": "pete",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 60
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/planks_birch.png",
+        "type": "Texture2D",
+        "name": "planks_birch",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 38
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/planks_oak.png",
+        "type": "Texture2D",
+        "name": "planks_oak",
+        "source": {
+            "file": "sharedassets6.assets",
+            "path_id": 10
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/playstore.png",
+        "type": "Texture2D",
+        "name": "playstore",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 42
+        },
+        "size": [
+            256,
+            85
+        ]
+    },
+    {
+        "path": "textures/pumpkin_top.png",
+        "type": "Texture2D",
+        "name": "pumpkin_top",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 24
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/redstone_lamp_off.png",
+        "type": "Texture2D",
+        "name": "redstone_lamp_off",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 31
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/roccket scope.png",
+        "type": "Texture2D",
+        "name": "roccket scope",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 98
+        },
+        "size": [
+            256,
+            256
+        ]
+    },
+    {
+        "path": "textures/rocket texture.png",
+        "type": "Texture2D",
+        "name": "rocket texture",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 113
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/sand 2.png",
+        "type": "Texture2D",
+        "name": "sand 2",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 60
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/scope.png",
+        "type": "Texture2D",
+        "name": "scope",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 104
+        },
+        "size": [
+            1024,
+            1024
+        ]
+    },
+    {
+        "path": "textures/scopeGrenade laucher.png",
+        "type": "Texture2D",
+        "name": "scopeGrenade laucher",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 76
+        },
+        "size": [
+            1922,
+            1082
+        ]
+    },
+    {
+        "path": "textures/sdkgui.png",
+        "type": "Texture2D",
+        "name": "sdkgui",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 77
+        },
+        "size": [
+            362,
+            367
+        ]
+    },
+    {
+        "path": "textures/small-red-button-hi.png",
+        "type": "Texture2D",
+        "name": "small-red-button-hi",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 66
+        },
+        "size": [
+            256,
+            101
+        ]
+    },
+    {
+        "path": "textures/sniper scope.png",
+        "type": "Texture2D",
+        "name": "sniper scope",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 79
+        },
+        "size": [
+            800,
+            600
+        ]
+    },
+    {
+        "path": "textures/snow.png",
+        "type": "Texture2D",
+        "name": "snow",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 24
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/snow__10.png",
+        "type": "Texture2D",
+        "name": "snow",
+        "source": {
+            "file": "sharedassets8.assets",
+            "path_id": 10
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/snow__43.png",
+        "type": "Texture2D",
+        "name": "snow",
+        "source": {
+            "file": "sharedassets5.assets",
+            "path_id": 43
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stone 1 white.png",
+        "type": "Texture2D",
+        "name": "stone 1 white",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 28
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stone 1.png",
+        "type": "Texture2D",
+        "name": "stone 1",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 37
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stone 3.png",
+        "type": "Texture2D",
+        "name": "stone 3",
+        "source": {
+            "file": "sharedassets7.assets",
+            "path_id": 40
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stone with  black blue.png",
+        "type": "Texture2D",
+        "name": "stone with  black blue",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 41
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stone with  black.png",
+        "type": "Texture2D",
+        "name": "stone with  black",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 27
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stone with  dirt.png",
+        "type": "Texture2D",
+        "name": "stone with  dirt",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 31
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stone with  gold.png",
+        "type": "Texture2D",
+        "name": "stone with  gold",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 30
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stone with red.png",
+        "type": "Texture2D",
+        "name": "stone with red",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 32
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stonebrick 2.png",
+        "type": "Texture2D",
+        "name": "stonebrick 2",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 27
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stonebrick 4.png",
+        "type": "Texture2D",
+        "name": "stonebrick 4",
+        "source": {
+            "file": "sharedassets8.assets",
+            "path_id": 9
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stonebrick.png",
+        "type": "Texture2D",
+        "name": "stonebrick",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 42
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stonebrick_cracked.png",
+        "type": "Texture2D",
+        "name": "stonebrick_cracked",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 65
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/stonebrick_mossy.png",
+        "type": "Texture2D",
+        "name": "stonebrick_mossy",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 40
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/tree middle.png",
+        "type": "Texture2D",
+        "name": "tree middle",
+        "source": {
+            "file": "sharedassets2.assets",
+            "path_id": 37
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/tree sponge_wet.png",
+        "type": "Texture2D",
+        "name": "tree sponge_wet",
+        "source": {
+            "file": "sharedassets3.assets",
+            "path_id": 22
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/tree top.png",
+        "type": "Texture2D",
+        "name": "tree top",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 56
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/tree up.png",
+        "type": "Texture2D",
+        "name": "tree up",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 54
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/tunnels.png",
+        "type": "Texture2D",
+        "name": "tunnels",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 80
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/village.png",
+        "type": "Texture2D",
+        "name": "village",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 90
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/village_material_25.png",
+        "type": "Texture2D",
+        "name": "village_material_25",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 38
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/village_material_27.png",
+        "type": "Texture2D",
+        "name": "village_material_27",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 36
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/village_material_30.png",
+        "type": "Texture2D",
+        "name": "village_material_30",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 35
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/village_material_31.png",
+        "type": "Texture2D",
+        "name": "village_material_31",
+        "source": {
+            "file": "sharedassets10.assets",
+            "path_id": 37
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/wall blue.png",
+        "type": "Texture2D",
+        "name": "wall blue",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 45
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/wall red.png",
+        "type": "Texture2D",
+        "name": "wall red",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 47
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/water overlay.png",
+        "type": "Texture2D",
+        "name": "water overlay",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 66
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/wheat_stage_5.png",
+        "type": "Texture2D",
+        "name": "wheat_stage_5",
+        "source": {
+            "file": "sharedassets1.assets",
+            "path_id": 62
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/wool_colored_blue.png",
+        "type": "Texture2D",
+        "name": "wool_colored_blue",
+        "source": {
+            "file": "sharedassets9.assets",
+            "path_id": 19
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/youtube.png",
+        "type": "Texture2D",
+        "name": "youtube",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 107
+        },
+        "size": [
+            500,
+            500
+        ]
+    },
+    {
+        "path": "textures/zelda-flame-close-up.png",
+        "type": "Texture2D",
+        "name": "zelda-flame-close-up",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 103
+        },
+        "size": [
+            64,
+            64
+        ]
+    },
+    {
+        "path": "textures/zm_bridge.png",
+        "type": "Texture2D",
+        "name": "zm_bridge",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 111
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/zm_castle.png",
+        "type": "Texture2D",
+        "name": "zm_castle",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 74
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/zm_crash.png",
+        "type": "Texture2D",
+        "name": "zm_crash",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 58
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/zm_fight.png",
+        "type": "Texture2D",
+        "name": "zm_fight",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 118
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/zm_pete.png",
+        "type": "Texture2D",
+        "name": "zm_pete",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 83
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/zm_scaz.png",
+        "type": "Texture2D",
+        "name": "zm_scaz",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 81
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/zm_snow.png",
+        "type": "Texture2D",
+        "name": "zm_snow",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 75
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/zm_tunnels.png",
+        "type": "Texture2D",
+        "name": "zm_tunnels",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 44
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "textures/zm_village.png",
+        "type": "Texture2D",
+        "name": "zm_village",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 97
+        },
+        "size": [
+            200,
+            200
+        ]
+    },
+    {
+        "path": "ui/sprites/1.png",
+        "type": "Sprite",
+        "name": "1",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 154
+        },
+        "size": [
+            1483,
+            705
+        ]
+    },
+    {
+        "path": "ui/sprites/Facebook-button.png",
+        "type": "Sprite",
+        "name": "Facebook-button",
+        "source": {
+            "file": "sharedassets4.assets",
+            "path_id": 5
+        },
+        "size": [
+            256,
+            81
+        ]
+    },
+    {
+        "path": "ui/sprites/GameMenu_Button.png",
+        "type": "Sprite",
+        "name": "GameMenu_Button",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 164
+        },
+        "size": [
+            247,
+            46
+        ]
+    },
+    {
+        "path": "ui/sprites/Google-Play-Store-2-300x216.png",
+        "type": "Sprite",
+        "name": "Google-Play-Store-2-300x216",
+        "source": {
+            "file": "sharedassets4.assets",
+            "path_id": 4
+        },
+        "size": [
+            256,
+            84
+        ]
+    },
+    {
+        "path": "ui/sprites/InputFieldBackground.png",
+        "type": "Sprite",
+        "name": "InputFieldBackground",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 152
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "ui/sprites/RateUs.png",
+        "type": "Sprite",
+        "name": "RateUs",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 158
+        },
+        "size": [
+            248,
+            249
+        ]
+    },
+    {
+        "path": "ui/sprites/SF Button - Hover.png",
+        "type": "Sprite",
+        "name": "SF Button - Hover",
+        "source": {
+            "file": "sharedassets4.assets",
+            "path_id": 6
+        },
+        "size": [
+            230,
+            66
+        ]
+    },
+    {
+        "path": "ui/sprites/SF Title.png",
+        "type": "Sprite",
+        "name": "SF Title",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 159
+        },
+        "size": [
+            256,
+            64
+        ]
+    },
+    {
+        "path": "ui/sprites/SF Window.png",
+        "type": "Sprite",
+        "name": "SF Window",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 156
+        },
+        "size": [
+            255,
+            124
+        ]
+    },
+    {
+        "path": "ui/sprites/UISprite.png",
+        "type": "Sprite",
+        "name": "UISprite",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 317
+        },
+        "size": [
+            32,
+            32
+        ]
+    },
+    {
+        "path": "ui/sprites/discord.png",
+        "type": "Sprite",
+        "name": "discord",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 161
+        },
+        "size": [
+            263,
+            300
+        ]
+    },
+    {
+        "path": "ui/sprites/facebook_bun.png",
+        "type": "Sprite",
+        "name": "facebook_bun",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 163
+        },
+        "size": [
+            300,
+            300
+        ]
+    },
+    {
+        "path": "ui/sprites/google play.png",
+        "type": "Sprite",
+        "name": "google play",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 153
+        },
+        "size": [
+            121,
+            112
+        ]
+    },
+    {
+        "path": "ui/sprites/menu BlueSquareButton 1.png",
+        "type": "Sprite",
+        "name": "menu BlueSquareButton 1",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 160
+        },
+        "size": [
+            256,
+            104
+        ]
+    },
+    {
+        "path": "ui/sprites/playstore.png",
+        "type": "Sprite",
+        "name": "playstore",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 155
+        },
+        "size": [
+            256,
+            85
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_0.png",
+        "type": "Sprite",
+        "name": "sdkgui_0",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 318
+        },
+        "size": [
+            38,
+            38
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_1.png",
+        "type": "Sprite",
+        "name": "sdkgui_1",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 319
+        },
+        "size": [
+            38,
+            38
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_12.png",
+        "type": "Sprite",
+        "name": "sdkgui_12",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 322
+        },
+        "size": [
+            17,
+            17
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_13.png",
+        "type": "Sprite",
+        "name": "sdkgui_13",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 323
+        },
+        "size": [
+            13,
+            13
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_14.png",
+        "type": "Sprite",
+        "name": "sdkgui_14",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 324
+        },
+        "size": [
+            11,
+            13
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_15.png",
+        "type": "Sprite",
+        "name": "sdkgui_15",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 325
+        },
+        "size": [
+            17,
+            15
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_16.png",
+        "type": "Sprite",
+        "name": "sdkgui_16",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 326
+        },
+        "size": [
+            17,
+            17
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_17.png",
+        "type": "Sprite",
+        "name": "sdkgui_17",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 327
+        },
+        "size": [
+            17,
+            17
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_18.png",
+        "type": "Sprite",
+        "name": "sdkgui_18",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 328
+        },
+        "size": [
+            25,
+            24
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_19.png",
+        "type": "Sprite",
+        "name": "sdkgui_19",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 329
+        },
+        "size": [
+            11,
+            13
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_2.png",
+        "type": "Sprite",
+        "name": "sdkgui_2",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 320
+        },
+        "size": [
+            17,
+            15
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_20.png",
+        "type": "Sprite",
+        "name": "sdkgui_20",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 330
+        },
+        "size": [
+            113,
+            24
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_21.png",
+        "type": "Sprite",
+        "name": "sdkgui_21",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 331
+        },
+        "size": [
+            81,
+            24
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_22.png",
+        "type": "Sprite",
+        "name": "sdkgui_22",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 332
+        },
+        "size": [
+            74,
+            74
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_23.png",
+        "type": "Sprite",
+        "name": "sdkgui_23",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 333
+        },
+        "size": [
+            48,
+            66
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_24.png",
+        "type": "Sprite",
+        "name": "sdkgui_24",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 334
+        },
+        "size": [
+            57,
+            57
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_25.png",
+        "type": "Sprite",
+        "name": "sdkgui_25",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 335
+        },
+        "size": [
+            101,
+            92
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_28.png",
+        "type": "Sprite",
+        "name": "sdkgui_28",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 336
+        },
+        "size": [
+            291,
+            30
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_3.png",
+        "type": "Sprite",
+        "name": "sdkgui_3",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 321
+        },
+        "size": [
+            17,
+            17
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_4.png",
+        "type": "Sprite",
+        "name": "sdkgui_4",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 337
+        },
+        "size": [
+            138,
+            37
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_5.png",
+        "type": "Sprite",
+        "name": "sdkgui_5",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 338
+        },
+        "size": [
+            97,
+            94
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_6.png",
+        "type": "Sprite",
+        "name": "sdkgui_6",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 339
+        },
+        "size": [
+            60,
+            60
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_7.png",
+        "type": "Sprite",
+        "name": "sdkgui_7",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 340
+        },
+        "size": [
+            61,
+            61
+        ]
+    },
+    {
+        "path": "ui/sprites/sdkgui_8.png",
+        "type": "Sprite",
+        "name": "sdkgui_8",
+        "source": {
+            "file": "resources.assets",
+            "path_id": 341
+        },
+        "size": [
+            26,
+            25
+        ]
+    },
+    {
+        "path": "ui/sprites/small-red-button-hi.png",
+        "type": "Sprite",
+        "name": "small-red-button-hi",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 157
+        },
+        "size": [
+            256,
+            101
+        ]
+    },
+    {
+        "path": "ui/sprites/youtube.png",
+        "type": "Sprite",
+        "name": "youtube",
+        "source": {
+            "file": "sharedassets0.assets",
+            "path_id": 162
+        },
+        "size": [
+            466,
+            468
+        ]
+    }
+]

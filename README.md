@@ -14,7 +14,7 @@ The implementation is independent. It has no Unity and no original code, only be
 
 ## Status
 
-Early setup. The repository contains the project scaffolding and the reverse-engineering plan; nothing is playable yet.
+Reverse engineering in progress; nothing is playable yet. Done so far: the original build is unpacked, the code structure is recovered, the multiplayer stack is identified (PUN Classic 1.91 on Photon Cloud), and 550 assets (textures, sprites, audio, meshes, fonts) are extracted into `assets/`. See [`docs/`](docs/).
 
 ## Assets
 
@@ -25,7 +25,8 @@ Original assets (textures, sounds, the OST, models, ...) are extracted from the 
 | Path | Purpose |
 |------|---------|
 | `crates/pga3-client/` | Game client (Rust + OpenGL) |
-| `assets/` | Extracted original assets as regular files |
+| `assets/` | Extracted original assets as regular files (`manifest.json` maps each to its Unity origin) |
+| `tools/extract/` | Reproducible asset extraction pipeline |
 | `docs/` | Findings, protocol and gameplay specs, architecture |
 | `research/` | Raw RE material (gitignored): saved page, original build, captures |
 | `AGENTS.md` | Context and rules for AI agents |
