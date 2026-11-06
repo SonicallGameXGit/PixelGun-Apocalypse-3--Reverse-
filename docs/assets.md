@@ -10,11 +10,11 @@ Pipeline: `tools/extract/` (see its README). Output: `assets/` + `assets/manifes
 | Sprite | 41 | `assets/ui/sprites/` | PNG |
 | AudioClip | 48 | `assets/audio/` | `.m4a`, the original AAC stream, byte-exact, not re-encoded |
 | Mesh | 173 | `assets/models/` | OBJ; skinning of the 6 skinned meshes in `data/skins/` |
-| Font | 11 | `assets/fonts/` | TTF |
+| Font | 11 + 1 built-in | `assets/fonts/` | TTF |
 | Shader | 20 | `assets/shaders/` | ShaderLab text incl. compiled GLSL ES programs (UnityPy export) |
 | World data | – | `assets/data/` | JSON, see below |
 
-Excluded: Unity built-in resources (`unity_default_resources`, `unity_builtin_extra`); 12 empty 0×0 `Font Texture` objects (runtime dynamic font atlases, nothing to extract).
+Excluded: Unity built-in resources (`unity_default_resources`, `unity_builtin_extra`), except the built-in `Arial` font (`unity_default_resources:10102`, see below); 12 empty 0×0 `Font Texture` objects (runtime dynamic font atlases, nothing to extract).
 
 Names with a `__<path_id>` suffix are same-named distinct objects.
 
@@ -24,6 +24,8 @@ Names with a `__<path_id>` suffix are same-named distinct objects.
 - Music: only **`muzica lobby.m4a`** (mono, 44.1 kHz, 22.76 s). No other music track exists in this build (**observed**: all 48 clips listed). If in-game music existed, it was streamed from elsewhere or belongs to a different version (**unknown**).
 
 ## Fonts: licensing note
+
+The built-in font every `OnGUI` default style uses is Unity's `Arial` (`unity_default_resources:10102`), which is in fact **Liberation Sans 2.00.1** (SIL Open Font License 1.1). `publish_assets.py` publishes it as `assets/fonts/Arial.ttf` (allow-list `BUILTIN_ALLOWED`) with its licence in `assets/fonts/OFL-LiberationSans.txt`, which the clean step keeps.
 
 Some fonts bundled by the original developers are commercial third-party fonts: `ebrima.ttf` / `ebrimabd.ttf` (Microsoft Ebrima) and `_-_IMPACT.ttf` (Impact, Monotype). Redistribution may not be permitted; decide before publishing the repo.
 

@@ -59,6 +59,7 @@ pub struct CameraSettings {
     pub clear_flags: i64,
 }
 
+#[derive(Clone)]
 pub struct PrefabInstance {
     pub nodes: Vec<Node>,
     pub renderers: Vec<RendererInstance>,
@@ -288,6 +289,16 @@ impl PrefabInstance {
             .as_array()?
             .iter()
             .find(|c| c["type"] == kind)
+            .map(|c| &c["data"])
+    }
+
+    /// Every built-in component of this type on a node (a node can carry several AudioSources).
+    pub fn components<'a>(&'a self, node: usize, kind: &'a str) -> impl Iterator<Item = &'a Value> {
+        self.json["nodes"][node]["components"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(move |c| c["type"] == kind)
             .map(|c| &c["data"])
     }
 

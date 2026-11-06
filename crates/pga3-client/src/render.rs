@@ -12,14 +12,16 @@ use anyhow::{Context, Result};
 use glam::{Mat3, Mat4, Quat, Vec3, Vec4};
 use glow::HasContext;
 
-use crate::assets::{Material, ShaderKind, TextureInfo, load_materials, load_texture_infos};
-use crate::gfx::{GpuMesh, compile_program, upload_mesh, upload_texture};
+use crate::assets::{
+    Material, ParticleShader, ShaderKind, TextureInfo, load_materials, load_texture_infos,
+};
+use crate::gfx::{DynamicMesh, GpuMesh, compile_program, upload_mesh, upload_texture};
+use crate::gui::{FONT_ATLAS, GuiFont, GuiQuad};
 use crate::obj::{MeshData, parse_obj};
 use crate::prefab::{MeshSource, PrefabInstance};
 use crate::primitives::Primitive;
 use crate::scene::{FogMode, Scene};
 use crate::skin::{SkinData, load_skin};
-use crate::weapons::GuiQuad;
 
 /// Shared part of the lit vertex shaders: `lit_outputs` does the projection, UVs, ambient and
 /// fog of the compiled `Mobile/Diffuse` / `Diffuse` vertex programs.
@@ -131,23 +133,26 @@ void main() {
 }
 "#;
 
-/// `Mobile/Particles/Additive` (Unity's built-in fixed-function shader: `Blend SrcAlpha One`,
-/// `Cull Off`, `ZWrite Off`, `Fog { Color (0,0,0,0) }`, `combine texture * primary`). Meshes
-/// without vertex colours give `primary` = white.
-const ADDITIVE_VS: &str = r#"#version 330 core
+/// The unlit particle shaders (`assets::ParticleShader`): one program, the fragment programs of
+/// the compiled shaders selected by `u_mode`. Meshes without vertex colours (muzzle flashes,
+/// red-dot sights) are drawn with the generic attribute `a_color` = white.
+const PARTICLE_VS: &str = r#"#version 330 core
 in vec3 a_position;
 in vec3 a_normal;
 in vec2 a_uv;
+in vec4 a_color;
 uniform mat4 u_object_to_world;
 uniform mat4 u_view_proj;
 uniform vec4 u_main_st;
 uniform int u_fog_mode;
 uniform vec4 u_fog_params;
 out vec2 v_uv;
+out vec4 v_color;
 out float v_fog;
 void main() {
     gl_Position = u_view_proj * (u_object_to_world * vec4(a_position, 1.0));
     v_uv = a_uv * u_main_st.xy + u_main_st.zw;
+    v_color = a_color;
     float z = gl_Position.z;
     if (u_fog_mode == 1) {
         v_fog = z * u_fog_params.z + u_fog_params.w;
@@ -162,30 +167,122 @@ void main() {
 }
 "#;
 
-const ADDITIVE_FS: &str = r#"#version 330 core
+/// `u_mode`: 0 `tex · colour · u_tint` (Mobile additive: tint 1; Additive / Alpha Blended:
+/// tint 2 · `_TintColor`), 1 soft additive, 2 WFX additive alpha8 (tint 2 · `_TintColor`),
+/// 3 WFX multiply alpha8. Fog blends towards `u_fog_target`.
+const PARTICLE_FS: &str = r#"#version 330 core
 in vec2 v_uv;
+in vec4 v_color;
 in float v_fog;
 uniform sampler2D u_main_tex;
+uniform vec4 u_tint;
+uniform int u_mode;
+uniform vec3 u_fog_target;
 out vec4 frag_color;
 void main() {
-    vec4 c = texture(u_main_tex, v_uv);
-    // Fog towards the shader's fog colour, black.
-    frag_color = vec4(c.rgb * clamp(v_fog, 0.0, 1.0), c.a);
+    vec4 tex = texture(u_main_tex, v_uv);
+    vec4 c;
+    if (u_mode == 0) {
+        c = tex * v_color * u_tint;
+    } else if (u_mode == 1) {
+        vec4 t = tex * v_color;
+        c = vec4(t.rgb * t.a, t.a);
+    } else if (u_mode == 2) {
+        c = v_color * u_tint * (2.0 * tex.a * v_color.a);
+    } else {
+        c = tex.a * v_color;
+    }
+    c.a = clamp(c.a, 0.0, 1.0);
+    frag_color = vec4(mix(u_fog_target, c.rgb, clamp(v_fog, 0.0, 1.0)), c.a);
 }
 "#;
 
-/// `OnGUI` textures (`GUI.Box` with a background-only style, `GUI.DrawTexture`): GUI pixels,
-/// origin at the top left, tinted by `GUI.color`, alpha blended.
+/// Blend factors, fragment mode, tint factor and fog target of a particle shader.
+struct ParticleState {
+    src: u32,
+    dst: u32,
+    mode: i32,
+    /// `u_tint` = `_TintColor · tint_scale` (or white when the shader has no tint).
+    tint_scale: f32,
+    /// None = the scene's fog colour.
+    fog_target: Option<Vec3>,
+}
+
+fn particle_state(shader: ParticleShader) -> ParticleState {
+    let (src, dst, mode, tint_scale, fog_target) = match shader {
+        ParticleShader::MobileAdditive => (glow::SRC_ALPHA, glow::ONE, 0, 1.0, Some(Vec3::ZERO)),
+        ParticleShader::Additive => (glow::SRC_ALPHA, glow::ONE, 0, 2.0, Some(Vec3::ZERO)),
+        ParticleShader::SoftAdditive => (
+            glow::ONE,
+            glow::ONE_MINUS_SRC_COLOR,
+            1,
+            1.0,
+            Some(Vec3::ZERO),
+        ),
+        ParticleShader::AlphaBlended => (glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA, 0, 2.0, None),
+        ParticleShader::WfxAdditiveAlpha8 => (glow::SRC_ALPHA, glow::ONE, 2, 2.0, Some(Vec3::ZERO)),
+        ParticleShader::WfxMultiplyAlpha8 => (glow::ZERO, glow::SRC_COLOR, 3, 1.0, Some(Vec3::ONE)),
+    };
+    ParticleState {
+        src,
+        dst,
+        mode,
+        tint_scale,
+        fog_target,
+    }
+}
+
+/// A particle material resolved for drawing.
+#[derive(Clone, Copy)]
+struct ParticleMaterial {
+    shader: ParticleShader,
+    /// `_TintColor` (default (0.5, 0.5, 0.5, 0.5)).
+    tint: Vec4,
+}
+
+fn particle_material(material: &Material, shader: ParticleShader) -> ParticleMaterial {
+    ParticleMaterial {
+        shader,
+        tint: material
+            .colors
+            .get("_TintColor")
+            .copied()
+            .unwrap_or(Vec4::splat(0.5)),
+    }
+}
+
+/// Location of `a_color` in the particle program (the fourth attribute).
+const COLOR_ATTRIBUTE: u32 = 3;
+
+/// CPU-built geometry drawn with a material: particles, trails. Vertices are world-space
+/// `position(3) normal(3) uv(2) colour(4)`.
+pub struct DynamicBatch {
+    pub material: String,
+    pub vertices: Vec<f32>,
+    pub indices: Vec<u32>,
+    /// Weapon-camera layer (drawn in the Weapon Camera pass).
+    pub weapon_layer: bool,
+    /// Sort key: distance from the camera (larger draws first).
+    pub distance: f32,
+}
+
+pub const DYNAMIC_STRIDE: usize = 12;
+
+/// `OnGUI` quads (textures, style backgrounds, glyphs): GUI pixels, origin at the top left,
+/// tinted by `GUI.color`, alpha blended. `u_uv` is in GUI orientation (v down); asset textures
+/// are uploaded bottom row first (`u_flip` 1), the glyph atlas top row first.
 const GUI_VS: &str = r#"#version 330 core
 in vec2 a_position;
 uniform vec4 u_rect;
+uniform vec4 u_uv;
+uniform int u_flip;
 uniform vec2 u_screen;
 out vec2 v_uv;
 void main() {
     vec2 pixel = u_rect.xy + a_position * u_rect.zw;
     gl_Position = vec4(pixel.x / u_screen.x * 2.0 - 1.0, 1.0 - pixel.y / u_screen.y * 2.0, 0.0, 1.0);
-    // Texture row 0 (uploaded flipped) is the bottom; GUI y grows downwards.
-    v_uv = vec2(a_position.x, 1.0 - a_position.y);
+    vec2 uv = mix(u_uv.xy, u_uv.zw, a_position);
+    v_uv = u_flip == 1 ? vec2(uv.x, 1.0 - uv.y) : uv;
 }
 "#;
 
@@ -310,10 +407,14 @@ pub struct SceneRenderer {
     skinned: Program,
     decal: Program,
     sky: Program,
-    additive: Program,
+    particle: Program,
     gui: Program,
+    /// Stream buffers for `DynamicBatch`es.
+    dynamic: DynamicMesh,
     /// Unit quad (0..1) for `gui`.
     gui_quad: GpuMesh,
+    /// The glyph atlas texture and the `GuiFont::version` it holds.
+    font_texture: Option<(glow::Texture, u64)>,
     resources: Resources,
     materials: HashMap<String, Material>,
     /// `QualitySettings.blendWeights` of the active level.
@@ -472,8 +573,8 @@ struct ModelDraw {
     color: Vec4,
     /// Bind poses for skinned renderers.
     bind_poses: Option<Vec<Mat4>>,
-    /// `Mobile/Particles/Additive` (drawn after the opaque models).
-    additive: bool,
+    /// Unlit particle material (drawn after the opaque models).
+    particle: Option<ParticleMaterial>,
 }
 
 /// GPU-side data of a `PrefabInstance`, from `SceneRenderer::prepare_prefab`.
@@ -568,11 +669,11 @@ impl SceneRenderer {
             &["u_view_proj", "u_main_tex"],
         )?;
 
-        let additive = Program::new(
+        let particle = Program::new(
             gl,
-            ADDITIVE_VS,
-            ADDITIVE_FS,
-            &attributes,
+            PARTICLE_VS,
+            PARTICLE_FS,
+            &["a_position", "a_normal", "a_uv", "a_color"],
             &[
                 "u_object_to_world",
                 "u_view_proj",
@@ -580,14 +681,25 @@ impl SceneRenderer {
                 "u_main_tex",
                 "u_fog_mode",
                 "u_fog_params",
+                "u_tint",
+                "u_mode",
+                "u_fog_target",
             ],
         )?;
+        let dynamic = DynamicMesh::new(gl, &[3, 3, 2, 4])?;
         let gui = Program::new(
             gl,
             GUI_VS,
             GUI_FS,
             &["a_position"],
-            &["u_rect", "u_screen", "u_main_tex", "u_tint"],
+            &[
+                "u_rect",
+                "u_uv",
+                "u_flip",
+                "u_screen",
+                "u_main_tex",
+                "u_tint",
+            ],
         )?;
         let gui_quad = upload_mesh(
             gl,
@@ -629,9 +741,7 @@ impl SceneRenderer {
                     ShaderKind::MobileDiffuse => (Pass::Lit, Vec4::ONE),
                     ShaderKind::Diffuse => (Pass::Lit, material.color("_Color")),
                     ShaderKind::BlendedDecal => (Pass::Decal, material.color("_Color")),
-                    ShaderKind::Skybox
-                    | ShaderKind::ParticlesAdditive
-                    | ShaderKind::Unsupported => {
+                    ShaderKind::Skybox | ShaderKind::Particle(_) | ShaderKind::Unsupported => {
                         *stats
                             .unsupported_shaders
                             .entry(material.shader_name.clone())
@@ -720,9 +830,11 @@ impl SceneRenderer {
             skinned,
             decal,
             sky,
-            additive,
+            particle,
             gui,
+            dynamic,
             gui_quad,
+            font_texture: None,
             resources: loader,
             materials,
             skin_bones: crate::skin::quality_bone_count(assets)?,
@@ -924,13 +1036,13 @@ impl SceneRenderer {
                 else {
                     continue;
                 };
-                let (color, additive) = match material.shader {
-                    ShaderKind::MobileDiffuse => (Vec4::ONE, false),
-                    ShaderKind::Diffuse => (material.color("_Color"), false),
-                    ShaderKind::ParticlesAdditive => (Vec4::ONE, true),
-                    // Other prefab shaders are transparent particle effects (`Legacy
-                    // Shaders/Particles/Alpha Blended`); drawing them as opaque Diffuse would be
-                    // wrong, so they are skipped and reported until those shaders are ported.
+                let (color, particle) = match material.shader {
+                    ShaderKind::MobileDiffuse => (Vec4::ONE, None),
+                    ShaderKind::Diffuse => (material.color("_Color"), None),
+                    ShaderKind::Particle(shader) => {
+                        (Vec4::ONE, Some(particle_material(material, shader)))
+                    }
+                    // Other shaders (none on the prefabs drawn so far) are skipped and reported.
                     _ => {
                         *self
                             .stats
@@ -952,7 +1064,7 @@ impl SceneRenderer {
                     main_st,
                     color,
                     bind_poses: bind_poses.clone(),
-                    additive,
+                    particle,
                 });
             }
         }
@@ -1026,7 +1138,7 @@ impl SceneRenderer {
             for d in models
                 .draws
                 .iter()
-                .filter(|d| d.bind_poses.is_none() && !d.additive)
+                .filter(|d| d.bind_poses.is_none() && d.particle.is_none())
             {
                 if !visible(d.renderer) {
                     continue;
@@ -1078,28 +1190,20 @@ impl SceneRenderer {
                 self.draw_model(gl, p, d);
             }
 
-            // Mobile/Particles/Additive: Blend SrcAlpha One, ZWrite Off, Cull Off.
+            // Transparent queue: particle shaders, ZWrite Off, Cull Off. Meshes have no vertex
+            // colours: a_color = white.
             if models
                 .draws
                 .iter()
-                .any(|d| d.additive && visible(d.renderer))
+                .any(|d| d.particle.is_some() && visible(d.renderer))
             {
-                let p = &self.additive;
-                gl.use_program(Some(p.handle));
-                gl.uniform_matrix_4_f32_slice(
-                    p.u("u_view_proj"),
-                    false,
-                    &view_proj.to_cols_array(),
-                );
-                gl.uniform_1_i32(p.u("u_fog_mode"), self.fog_mode);
-                let f = self.fog_params;
-                gl.uniform_4_f32(p.u("u_fog_params"), f.x, f.y, f.z, f.w);
-                gl.uniform_1_i32(p.u("u_main_tex"), 0);
-                gl.disable(glow::CULL_FACE);
-                gl.enable(glow::BLEND);
-                gl.blend_func(glow::SRC_ALPHA, glow::ONE);
-                gl.depth_mask(false);
-                for d in models.draws.iter().filter(|d| d.additive) {
+                self.begin_particles(gl, &view_proj);
+                let p = &self.particle;
+                gl.vertex_attrib_4_f32(COLOR_ATTRIBUTE, 1.0, 1.0, 1.0, 1.0);
+                for d in models.draws.iter() {
+                    let Some(material) = d.particle else {
+                        continue;
+                    };
                     if !visible(d.renderer) {
                         continue;
                     }
@@ -1109,29 +1213,81 @@ impl SceneRenderer {
                         false,
                         &world.to_cols_array(),
                     );
+                    self.set_particle_material(gl, material);
                     let s = d.main_st;
                     gl.uniform_4_f32(p.u("u_main_st"), s.x, s.y, s.z, s.w);
                     gl.bind_texture(glow::TEXTURE_2D, Some(d.texture));
                     gl.bind_vertex_array(Some(d.vao));
                     gl.draw_elements(glow::TRIANGLES, d.count, glow::UNSIGNED_INT, d.offset);
                 }
-                gl.depth_mask(true);
-                gl.disable(glow::BLEND);
-                gl.enable(glow::CULL_FACE);
+                self.end_particles(gl);
             }
             gl.bind_vertex_array(None);
         }
     }
 
+    /// Uploads the glyph atlas if it changed since the last upload.
+    fn sync_font(&mut self, gl: &glow::Context, font: &GuiFont) -> Option<glow::Texture> {
+        if let Some((texture, version)) = self.font_texture
+            && version == font.version
+        {
+            return Some(texture);
+        }
+        unsafe {
+            let texture = match self.font_texture {
+                Some((texture, _)) => texture,
+                None => gl.create_texture().ok()?,
+            };
+            gl.bind_texture(glow::TEXTURE_2D, Some(texture));
+            gl.pixel_store_i32(glow::UNPACK_ALIGNMENT, 1);
+            gl.tex_image_2d(
+                glow::TEXTURE_2D,
+                0,
+                glow::RGBA8 as i32,
+                font.atlas_size as i32,
+                font.atlas_size as i32,
+                0,
+                glow::RGBA,
+                glow::UNSIGNED_BYTE,
+                glow::PixelUnpackData::Slice(Some(&font.atlas)),
+            );
+            // Glyphs are drawn at their rasterised size (pixel aligned).
+            for (name, value) in [
+                (glow::TEXTURE_MIN_FILTER, glow::NEAREST),
+                (glow::TEXTURE_MAG_FILTER, glow::NEAREST),
+                (glow::TEXTURE_WRAP_S, glow::CLAMP_TO_EDGE),
+                (glow::TEXTURE_WRAP_T, glow::CLAMP_TO_EDGE),
+            ] {
+                gl.tex_parameter_i32(glow::TEXTURE_2D, name, value as i32);
+            }
+            self.font_texture = Some((texture, font.version));
+            Some(texture)
+        }
+    }
+
     /// Draws `OnGUI` quads over the frame (`GuiQuad::rect` in GUI pixels of a `width` ×
-    /// `height` screen).
-    pub fn draw_gui(&mut self, gl: &glow::Context, quads: &[GuiQuad], width: u32, height: u32) {
+    /// `height` screen). Glyph quads use `font`'s atlas.
+    pub fn draw_gui(
+        &mut self,
+        gl: &glow::Context,
+        quads: &[GuiQuad],
+        font: Option<&GuiFont>,
+        width: u32,
+        height: u32,
+    ) {
         if quads.is_empty() {
             return;
         }
-        let textures: Vec<glow::Texture> = quads
+        let atlas = font.and_then(|f| self.sync_font(gl, f));
+        let textures: Vec<Option<(glow::Texture, bool)>> = quads
             .iter()
-            .map(|q| self.resources.texture(gl, Some(&q.texture)))
+            .map(|q| {
+                if q.texture == FONT_ATLAS {
+                    atlas.map(|t| (t, false))
+                } else {
+                    Some((self.resources.texture(gl, Some(&q.texture)), true))
+                }
+            })
             .collect();
         let p = &self.gui;
         unsafe {
@@ -1147,8 +1303,14 @@ impl SceneRenderer {
             gl.bind_vertex_array(Some(self.gui_quad.vao));
             let (offset, count) = self.gui_quad.submeshes[0];
             for (quad, texture) in quads.iter().zip(textures) {
+                let Some((texture, flip)) = texture else {
+                    continue;
+                };
                 let [x, y, w, h] = quad.rect;
                 gl.uniform_4_f32(p.u("u_rect"), x, y, w, h);
+                let [u0, v0, u1, v1] = quad.uv;
+                gl.uniform_4_f32(p.u("u_uv"), u0, v0, u1, v1);
+                gl.uniform_1_i32(p.u("u_flip"), flip as i32);
                 let c = quad.color;
                 gl.uniform_4_f32(p.u("u_tint"), c.x, c.y, c.z, c.w);
                 gl.bind_texture(glow::TEXTURE_2D, Some(texture));
@@ -1158,6 +1320,143 @@ impl SceneRenderer {
             gl.disable(glow::BLEND);
             gl.enable(glow::DEPTH_TEST);
             gl.enable(glow::CULL_FACE);
+        }
+    }
+
+    /// Particle program with the frame's uniforms; blending on, depth writes and culling off,
+    /// colour writes RGB only (`ColorMask RGB`).
+    fn begin_particles(&self, gl: &glow::Context, view_proj: &Mat4) {
+        let p = &self.particle;
+        unsafe {
+            gl.use_program(Some(p.handle));
+            gl.uniform_matrix_4_f32_slice(p.u("u_view_proj"), false, &view_proj.to_cols_array());
+            gl.uniform_1_i32(p.u("u_fog_mode"), self.fog_mode);
+            let f = self.fog_params;
+            gl.uniform_4_f32(p.u("u_fog_params"), f.x, f.y, f.z, f.w);
+            gl.uniform_1_i32(p.u("u_main_tex"), 0);
+            gl.disable(glow::CULL_FACE);
+            gl.enable(glow::BLEND);
+            gl.depth_mask(false);
+            gl.color_mask(true, true, true, false);
+        }
+    }
+
+    fn end_particles(&self, gl: &glow::Context) {
+        unsafe {
+            gl.color_mask(true, true, true, true);
+            gl.depth_mask(true);
+            gl.disable(glow::BLEND);
+            gl.enable(glow::CULL_FACE);
+        }
+    }
+
+    fn set_particle_material(&self, gl: &glow::Context, material: ParticleMaterial) {
+        let p = &self.particle;
+        let state = particle_state(material.shader);
+        let tint = if material.shader.uses_tint() {
+            material.tint * state.tint_scale
+        } else {
+            Vec4::ONE
+        };
+        let fog = state.fog_target.unwrap_or(self.fog_color);
+        unsafe {
+            gl.blend_func(state.src, state.dst);
+            gl.uniform_1_i32(p.u("u_mode"), state.mode);
+            gl.uniform_4_f32(p.u("u_tint"), tint.x, tint.y, tint.z, tint.w);
+            gl.uniform_3_f32(p.u("u_fog_target"), fog.x, fog.y, fog.z);
+        }
+    }
+
+    /// Draws CPU-built geometry (particles, trails) of one camera, farthest batch first (the
+    /// Transparent queue's back-to-front order). Batches whose material uses a lit shader
+    /// (`Diffuse`, `Mobile/Diffuse` debris particles) are drawn opaque first.
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_dynamic(
+        &mut self,
+        gl: &glow::Context,
+        view: &View,
+        width: u32,
+        height: u32,
+        batches: &[DynamicBatch],
+        weapon_layer: bool,
+    ) {
+        let mut order: Vec<&DynamicBatch> = batches
+            .iter()
+            .filter(|b| b.weapon_layer == weapon_layer && !b.indices.is_empty())
+            .collect();
+        if order.is_empty() {
+            return;
+        }
+        order.sort_by(|a, b| b.distance.total_cmp(&a.distance));
+        // Resolve materials and textures first (texture loading needs `&mut self`).
+        let mut resolved = Vec::new();
+        for batch in order {
+            let Some(material) = self.materials.get(&batch.material) else {
+                continue;
+            };
+            let shader = material.shader;
+            let color = material.color("_Color");
+            let (path, main_st) = material.texture("_MainTex");
+            let particle = match shader {
+                ShaderKind::Particle(s) => Some(particle_material(material, s)),
+                ShaderKind::MobileDiffuse | ShaderKind::Diffuse => None,
+                _ => continue,
+            };
+            let color = if shader == ShaderKind::Diffuse {
+                color
+            } else {
+                Vec4::ONE
+            };
+            let path = path.map(str::to_string);
+            let texture = self.resources.texture(gl, path.as_deref());
+            resolved.push((batch, particle, color, texture, main_st));
+        }
+        let aspect = width as f32 / height.max(1) as f32;
+        let (view_matrix, projection) = view.matrices(aspect);
+        let view_proj = projection * view_matrix;
+        let identity = Mat4::IDENTITY.to_cols_array();
+        unsafe {
+            gl.viewport(0, 0, width as i32, height as i32);
+            gl.enable(glow::DEPTH_TEST);
+            gl.depth_func(glow::LEQUAL);
+            gl.active_texture(glow::TEXTURE0);
+            // Lit (opaque) particles.
+            let p = &self.lit;
+            gl.use_program(Some(p.handle));
+            self.set_lighting(gl, p, &view_proj);
+            gl.uniform_matrix_4_f32_slice(p.u("u_object_to_world"), false, &identity);
+            gl.uniform_matrix_3_f32_slice(
+                p.u("u_normal_matrix"),
+                false,
+                &Mat3::IDENTITY.to_cols_array(),
+            );
+            gl.disable(glow::CULL_FACE);
+            gl.disable(glow::BLEND);
+            for (batch, particle, color, texture, st) in &resolved {
+                if particle.is_some() {
+                    continue;
+                }
+                gl.uniform_4_f32(p.u("u_main_st"), st.x, st.y, st.z, st.w);
+                gl.uniform_3_f32(p.u("u_color"), color.x, color.y, color.z);
+                gl.bind_texture(glow::TEXTURE_2D, Some(*texture));
+                self.dynamic.draw(gl, &batch.vertices, &batch.indices);
+            }
+            gl.enable(glow::CULL_FACE);
+            // Transparent particles, back to front.
+            self.begin_particles(gl, &view_proj);
+            let p = &self.particle;
+            gl.uniform_matrix_4_f32_slice(p.u("u_object_to_world"), false, &identity);
+            for (batch, particle, _, texture, st) in &resolved {
+                let Some(material) = particle else {
+                    continue;
+                };
+                self.set_particle_material(gl, *material);
+                gl.uniform_4_f32(p.u("u_main_st"), st.x, st.y, st.z, st.w);
+                gl.bind_texture(glow::TEXTURE_2D, Some(*texture));
+                self.dynamic.draw(gl, &batch.vertices, &batch.indices);
+            }
+            self.end_particles(gl);
+            gl.bind_vertex_array(None);
         }
     }
 

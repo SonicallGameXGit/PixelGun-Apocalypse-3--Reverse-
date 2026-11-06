@@ -13,8 +13,11 @@ Client: `crates/pga3-client` (binary). Procedural, data-oriented Rust; GL calls 
 | `image` 0.25 (png only) | texture loading | |
 | `serde` / `serde_json` | `assets/data/*.json` | |
 | `anyhow` | error handling | |
+| `cpal` 0.15 | audio output | plain cross-platform device access; the mixer is ours (`audio.rs`) because the WebGL build's model (pan-only panner + gain set by Unity) must be reproduced exactly |
+| `symphonia` 0.5 (`aac`, `isomp4`) | decoding the original `.m4a` clips | pure Rust; the clips stay byte-exact AAC in `assets/` |
+| `fontdue` 0.9 | glyph rasterisation for `OnGUI` text | small, pure Rust, reads the published Liberation Sans (`assets/fonts/Arial.ttf`) |
 
-**Physics: custom** (`physics.rs`), not rapier: the game only needs static triangle-mesh/box queries plus Unity's CharacterController. That controller is PhysX 3.4's character controller, whose source is public (BSD-3-Clause, NVIDIAGameWorks/PhysX-3.4, `PhysXCharacterKinematic/src/CctCharacterController.cpp`). `physics.rs` ports its `moveCharacter` / `doSweepTest` / `collisionResponse` / `computeMTD` and the sweep rules of `GuSweepCapsuleTriangle.cpp` / `GuSweepsMesh.cpp` for the settings this game uses (details: `docs/gameplay/movement.md`). A general rigid-body engine would not reproduce that behaviour. Audio and networking crates are not chosen yet (see AGENTS.md "Tech stack").
+**Physics: custom** (`physics.rs`), not rapier: the game only needs static triangle-mesh/box queries plus Unity's CharacterController. That controller is PhysX 3.4's character controller, whose source is public (BSD-3-Clause, NVIDIAGameWorks/PhysX-3.4, `PhysXCharacterKinematic/src/CctCharacterController.cpp`). `physics.rs` ports its `moveCharacter` / `doSweepTest` / `collisionResponse` / `computeMTD` and the sweep rules of `GuSweepCapsuleTriangle.cpp` / `GuSweepsMesh.cpp` for the settings this game uses (details: `docs/gameplay/movement.md`). A general rigid-body engine would not reproduce that behaviour. The networking crate is not chosen yet (see AGENTS.md "Tech stack").
 
 ## Modules
 
@@ -36,6 +39,14 @@ Client: `crates/pga3-client` (binary). Procedural, data-oriented Rust; GL calls 
 | `projectiles.rs` | spawned `Resources` prefabs: `Bullet` (raycast stepping, impacts by tag), `Projectile` (rocket sphere sweep, explosion), destroy timing |
 | `unity.rs` | Unity math (`Quaternion.Euler`/`AngleAxis`/`LookRotation`/`FromToRotation`/`Slerp`, `Mathf.Lerp`) and `UnityEngine.Random` (Xorshift128) |
 | `primitives.rs` | Unity's built-in Cube/Cylinder, generated in code (not published) |
+| `audio.rs` | `AudioSource`/`AudioListener` and the mixer, as the Unity WebGL build plays them (spec: `docs/gameplay/audio.md`) |
+| `footsteps.rs` | port of `FPSSoundController` |
+| `particles.rs` | Shuriken `ParticleSystem` simulation and geometry (spec: `docs/gameplay/particles.md`) |
+| `trail.rs` | `TrailRenderer` (bullet and rocket trails) |
+| `effects.rs` | the spawned prefabs' effects: impacts (`WaitForDestroy`), the explosion (`CFX_AutoDestructShuriken`, `ExplosionDamage`), projectile trails and sounds |
+| `gui.rs` | IMGUI subset for `OnGUI`: skins, styles, boxes, labels, rich text, the built-in Arial font atlas (spec: `docs/gameplay/hud.md`) |
+| `hud.rs` | ports of `AmmoDisplay`, `WeaponManager.OnGUI` and the spawn-protection label |
+| `damage.rs` | ports of `PlayerDamage`, spawn protection and the death prefab's `RagdollController` (spec: `docs/gameplay/damage.md`) |
 
 ## Coordinate conventions (important for network compatibility)
 
@@ -57,7 +68,7 @@ Evidence: `assets/data/settings/PlayerSettings.json` (`m_ActiveColorSpace` 0 = g
 - Unity material slot rule: slot *i* draws submesh *i*; extra slots redraw the last submesh.
 - Skinned meshes: GPU skinning with a bone palette (`bone.localToWorld · bindpose`, max 64), one bone per vertex as quality level "Good" (`blendWeights = 1`) dictates. Player prefab: Main Camera pass (mask 309), then depth clear and the Weapon Camera pass (layer 9) for the first-person rig. Details: `docs/gameplay/animation.md`.
 
-Not implemented yet: particles (`Mobile/Particles/*`, `WFX/*`; prefab renderers using them are skipped), `Standard`, point/spot lights, UI.
+Particles and trails (`Mobile/Particles/*`, `Particles/*`, `WFX/*`) are drawn as dynamic batches sorted back to front after opaques and decals (`docs/gameplay/particles.md`); `OnGUI` output is a list of textured quads drawn last. Not implemented yet: `Standard`, point/spot lights, the menus (uGUI/`OnGUI` menu screens).
 
 ## Running
 
@@ -65,6 +76,6 @@ Not implemented yet: particles (`Mobile/Particles/*`, `WFX/*`; prefab renderers 
 cargo run --release -p pga3-client -- [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--stats] [--wait SECONDS] [--screenshot out.png]
 ```
 
-Scenes: `Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village` and `ZM_*` variants. The game starts walking at spawn point N (default 0) with the original controls: WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone, mouse look. F toggles a free-fly camera (WASD, Space/C up/down, Shift fast; F again drops the player there); `--camera`/`--fly` start in fly mode. Click captures the mouse, Esc releases/quits, Tab goes to the next spawn point, P prints the current `--camera` value. `--screenshot` renders a few frames, saves a PNG and exits; agents use it to verify rendering (`--wait S` delays the screenshot by S seconds, e.g. to capture an animation in progress). The local player is the `german` prefab: walk mode shows its first-person weapons with the original weapon controls (left mouse fire, right mouse aim, R reload, 1-6 / wheel / M, N select, O auto-fire toggle; the mouse buttons only act while the cursor is captured), the crosshair and the sniper scope; fly mode also shows its animated third-person body at the player's position. `--weapon KEY` presses a number key on the first frame and `--fire` holds fire (clicking every 30 frames), for screenshots of the weapons. `--stats` prints the frame rate, frame times and CPU time once per second. The assets folder is found automatically or via `PGA3_ASSETS`.
+Scenes: `Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village` and `ZM_*` variants. The game starts walking at spawn point N (default 0) with the original controls: WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone, mouse look. F toggles a free-fly camera (WASD, Space/C up/down, Shift fast; F again drops the player there); `--camera`/`--fly` start in fly mode. Click captures the mouse, Esc releases/quits, Tab goes to the next spawn point, P prints the current `--camera` value. `--screenshot` renders a few frames, saves a PNG and exits; agents use it to verify rendering (`--wait S` delays the screenshot by S seconds, e.g. to capture an animation in progress). The local player is the `german` prefab: walk mode shows its first-person weapons with the original weapon controls (left mouse fire, right mouse aim, R reload, 1-6 / wheel / M, N select, O auto-fire toggle; the mouse buttons only act while the cursor is captured), the crosshair and the sniper scope; fly mode also shows its animated third-person body at the player's position. `--weapon KEY` presses a number key on the first frame and `--fire` holds fire (clicking every 30 frames), for screenshots of the weapons. Sound plays through the default output device (the game runs silently without one; `--screenshot` is always silent). `--stats` prints the frame rate, frame times and CPU time once per second. The assets folder is found automatically or via `PGA3_ASSETS`.
 
 Frame pacing: the client renders once per display refresh. On Wayland, winit paces `RedrawRequested` to the compositor's frame callbacks (`Window::pre_present_notify` before each swap), so the EGL swap interval is 0; a blocking swap on top of that waited a second refresh and halved the frame rate (72 fps on a 144 Hz monitor). On X11 and other platforms the swap interval 1 is the vsync. `PGA3_NO_VSYNC=1` renders uncapped (benchmarking). Measured on the maintainer's machine: 144 fps on a 144 Hz monitor, 0.1 ms CPU per frame, player movement 7-34 µs per frame.

@@ -1,13 +1,14 @@
 //! Pixel Gun Apocalypse 3 open-source client.
 //!
-//! Current milestone: weapons. Loads a map from `assets/data/scenes/`, renders it with the
-//! original shading and spawns the local player (original movement and collision) at a spawn
-//! point with its first-person weapons (switching, aiming, firing, reloading, bullets and
-//! rockets); a free-fly camera is available for inspection and shows the player's animated
-//! third-person body.
+//! Current milestone: weapons, effects, sound and HUD. Loads a map from `assets/data/scenes/`,
+//! renders it with the original shading and spawns the local player (original movement and
+//! collision) at a spawn point with its first-person weapons (switching, aiming, firing,
+//! reloading, bullets and rockets), their sounds, impact / explosion particles and trails, the
+//! HUD (ammo, weapon bar, HP) and fall damage with the death prefab and respawn; a free-fly camera
+//! is available for inspection and shows the player's animated third-person body.
 //!
 //! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--stats]
-//! [--weapon KEY] [--fire] [--screenshot out.png [--wait SECONDS]]`
+//! [--weapon KEY] [--fire] [--aim] [--screenshot out.png [--wait SECONDS]]`
 //! (`--weapon` presses that number key on the first frame, `--fire` holds the fire button and
 //! clicks every 30 frames: for screenshots of the weapons.)
 //! Controls: click = capture mouse, Esc = release / quit, F = walk/fly toggle, Tab = next spawn.
@@ -18,9 +19,16 @@
 
 mod anim;
 mod assets;
+mod audio;
 mod character;
+mod damage;
+mod effects;
+mod footsteps;
 mod gfx;
+mod gui;
+mod hud;
 mod obj;
+mod particles;
 mod physics;
 mod player;
 mod prefab;
@@ -29,6 +37,7 @@ mod projectiles;
 mod render;
 mod scene;
 mod skin;
+mod trail;
 mod unity;
 mod weapons;
 
@@ -37,6 +46,7 @@ use std::path::PathBuf;
 use std::time::Instant;
 
 use anyhow::{Context, Result, bail};
+use assets::ref_of;
 use glam::{EulerRot, Mat4, Quat, Vec3};
 use glutin::config::{ConfigTemplateBuilder, GlConfig};
 use glutin::context::{
@@ -56,14 +66,21 @@ use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 
+use audio::{Audio, SourceSettings};
 use character::{CharacterAnimation, CharacterInput};
+use damage::{DamageEvent, PlayerDamage, RagdollController, SpawnProtection};
+use effects::{Effects, MeshCache};
+use footsteps::FpsSoundController;
+use gui::{Gui, GuiFont, GuiSkin};
+use hud::{AmmoDisplay, DefaultSkin};
+use particles::ParticleSystem;
 use physics::CollisionWorld;
 use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
 use prefab::PrefabInstance;
 use projectiles::{ProjectileEvent, Projectiles, Templates};
 use render::{PrefabModels, SceneRenderer, View};
 use scene::Scene;
-use weapons::{WeaponContext, WeaponEvent, WeaponInput, WeaponManager};
+use weapons::{SoundSource, WeaponContext, WeaponEvent, WeaponInput, WeaponManager};
 
 /// Player prefab spawned by the client (as `Player::from_prefab`).
 const PLAYER_PREFAB: &str = "german";
@@ -85,6 +102,8 @@ struct Args {
     weapon: Option<usize>,
     /// Hold the fire button (and click every 30 frames).
     fire: bool,
+    /// Press the aim button once, 0.6 s after start (after the weapon switch).
+    aim: bool,
 }
 
 fn parse_args() -> Result<Args> {
@@ -98,6 +117,7 @@ fn parse_args() -> Result<Args> {
         stats: false,
         weapon: None,
         fire: false,
+        aim: false,
     };
     let mut iter = std::env::args().skip(1);
     while let Some(arg) = iter.next() {
@@ -122,6 +142,7 @@ fn parse_args() -> Result<Args> {
                 args.weapon = Some(key);
             }
             "--fire" => args.fire = true,
+            "--aim" => args.aim = true,
             "--screenshot" => {
                 args.screenshot = Some(PathBuf::from(iter.next().context("--screenshot PATH")?))
             }
@@ -205,6 +226,34 @@ struct LocalAvatar {
     templates: Templates,
     template_models: Vec<PrefabModels>,
     projectiles: Projectiles,
+    /// The prefab as instantiated, before any script ran (for respawning).
+    pristine: PrefabInstance,
+    scripts: AvatarScripts,
+}
+
+/// Per-life state of the local player's scripts (recreated on respawn).
+struct AvatarScripts {
+    damage: Option<PlayerDamage>,
+    protection: SpawnProtection,
+    ammo: Option<AmmoDisplay>,
+    footsteps: Option<FpsSoundController>,
+    step_random: unity::Random,
+    /// AudioSources: the root's (footsteps), the WeaponManager's, each weapon's (slot order).
+    root_source: Option<u64>,
+    manager_source: Option<(u64, usize)>,
+    weapon_sources: Vec<Option<(u64, usize)>>,
+    /// Particle systems in the prefab (the shotgun's smoke): (node, system).
+    systems: Vec<(usize, ParticleSystem)>,
+    /// `PhotonNetwork.Destroy` ran (after death): the player object is gone.
+    destroyed: bool,
+}
+
+/// The death prefab (`german (ragdol)`): an animated body with its own camera.
+struct Ragdoll {
+    prefab: PrefabInstance,
+    controller: Option<RagdollController>,
+    sources: Vec<u64>,
+    destroy_at: f32,
 }
 
 /// The same prefab as other players see it (`LookObject` hidden): the animated third-person
@@ -240,6 +289,27 @@ struct Running {
     last_frame: Instant,
     started: Instant,
     frames: u32,
+    /// `--aim` already pressed.
+    aimed: bool,
+    /// `Time.time` for scene objects (projectiles, effects, the death prefab), which keep
+    /// running while the player is dead; `fixed_clock` is `Time.fixedTime`.
+    time: f32,
+    fixed_clock: f32,
+    /// This frame's unclamped delta time.
+    last_dt: f32,
+    audio: Audio,
+    effects: Effects,
+    meshes: MeshCache,
+    gui: Gui,
+    font: Option<GuiFont>,
+    /// `PlayerDamage`/`AmmoDisplay`'s skin, the death prefab's, Unity's default one.
+    fps_skin: Option<GuiSkin>,
+    ragdoll_skin: Option<GuiSkin>,
+    default_skin: Option<DefaultSkin>,
+    /// The death prefab as loaded, its GPU models, and the live instance.
+    ragdoll_template: Option<(PrefabInstance, PrefabModels)>,
+    ragdoll: Option<Ragdoll>,
+    assets: PathBuf,
     /// Frame-time statistics since `stats_start`: count, sum, max, CPU time in update+render.
     stats_start: Instant,
     stats_frames: u32,
@@ -307,7 +377,53 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
     let world = physics::build_world(&assets, &scene)?;
     let mut player = Player::from_prefab(&assets, PLAYER_PREFAB)?;
     let mut renderer = renderer;
-    let (local, body) = load_avatars(&gl, &assets, &mut renderer)?;
+    // Screenshot runs stay silent.
+    let mut audio = if args.screenshot.is_some() {
+        Audio::silent(&assets)
+    } else {
+        Audio::new(&assets)
+    };
+    let mut meshes = MeshCache::new(&assets);
+    let (local, body) = load_avatars(
+        &gl,
+        &assets,
+        &mut renderer,
+        &player,
+        &mut audio,
+        &mut meshes,
+    )?;
+    let ragdoll_template = match local
+        .scripts
+        .damage
+        .as_ref()
+        .and_then(|d| d.ragdoll.clone())
+    {
+        Some(reference) => load_ragdoll(&gl, &assets, &mut renderer, &reference)?,
+        None => None,
+    };
+    let font = match GuiFont::load(&assets) {
+        Ok(font) => Some(font),
+        Err(error) => {
+            eprintln!("GUI font: {error:#}");
+            None
+        }
+    };
+    let skin = |reference: Option<&str>| reference.and_then(|r| gui::load_skin(&assets, r).ok());
+    let fps_skin = skin(
+        local
+            .scripts
+            .damage
+            .as_ref()
+            .and_then(|d| d.skin.as_deref()),
+    );
+    let ragdoll_skin = ragdoll_template.as_ref().and_then(|(prefab, _)| {
+        let (_, c) = prefab
+            .find_scripts("RagdollController")
+            .into_iter()
+            .next()?;
+        skin(ref_of(&c["fields"]["guiSKin"]).map(|(r, _)| r))
+    });
+    let default_skin = skin(Some(gui::DEFAULT_SKIN)).map(|skin| DefaultSkin { skin });
     println!(
         "collision: {} colliders, {} triangles",
         scene.colliders.len(),
@@ -374,10 +490,25 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
         last_frame: Instant::now(),
         started: Instant::now(),
         frames: 0,
+        aimed: false,
         stats_start: Instant::now(),
         stats_frames: 0,
         stats_max: 0.0,
         stats_cpu: 0.0,
+        time: 0.0,
+        fixed_clock: 0.0,
+        last_dt: 0.0,
+        audio,
+        effects: Effects::default(),
+        meshes,
+        gui: Gui::new(&assets),
+        font,
+        fps_skin,
+        ragdoll_skin,
+        default_skin,
+        ragdoll_template,
+        ragdoll: None,
+        assets,
     })
 }
 
@@ -388,26 +519,21 @@ fn load_avatars(
     gl: &glow::Context,
     assets: &std::path::Path,
     renderer: &mut SceneRenderer,
+    player: &Player,
+    audio: &mut Audio,
+    meshes: &mut MeshCache,
 ) -> Result<(LocalAvatar, BodyView)> {
     let mut clips = anim::ClipLibrary::new(assets)?;
-    let mut local = PrefabInstance::load(assets, PLAYER_PREFAB, &mut clips)?;
+    let pristine = PrefabInstance::load(assets, PLAYER_PREFAB, &mut clips)?;
     let mut remote = PrefabInstance::load(assets, PLAYER_PREFAB, &mut clips)?;
-    let controller = local
-        .find_scripts("PlayerNetworkController")
-        .first()
-        .map(|(_, c)| c["fields"].clone());
-    if let Some(fields) = &controller {
-        local.set_active_refs(&fields["localObjectsToDeactivate"], false);
-    }
+    let custom_tags = assets::load_tags(assets)?;
+    let (local, weapons) = instantiate_local(&pristine, &custom_tags);
     // Remote view: only LookObject (the first-person rig) is hidden. The original also hides
     // SpawnObject and Base_mesh and shows a team body mesh chosen elsewhere (docs/unknowns.md).
     if let Some(look) = remote.find("LookObject") {
         remote.nodes[look].active_self = false;
     }
-    local.play_automatically();
     remote.play_automatically();
-    let custom_tags = assets::load_tags(assets)?;
-    let weapons = weapons::weapon_manager_awake(&mut local, &custom_tags);
     let character = CharacterAnimation::start(&mut remote, &mut clips);
     let spawned_refs = weapons.as_ref().map(spawned_prefabs).unwrap_or_default();
     let templates = Templates::load(assets, &spawned_refs, custom_tags, &mut clips)?;
@@ -430,6 +556,7 @@ fn load_avatars(
             .map(|s| s.name.as_str())
             .collect::<Vec<_>>())
     );
+    let scripts = AvatarScripts::start(&local, weapons.as_ref(), player, audio, meshes);
     Ok((
         LocalAvatar {
             main_camera: local.find("Main Camera"),
@@ -441,6 +568,8 @@ fn load_avatars(
             templates,
             template_models,
             projectiles: Projectiles::default(),
+            pristine,
+            scripts,
         },
         BodyView {
             prefab: remote,
@@ -466,6 +595,137 @@ fn spawned_prefabs(manager: &WeaponManager) -> Vec<String> {
         })
         .flatten()
         .collect()
+}
+
+/// The owner's instance of the player prefab with its start-up scripts run:
+/// `PlayerNetworkController.Awake` deactivations, Animation `playAutomatically`,
+/// `WeaponManager.Awake` (weapon take-in).
+fn instantiate_local(
+    pristine: &PrefabInstance,
+    custom_tags: &[String],
+) -> (PrefabInstance, Option<WeaponManager>) {
+    let mut local = pristine.clone();
+    let controller = local
+        .find_scripts("PlayerNetworkController")
+        .first()
+        .map(|(_, c)| c["fields"].clone());
+    if let Some(fields) = &controller {
+        local.set_active_refs(&fields["localObjectsToDeactivate"], false);
+    }
+    local.play_automatically();
+    let weapons = weapons::weapon_manager_awake(&mut local, custom_tags);
+    (local, weapons)
+}
+
+/// The first AudioSource of a node, added to the mixer.
+fn add_node_source(prefab: &PrefabInstance, node: usize, audio: &mut Audio) -> Option<u64> {
+    let settings = SourceSettings::from_component(prefab.components(node, "AudioSource").next()?);
+    Some(audio.add_source(settings, prefab.world_of(node).w_axis.truncate()))
+}
+
+impl AvatarScripts {
+    /// `Awake`/`Start` of the scripts on a freshly instantiated owner's player.
+    fn start(
+        prefab: &PrefabInstance,
+        weapons: Option<&WeaponManager>,
+        player: &Player,
+        audio: &mut Audio,
+        meshes: &mut MeshCache,
+    ) -> AvatarScripts {
+        let damage = prefab
+            .script_fields(0, "PlayerDamage")
+            .map(|f| PlayerDamage::awake(f, player.camera_local_rotation));
+        let manager_node = prefab
+            .find_scripts("WeaponManager")
+            .first()
+            .map(|(n, _)| *n);
+        let ammo = manager_node
+            .and_then(|n| prefab.script_fields(n, "AmmoDisplay"))
+            .map(|f| AmmoDisplay::new(f["display"].as_bool().unwrap_or(true)));
+        let footsteps = prefab
+            .script_fields(0, "FPSSoundController")
+            .map(FpsSoundController::new);
+        let root_source = add_node_source(prefab, 0, audio);
+        let manager_source =
+            manager_node.and_then(|n| add_node_source(prefab, n, audio).map(|id| (id, n)));
+        let weapon_sources = weapons
+            .map(|w| {
+                w.all_weapons
+                    .iter()
+                    .map(|&n| add_node_source(prefab, n, audio).map(|id| (id, n)))
+                    .collect()
+            })
+            .unwrap_or_default();
+        let mut systems = Vec::new();
+        for node in 0..prefab.nodes.len() {
+            if let Some(def) = effects::particle_system_def(prefab, node, meshes) {
+                let mut system = ParticleSystem::new(std::sync::Arc::new(def), node as u32 + 1);
+                // `WeaponScript.Start`: `smoke.Stop()`.
+                system.stop();
+                systems.push((node, system));
+            }
+        }
+        AvatarScripts {
+            damage,
+            protection: SpawnProtection::default(),
+            ammo,
+            footsteps,
+            step_random: unity::Random::new(3),
+            root_source,
+            manager_source,
+            weapon_sources,
+            systems,
+            destroyed: false,
+        }
+    }
+
+    /// Every AudioSource of the player object is destroyed with it.
+    fn remove_sources(&mut self, audio: &mut Audio) {
+        let ids = self
+            .root_source
+            .take()
+            .into_iter()
+            .chain(self.manager_source.take().map(|(id, _)| id))
+            .chain(self.weapon_sources.drain(..).flatten().map(|(id, _)| id));
+        for id in ids {
+            audio.remove(id);
+        }
+    }
+}
+
+/// Loads the death prefab a `PlayerDamage.ragdoll` ref names (a `Resources` prefab).
+fn load_ragdoll(
+    gl: &glow::Context,
+    assets: &std::path::Path,
+    renderer: &mut SceneRenderer,
+    reference: &str,
+) -> Result<Option<(PrefabInstance, PrefabModels)>> {
+    let resources = assets::load_json(&assets.join("data/resources.json"))?;
+    let name = resources.as_object().and_then(|map| {
+        map.iter().find_map(|(name, objects)| {
+            objects
+                .as_array()?
+                .iter()
+                .any(|o| o["ref"] == reference)
+                .then(|| name.clone())
+        })
+    });
+    let Some(name) = name else {
+        eprintln!("ragdoll prefab {reference} not found");
+        return Ok(None);
+    };
+    let mut clips = anim::ClipLibrary::new(assets)?;
+    let prefab = PrefabInstance::load(assets, &name, &mut clips)?;
+    let models = renderer.prepare_prefab(gl, &prefab)?;
+    Ok(Some((prefab, models)))
+}
+
+/// The delta time the player's frame uses (`maximumDeltaTime` clamps it while walking).
+fn dt_frame_of(mode: &Mode, dt: f32) -> f32 {
+    match mode {
+        Mode::Walk => dt.min(MAXIMUM_DELTA_TIME),
+        Mode::Fly => dt.min(MAXIMUM_DELTA_TIME),
+    }
 }
 
 fn place_at_spawn(player: &mut Player, camera: &mut FlyCamera, scene: &Scene, index: usize) {
@@ -506,8 +766,12 @@ impl Running {
             Mode::Walk => dt.min(MAXIMUM_DELTA_TIME),
             Mode::Fly => dt,
         };
+        self.last_dt = dt;
         self.local.prefab.begin_frame(dt_frame);
         self.body.prefab.begin_frame(dt_frame);
+        if let Some(ragdoll) = &mut self.ragdoll {
+            ragdoll.prefab.begin_frame(dt_frame);
+        }
         match self.mode {
             Mode::Walk => self.update_walk(dt),
             Mode::Fly => self.update_fly(dt),
@@ -564,32 +828,54 @@ impl Running {
 
     /// FixedUpdate steps, Update, coroutines, the animation pass, LateUpdate.
     fn step_player(&mut self, dt: f32, input: &FrameInput, mut weapon_input: WeaponInput) {
+        self.time += dt;
+        let world_time = self.time;
+        let alive = !self.local.scripts.destroyed;
         let local = &mut self.local;
         self.fixed_time += dt;
         while self.fixed_time >= FIXED_DELTA_TIME {
             self.fixed_time -= FIXED_DELTA_TIME;
-            self.player
-                .fixed_update(&self.world, &self.scene.ladders, input);
+            self.fixed_clock += FIXED_DELTA_TIME;
+            if alive {
+                self.player
+                    .fixed_update(&self.world, &self.scene.ladders, input);
+                // FPSSoundController.FixedUpdate.
+                let scripts = &mut local.scripts;
+                if let Some(steps) = &mut scripts.footsteps
+                    && let Some(clip) =
+                        steps.fixed_update(&self.player, self.fixed_clock, &mut scripts.step_random)
+                    && let Some(source) = scripts.root_source
+                {
+                    self.audio.play(source, &clip);
+                }
+            }
             local.projectiles.fixed_update(
                 &local.templates,
                 &self.world,
                 FIXED_DELTA_TIME,
-                self.player.time,
+                world_time,
             );
         }
-        self.player.update(&self.world, dt, input.vertical, input);
+        if alive {
+            self.player.update(&self.world, dt, input.vertical, input);
+        }
         let time = self.player.time;
-        weapons::sync_avatar(
-            &mut local.prefab,
-            &self.player,
-            local.main_camera,
-            local.weapon_manager,
-        );
+        if alive {
+            weapons::sync_avatar(
+                &mut local.prefab,
+                &self.player,
+                local.main_camera,
+                local.weapon_manager,
+            );
+        }
         // Objects spawned last frame run Start, then every Update.
         local
             .projectiles
-            .update(&local.templates, &self.world, dt, time);
-        if let Some(weapons) = &mut local.weapons {
+            .update(&local.templates, &self.world, dt, world_time);
+        let manager_active = alive && hud::player_gui_active(&local.prefab, local.weapon_manager);
+        if let Some(weapons) = &mut local.weapons
+            && manager_active
+        {
             weapon_input.velocity_y = self.player.controller_velocity.y;
             let mut ctx = WeaponContext {
                 prefab: &mut local.prefab,
@@ -619,27 +905,228 @@ impl Running {
                         ),
                         None => eprintln!("weapon spawned unknown prefab {prefab}"),
                     },
-                    // Audio is not implemented yet.
-                    WeaponEvent::Sound(_) => {}
+                    WeaponEvent::Sound { source, clip } => {
+                        let id = match source {
+                            SoundSource::Manager => local.scripts.manager_source.map(|(id, _)| id),
+                            SoundSource::Weapon(slot) => local
+                                .scripts
+                                .weapon_sources
+                                .get(slot)
+                                .copied()
+                                .flatten()
+                                .map(|(id, _)| id),
+                        };
+                        if let Some(id) = id {
+                            self.audio.play(id, &clip);
+                        }
+                    }
+                }
+            }
+            if let Some(ammo) = &mut local.scripts.ammo {
+                ammo.update(weapons, dt);
+            }
+            // `smoke.Play()` / `Stop()` of the shotgun.
+            for script in weapons.scripts.iter().flatten() {
+                let Some(node) = script.shot_gun.smoke else {
+                    continue;
+                };
+                for (n, system) in &mut local.scripts.systems {
+                    if *n == node {
+                        if script.shot_gun.smoke_playing && !system.emitting {
+                            system.play();
+                        } else if !script.shot_gun.smoke_playing && system.emitting {
+                            system.stop();
+                        }
+                    }
                 }
             }
         }
         for event in local.projectiles.events.drain(..) {
-            if let ProjectileEvent::Damage { amount, point, tag } = event {
-                // No damage receivers (PlayerDamage, zombies) yet.
-                let _ = (amount, point, tag);
+            match event {
+                ProjectileEvent::Effect {
+                    prefab,
+                    position,
+                    rotation,
+                } => {
+                    if let Some(template) =
+                        local.templates.list.iter().position(|t| t.path == prefab)
+                    {
+                        self.effects.spawn(
+                            &local.templates,
+                            template,
+                            position,
+                            rotation,
+                            None,
+                            world_time,
+                            &mut self.audio,
+                            &mut self.meshes,
+                        );
+                    }
+                }
+                // `ApplyDamage` reaches only `HitBox`es (remote players): nothing receives it
+                // locally.
+                ProjectileEvent::Damage { .. } => {}
             }
         }
-        local.projectiles.end_frame(time);
+        if alive {
+            let scripts = &mut local.scripts;
+            scripts.protection.update(dt);
+            if let Some(damage) = &mut scripts.damage {
+                damage.update(dt, &mut self.player.camera_local_rotation);
+                if damage.run_coroutines(time) == Some(DamageEvent::Destroyed) {
+                    // `PhotonNetwork.Destroy(gameObject)`.
+                    scripts.destroyed = true;
+                    scripts.remove_sources(&mut self.audio);
+                }
+            }
+        }
+        local.projectiles.end_frame(world_time);
+        self.effects.sync_projectiles(
+            &local.templates,
+            &local.projectiles,
+            world_time,
+            &mut self.audio,
+            &mut self.meshes,
+        );
+        self.effects
+            .update(dt, world_time, &self.world, &mut self.audio);
+        // `ExplosionDamage` damages what has a `HitBox` (remote players) and pushes rigidbodies
+        // (none in the maps): nothing local reacts.
+        self.effects.events.clear();
         // Unity evaluates animations between Update and LateUpdate.
         self.local.prefab.update_animations();
         self.body.prefab.update_animations();
-        self.player.late_update(input);
-        for event in self.player.events.drain(..) {
-            if let player::PlayerEvent::FallDamage(amount) = event {
-                println!("fall damage {amount:.1}");
+        if let Some(ragdoll) = &mut self.ragdoll {
+            ragdoll.prefab.update_animations();
+        }
+        if alive {
+            self.player.late_update(input);
+        }
+        let events = std::mem::take(&mut self.player.events);
+        for event in events {
+            if let player::PlayerEvent::FallDamage(amount) = event
+                && alive
+            {
+                let scripts = &mut self.local.scripts;
+                let protected = scripts.protection.protected;
+                let died = scripts
+                    .damage
+                    .as_mut()
+                    .and_then(|d| d.apply_fall_damage(amount, protected, time));
+                if let Some(DamageEvent::Died { .. }) = died {
+                    self.die(world_time);
+                }
             }
         }
+        self.update_ragdoll(world_time);
+    }
+
+    /// `DoDamage` at `currentHp < 0`: the player's children are deactivated and the death
+    /// prefab is instantiated at its transform and sent `RespawnAfter`.
+    fn die(&mut self, time: f32) {
+        let children = self.local.prefab.nodes[0].children.clone();
+        for child in children {
+            self.local.prefab.nodes[child].active_self = false;
+        }
+        let Some((template, _)) = &self.ragdoll_template else {
+            return;
+        };
+        let mut prefab = template.clone();
+        prefab.nodes[0].local.position = self.player.position;
+        prefab.nodes[0].local.rotation = self.player.rotation;
+        prefab.play_automatically();
+        prefab.update_world();
+        let mut sources = Vec::new();
+        for node in 0..prefab.nodes.len() {
+            if !prefab.active_in_hierarchy(node) {
+                continue;
+            }
+            for data in prefab.components(node, "AudioSource") {
+                let settings = SourceSettings::from_component(data);
+                let at = prefab.world_of(node).w_axis.truncate();
+                sources.push(self.audio.add_source(settings, at));
+            }
+        }
+        let (controller, life) = {
+            let controller = prefab
+                .find_scripts("RagdollController")
+                .into_iter()
+                .next()
+                .map(|(_, c)| {
+                    let cam = prefab.node_of_ref(&c["fields"]["cam"]);
+                    RagdollController::new(&c["fields"], cam)
+                });
+            let life = prefab
+                .script_fields(0, "WaitForDestroy")
+                .map_or(f32::INFINITY, |f| assets::f32_of(&f["lifeTime"]));
+            (controller, life)
+        };
+        let mut controller = controller;
+        if let Some(c) = &mut controller {
+            c.respawn_after(time);
+        }
+        self.ragdoll = Some(Ragdoll {
+            prefab,
+            controller,
+            sources,
+            destroy_at: time + life,
+        });
+    }
+
+    /// The death prefab's `InvokeRepeating` countdown (`SpawnPlayer` respawns) and its
+    /// `WaitForDestroy`.
+    fn update_ragdoll(&mut self, time: f32) {
+        let Some(ragdoll) = &mut self.ragdoll else {
+            return;
+        };
+        let spawn = ragdoll.controller.as_mut().is_some_and(|c| c.update(time));
+        if time >= ragdoll.destroy_at {
+            for &id in &ragdoll.sources {
+                self.audio.remove(id);
+            }
+            self.ragdoll = None;
+        }
+        if spawn {
+            self.respawn();
+        }
+    }
+
+    /// `RoomMultiplayerMenu.SpawnPlayer`: a new player prefab at a random spawn point. Rooms
+    /// and teams are not ported, so every spawn point is a candidate.
+    fn respawn(&mut self) {
+        let local = &mut self.local;
+        local.scripts.remove_sources(&mut self.audio);
+        let custom_tags = local.templates.custom_tags.clone();
+        let (prefab, weapons) = instantiate_local(&local.pristine, &custom_tags);
+        local.prefab = prefab;
+        local.weapons = weapons;
+        match Player::from_prefab(&self.assets, PLAYER_PREFAB) {
+            Ok(player) => self.player = player,
+            Err(error) => eprintln!("respawn: {error:#}"),
+        }
+        let count = self.scene.spawn_points.len().max(1) as i32;
+        self.spawn_index = local.scripts.step_random.range_int(0, count) as usize;
+        place_at_spawn(
+            &mut self.player,
+            &mut self.camera,
+            &self.scene,
+            self.spawn_index,
+        );
+        let local = &mut self.local;
+        local.scripts = AvatarScripts::start(
+            &local.prefab,
+            local.weapons.as_ref(),
+            &self.player,
+            &mut self.audio,
+            &mut self.meshes,
+        );
+        weapons::sync_avatar(
+            &mut local.prefab,
+            &self.player,
+            local.main_camera,
+            local.weapon_manager,
+        );
+        local.prefab.update_world();
     }
 
     fn update_fly(&mut self, dt: f32) {
@@ -695,18 +1182,71 @@ impl Running {
         );
         self.local.prefab.update_world();
         self.body.prefab.update_world();
+        if let Some(ragdoll) = &mut self.ragdoll {
+            ragdoll.prefab.update_world();
+        }
+        self.update_avatar_systems(dt_frame_of(&self.mode, self.last_dt));
+        self.update_listener();
     }
 
-    fn render(&mut self) {
-        let size = self.window.inner_size();
-        let view = match self.mode {
-            Mode::Walk => View {
-                position: self.player.camera_position(),
-                rotation: self.player.camera_rotation(),
-                fov_y_degrees: self.player.camera_fov,
-                near: self.player.camera_near,
-                far: self.player.camera_far,
-            },
+    /// The player prefab's particle systems (simulated while their GameObject is active) and its
+    /// AudioSources (positions; a deactivated weapon's source stops).
+    fn update_avatar_systems(&mut self, dt: f32) {
+        let local = &mut self.local;
+        if local.scripts.destroyed {
+            return;
+        }
+        for (node, system) in &mut local.scripts.systems {
+            if local.prefab.active_in_hierarchy(*node) {
+                system.simulate(dt, local.prefab.world[*node], Some(&self.world));
+            }
+        }
+        let scripts = &local.scripts;
+        if let Some(id) = scripts.root_source {
+            self.audio
+                .set_position(id, local.prefab.world[0].w_axis.truncate());
+        }
+        for &(id, node) in scripts
+            .manager_source
+            .iter()
+            .chain(scripts.weapon_sources.iter().flatten())
+        {
+            if local.prefab.active_in_hierarchy(node) {
+                self.audio
+                    .set_position(id, local.prefab.world[node].w_axis.truncate());
+            } else {
+                self.audio.stop(id);
+            }
+        }
+    }
+
+    /// The camera rendering the frame: the player's Main Camera, the death prefab's camera
+    /// while it exists, or the fly camera.
+    fn main_view(&self) -> View {
+        match self.mode {
+            Mode::Walk => {
+                if let Some(ragdoll) = &self.ragdoll
+                    && let Some(cam) = ragdoll.controller.as_ref().and_then(|c| c.cam)
+                    && let Some(camera) = ragdoll.prefab.camera(cam)
+                {
+                    let (_, rotation, position) =
+                        ragdoll.prefab.world[cam].to_scale_rotation_translation();
+                    return View {
+                        position,
+                        rotation,
+                        fov_y_degrees: camera.fov_y_degrees,
+                        near: camera.near,
+                        far: camera.far,
+                    };
+                }
+                View {
+                    position: self.player.camera_position(),
+                    rotation: self.player.camera_rotation(),
+                    fov_y_degrees: self.player.camera_fov,
+                    near: self.player.camera_near,
+                    far: self.player.camera_far,
+                }
+            }
             Mode::Fly => View {
                 position: self.camera.position,
                 rotation: self.camera.rotation(),
@@ -714,7 +1254,18 @@ impl Running {
                 near: self.fov.1,
                 far: self.fov.2,
             },
-        };
+        }
+    }
+
+    /// The AudioListener follows the rendering camera.
+    fn update_listener(&mut self) {
+        let view = self.main_view();
+        self.audio.update(view.position, view.rotation);
+    }
+
+    fn render(&mut self) {
+        let size = self.window.inner_size();
+        let view = self.main_view();
         let (w, h) = (size.width, size.height);
         self.renderer.draw(&self.gl, &view, w, h);
         // Spawned bullets and rockets (Default layer, seen by the Main Camera and the fly
@@ -733,6 +1284,20 @@ impl Running {
                 Some(root),
             );
         }
+        if let (Some(ragdoll), Some((_, models))) = (&self.ragdoll, &self.ragdoll_template) {
+            self.renderer.draw_models(
+                &self.gl,
+                &view,
+                w,
+                h,
+                &ragdoll.prefab,
+                models,
+                u32::MAX,
+                false,
+                None,
+            );
+        }
+        let alive = !self.local.scripts.destroyed;
         match self.mode {
             Mode::Walk => {
                 let local = &self.local;
@@ -740,19 +1305,27 @@ impl Running {
                     .main_camera
                     .and_then(|n| local.prefab.camera(n))
                     .map_or(u32::MAX, |c| c.culling_mask);
-                self.renderer.draw_models(
-                    &self.gl,
-                    &view,
-                    w,
-                    h,
-                    &local.prefab,
-                    &local.models,
-                    main_mask,
-                    false,
-                    None,
-                );
+                if alive {
+                    self.renderer.draw_models(
+                        &self.gl,
+                        &view,
+                        w,
+                        h,
+                        &local.prefab,
+                        &local.models,
+                        main_mask,
+                        false,
+                        None,
+                    );
+                }
+                let batches = self.effects.batches(&view);
+                self.renderer
+                    .draw_dynamic(&self.gl, &view, w, h, &batches, false);
                 // Weapon Camera (depth 2, clear flags Depth only, culling mask = layer 9).
+                let local = &self.local;
                 if let Some(node) = local.weapon_camera
+                    && alive
+                    && local.prefab.active_in_hierarchy(node)
                     && let Some(camera) = local.prefab.camera(node)
                 {
                     let (_, rotation, position) =
@@ -775,12 +1348,24 @@ impl Running {
                         camera.clear_flags == 3,
                         None,
                     );
+                    let batches: Vec<_> = local
+                        .scripts
+                        .systems
+                        .iter()
+                        .filter(|(n, _)| local.prefab.active_in_hierarchy(*n))
+                        .filter_map(|(n, system)| {
+                            let layer = local.prefab.nodes[*n].layer;
+                            let weapon_layer = camera.culling_mask & (1 << layer) != 0;
+                            system.geometry(local.prefab.world[*n], &weapon_view, weapon_layer)
+                        })
+                        .collect();
+                    self.renderer
+                        .draw_dynamic(&self.gl, &weapon_view, w, h, &batches, true);
                 }
-                // OnGUI (SniperScope, WeaponCrosshair) over the cameras.
-                if let Some(weapons) = &self.local.weapons {
-                    let quads = weapons.on_gui(&mut self.local.prefab, w as f32, h as f32);
-                    self.renderer.draw_gui(&self.gl, &quads, w, h);
-                }
+                self.draw_hud(w as f32, h as f32);
+                self.renderer
+                    .draw_gui(&self.gl, &self.gui.quads, self.font.as_ref(), w, h);
+                self.gui.quads.clear();
             }
             Mode::Fly => {
                 self.renderer.draw_models(
@@ -794,7 +1379,52 @@ impl Running {
                     false,
                     None,
                 );
+                let batches = self.effects.batches(&view);
+                self.renderer
+                    .draw_dynamic(&self.gl, &view, w, h, &batches, false);
             }
+        }
+    }
+
+    /// Every `OnGUI` of the frame, `GUI.depth` 10 (`PlayerDamage`) first.
+    fn draw_hud(&mut self, w: f32, h: f32) {
+        let Some(font) = &mut self.font else {
+            return;
+        };
+        let gui = &mut self.gui;
+        let local = &mut self.local;
+        let dt = self.last_dt;
+        if !local.scripts.destroyed
+            && let (Some(damage), Some(skin)) = (&local.scripts.damage, &self.fps_skin)
+        {
+            damage.on_gui(gui, font, skin, w, h);
+        }
+        if let Some(ragdoll) = &self.ragdoll
+            && let (Some(controller), Some(skin)) = (&ragdoll.controller, &self.ragdoll_skin)
+        {
+            controller.on_gui(gui, font, skin, w, h);
+        }
+        if local.scripts.destroyed {
+            return;
+        }
+        let manager_active = hud::player_gui_active(&local.prefab, local.weapon_manager);
+        if let Some(weapons) = &mut local.weapons
+            && manager_active
+        {
+            // SniperScope and WeaponCrosshair.
+            let quads = weapons.on_gui(&mut local.prefab, w, h);
+            gui.quads.extend(quads);
+            if let (Some(ammo), Some(skin)) = (&mut local.scripts.ammo, &self.fps_skin) {
+                ammo.on_gui(gui, font, skin, weapons, dt, w, h);
+            }
+            if let Some(default) = &mut self.default_skin {
+                default.weapon_manager_gui(gui, font, weapons, w, h);
+            }
+        }
+        if local.scripts.protection.protected
+            && let Some(default) = &self.default_skin
+        {
+            default.spawn_protection_gui(gui, font, w, h);
         }
     }
 }
@@ -961,6 +1591,10 @@ impl ApplicationHandler for App {
                     && let Some(key) = self.args.weapon
                 {
                     app.input.number_pressed[key] = true;
+                }
+                if self.args.aim && !app.aimed && app.started.elapsed().as_secs_f32() >= 0.6 {
+                    app.aimed = true;
+                    app.input.aim_pressed = true;
                 }
                 if self.args.fire {
                     app.input.fire_held = true;

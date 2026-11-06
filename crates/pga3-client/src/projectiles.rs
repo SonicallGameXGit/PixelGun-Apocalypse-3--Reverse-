@@ -1,7 +1,7 @@
 //! Objects the weapons instantiate from `Resources` prefabs (spec: `docs/gameplay/weapons.md`):
 //! `Bullet` (raycast-stepped bullets and the knife's damage probe) and `Projectile` (the
 //! launcher's rocket, a continuous-collision `Rigidbody`). Impact and explosion prefabs are
-//! particle systems, which are not rendered yet: they are reported as events.
+//! reported as events and played by `effects.rs`, which also draws the trails.
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -150,13 +150,14 @@ impl Templates {
 /// Something a spawned object did.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ProjectileEvent {
-    /// `Instantiate` of an impact or explosion prefab (particles, not rendered).
+    /// `Instantiate` of an impact or explosion prefab (played by `effects.rs`).
     Effect {
         prefab: String,
         position: Vec3,
         rotation: Quat,
     },
-    /// `SendMessageUpwards("ApplyDamage", damage)` on the hit collider (no receivers yet).
+    /// `SendMessageUpwards("ApplyDamage", damage)` on the hit collider. Only `HitBox` (on remote
+    /// players) receives it, so locally nothing does.
     Damage { amount: i32, point: Vec3, tag: u32 },
 }
 
@@ -181,6 +182,8 @@ enum State {
 
 /// One instantiated prefab.
 pub struct Spawned {
+    /// Unique per instantiation (for what is attached to it: trail, sound).
+    pub id: u64,
     pub template: usize,
     pub position: Vec3,
     pub rotation: Quat,
@@ -193,6 +196,7 @@ pub struct Spawned {
 pub struct Projectiles {
     pub objects: Vec<Spawned>,
     pub events: Vec<ProjectileEvent>,
+    next_id: u64,
 }
 
 impl Projectiles {
@@ -224,7 +228,9 @@ impl Projectiles {
             },
             Behaviour::None => State::Inert,
         };
+        self.next_id += 1;
         self.objects.push(Spawned {
+            id: self.next_id,
             template,
             position,
             rotation,

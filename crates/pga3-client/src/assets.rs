@@ -152,13 +152,48 @@ pub enum ShaderKind {
     Diffuse,
     /// `BlendedDecal`: unlit `_MainTex * _Color`, alpha test (a > 0), ZWrite off, offset -1,-1.
     BlendedDecal,
-    /// `Mobile/Particles/Additive`: unlit `_MainTex * vertex colour`, `Blend SrcAlpha One`,
-    /// ZWrite off, Cull off, fog towards black (e.g. the weapons' muzzle flashes).
-    ParticlesAdditive,
+    /// Unlit transparent particle shaders (ZWrite off, Cull off, Transparent queue), e.g. the
+    /// weapons' muzzle flashes, the red-dot sights, impacts and the explosion.
+    Particle(ParticleShader),
     /// `Mobile/Skybox`: 6-sided skybox.
     Skybox,
     /// Anything not implemented yet; drawn as `Diffuse` and reported.
     Unsupported,
+}
+
+/// The unlit particle shaders of this build. Fragment programs are from the compiled GLSL ES
+/// programs in `assets/shaders/` (non-soft-particle variants: `QualitySettings.softParticles` is
+/// off at every level). The dump has no blend state; it is taken from the shaders' public sources
+/// (Unity built-in shaders 2018.3, War FX) and is **inferred**.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ParticleShader {
+    /// `Mobile/Particles/Additive`: `tex · colour`; `Blend SrcAlpha One`; fog to black.
+    MobileAdditive,
+    /// `Particles/Additive`: `2 · colour · _TintColor · tex`; `Blend SrcAlpha One`, fog to black.
+    Additive,
+    /// `Legacy Shaders/Particles/Additive (Soft)`: `t = tex · colour; (t.rgb · t.a, t.a)`;
+    /// `Blend One OneMinusSrcColor`, fog to black.
+    SoftAdditive,
+    /// `Legacy Shaders/Particles/Alpha Blended`: `2 · colour · _TintColor · tex` (alpha
+    /// clamped); `Blend SrcAlpha OneMinusSrcAlpha`, fog to the fog colour.
+    AlphaBlended,
+    /// `WFX/Additive Alpha8`: `2 · colour · _TintColor · (2 · tex.a · colour.a)`;
+    /// `Blend SrcAlpha One`, fog to black.
+    WfxAdditiveAlpha8,
+    /// `WFX/Multiply Alpha8`: `tex.a · colour`; `Blend Zero SrcColor`, fog to white.
+    WfxMultiplyAlpha8,
+}
+
+impl ParticleShader {
+    /// `_TintColor` is read by these shaders (its default is (0.5, 0.5, 0.5, 0.5)).
+    pub fn uses_tint(self) -> bool {
+        matches!(
+            self,
+            ParticleShader::Additive
+                | ParticleShader::AlphaBlended
+                | ParticleShader::WfxAdditiveAlpha8
+        )
+    }
 }
 
 pub struct TexEnv {
@@ -196,7 +231,18 @@ fn shader_kind(name: &str) -> ShaderKind {
         "Mobile/Diffuse" => ShaderKind::MobileDiffuse,
         "Diffuse" | "Legacy Shaders/Diffuse" => ShaderKind::Diffuse,
         "BlendedDecal" => ShaderKind::BlendedDecal,
-        "Mobile/Particles/Additive" => ShaderKind::ParticlesAdditive,
+        "Mobile/Particles/Additive" => ShaderKind::Particle(ParticleShader::MobileAdditive),
+        "Particles/Additive" | "Legacy Shaders/Particles/Additive" => {
+            ShaderKind::Particle(ParticleShader::Additive)
+        }
+        "Legacy Shaders/Particles/Additive (Soft)" => {
+            ShaderKind::Particle(ParticleShader::SoftAdditive)
+        }
+        "Legacy Shaders/Particles/Alpha Blended" => {
+            ShaderKind::Particle(ParticleShader::AlphaBlended)
+        }
+        "WFX/Additive Alpha8" => ShaderKind::Particle(ParticleShader::WfxAdditiveAlpha8),
+        "WFX/Multiply Alpha8" => ShaderKind::Particle(ParticleShader::WfxMultiplyAlpha8),
         "Mobile/Skybox" => ShaderKind::Skybox,
         _ => ShaderKind::Unsupported,
     }

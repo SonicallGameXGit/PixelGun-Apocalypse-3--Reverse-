@@ -13,6 +13,7 @@ use serde_json::Value;
 
 use crate::assets::{f32_of, ref_of, tag_number};
 use crate::character::WeaponAnimation;
+pub use crate::gui::GuiQuad;
 use crate::physics::CollisionWorld;
 use crate::player::Player;
 use crate::prefab::PrefabInstance;
@@ -59,8 +60,18 @@ pub enum WeaponEvent {
         rotation: Quat,
         velocity: Option<Vec3>,
     },
-    /// `AudioSource.Play` of a clip (asset path).
-    Sound(String),
+    /// `GetComponent<AudioSource>().clip = clip; .Play()` (asset path) on the WeaponManager's or
+    /// a weapon's own AudioSource. `Play` restarts that source.
+    Sound { source: SoundSource, clip: String },
+}
+
+/// Which AudioSource a weapon sound plays on.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SoundSource {
+    /// The `WeaponManager` GameObject's (`takeInAudio`).
+    Manager,
+    /// The weapon GameObject's (slot index in `allWeapons`).
+    Weapon(usize),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -111,7 +122,7 @@ pub struct ShotGun {
     pub bullets_left: i32,
     pub clips: i32,
     pub smoke: Option<usize>,
-    /// `smoke.Play()` / `Stop()` state (particles are not rendered yet).
+    /// `smoke.Play()` / `Stop()` state (applied to the particle system in `main.rs`).
     pub smoke_playing: bool,
 }
 
@@ -244,16 +255,6 @@ pub struct WeaponCrosshair {
     pub distance: f32,
 }
 
-/// A textured screen rectangle drawn by `OnGUI` (`GUI.Box` / `GUI.DrawTexture`): GUI pixels
-/// with the origin at the top left.
-#[derive(Clone, Debug, PartialEq)]
-pub struct GuiQuad {
-    pub texture: String,
-    /// x, y, width, height.
-    pub rect: [f32; 4],
-    pub color: Vec4,
-}
-
 /// The player's per-frame state the weapon scripts read and write.
 pub struct WeaponContext<'a> {
     pub prefab: &'a mut PrefabInstance,
@@ -277,6 +278,8 @@ pub struct WeaponManager {
     /// The `WeaponScript` of each weapon.
     pub scripts: Vec<Option<WeaponScript>>,
     pub shownowepinroom: f32,
+    /// "Available only at FULL game" message timer (set by the room rules, not ported).
+    pub shownowepinroom2: f32,
     pub changewep: i32,
     pub index2: i32,
     pub text_delay: f32,
@@ -574,7 +577,10 @@ impl Queue<'_> {
 
     fn sound(&mut self, clip: &Option<String>) {
         if let Some(clip) = clip {
-            self.events.push(WeaponEvent::Sound(clip.clone()));
+            self.events.push(WeaponEvent::Sound {
+                source: SoundSource::Weapon(self.slot),
+                clip: clip.clone(),
+            });
         }
     }
 
@@ -1210,11 +1216,7 @@ impl WeaponCrosshair {
             [(width - w) * 0.5, (height + d) * 0.5, w, l],
         ]
         .into_iter()
-        .map(|rect| GuiQuad {
-            texture: texture.clone(),
-            rect,
-            color,
-        })
+        .map(|rect| GuiQuad::texture(texture, rect, color))
         .collect()
     }
 }
@@ -1297,11 +1299,13 @@ pub fn weapon_manager_awake(
         selected_weapon: None,
         scripts: Vec::new(),
         shownowepinroom: f32_of(&fields["shownowepinroom"]),
+        shownowepinroom2: f32_of(&fields["shownowepinroom2"]),
         changewep: int_of(&fields["changewep"]),
         index2: int_of(&fields["index2"]),
-        text_delay: 0.0,
+        // Private fields: the constructor's values (`f29926`).
+        text_delay: 1.0,
         can_switch: false,
-        auto_fire: false,
+        auto_fire: true,
         // The client is not served from pacogames.com.
         super_weapons: false,
         room_name: ROOM_NAME.to_string(),
@@ -1315,7 +1319,10 @@ pub fn weapon_manager_awake(
     // TakeFirstWeapon: takeInAudio, SetActive(true), SendMessage("selectWeapon").
     if let Some(&weapon) = manager.all_weapons.get(index) {
         if let Some(clip) = &manager.take_in_audio {
-            manager.events.push(WeaponEvent::Sound(clip.clone()));
+            manager.events.push(WeaponEvent::Sound {
+                source: SoundSource::Manager,
+                clip: clip.clone(),
+            });
         }
         prefab.nodes[weapon].active_self = true;
         if let Some(script) = &mut scripts[index] {
@@ -1557,7 +1564,10 @@ impl WeaponManager {
     /// The end of `SwitchWeapons` (`f29927`).
     fn finish_switch(&mut self, from: usize, to: usize, ctx: &mut WeaponContext) {
         if let Some(clip) = &self.take_in_audio {
-            self.events.push(WeaponEvent::Sound(clip.clone()));
+            self.events.push(WeaponEvent::Sound {
+                source: SoundSource::Manager,
+                clip: clip.clone(),
+            });
         }
         ctx.set_active(self.all_weapons[from], false);
         // An inactive MonoBehaviour's coroutines stop.
@@ -1583,17 +1593,17 @@ impl WeaponManager {
             if script.aimed {
                 if let Some(texture) = &scope.scope_texture {
                     let (w, h) = (width as i32, height as i32);
-                    quads.push(GuiQuad {
-                        texture: texture.clone(),
-                        rect: [
+                    quads.push(GuiQuad::texture(
+                        texture,
+                        [
                             (w / 2) as f32 - h as f32 * 1.8 * 0.5,
                             // The original computes `h / 2 - h / 2`.
                             0.0,
                             h as f32 * 1.8,
                             h as f32,
                         ],
-                        color: Vec4::ONE,
-                    });
+                        Vec4::ONE,
+                    ));
                 }
                 for &node in &scope.objects_to_deactivate {
                     prefab.nodes[node].active_self = false;
@@ -1715,8 +1725,9 @@ mod tests {
             names,
             ["Machete", "Pistol", "M242", "ShotGun", "Sniper", "Launcher"]
         );
-        // Awake: weapons start with autoFire = !manager.autoFire.
-        assert!(!rig.manager.auto_fire && rig.script(0).auto_fire);
+        // The constructor sets autoFire; Awake gives weapons autoFire = !manager.autoFire.
+        assert!(rig.manager.auto_fire && !rig.script(0).auto_fire);
+        assert_eq!(rig.manager.text_delay, 1.0);
         assert_eq!(rig.manager.tags_to_shoot, [20001]);
         assert!(rig.active(0) && !rig.active(1));
         // Bullet refs (component refs too) find their Resources prefab.
@@ -1907,7 +1918,10 @@ mod tests {
         };
         let events = rig.frame(&click);
         assert!(spawns(&events).is_empty());
-        assert!(events.contains(&WeaponEvent::Sound("audio/fire melee_fire.m4a".to_string())));
+        assert!(events.contains(&WeaponEvent::Sound {
+            source: SoundSource::Weapon(0),
+            clip: "audio/fire melee_fire.m4a".to_string(),
+        }));
         // delayTime 0.07: the KnifeDamage probe spawns on the 5th frame (4/60 < 0.07 < 5/60).
         let mut spawned_at = None;
         for frame in 1..10 {

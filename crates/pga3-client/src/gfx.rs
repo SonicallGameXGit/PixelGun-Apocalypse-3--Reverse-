@@ -93,6 +93,55 @@ pub fn upload_mesh(
     }
 }
 
+/// A vertex/index buffer pair refilled every draw (particles, trails).
+pub struct DynamicMesh {
+    vao: glow::VertexArray,
+    vbo: glow::Buffer,
+    ebo: glow::Buffer,
+}
+
+impl DynamicMesh {
+    pub fn new(gl: &glow::Context, layout: &[i32]) -> Result<DynamicMesh> {
+        let stride: i32 = layout.iter().sum::<i32>() * 4;
+        unsafe {
+            let vao = gl.create_vertex_array().map_err(anyhow::Error::msg)?;
+            gl.bind_vertex_array(Some(vao));
+            let vbo = gl.create_buffer().map_err(anyhow::Error::msg)?;
+            gl.bind_buffer(glow::ARRAY_BUFFER, Some(vbo));
+            let ebo = gl.create_buffer().map_err(anyhow::Error::msg)?;
+            gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(ebo));
+            let mut offset = 0;
+            for (index, &size) in layout.iter().enumerate() {
+                gl.enable_vertex_attrib_array(index as u32);
+                gl.vertex_attrib_pointer_f32(
+                    index as u32,
+                    size,
+                    glow::FLOAT,
+                    false,
+                    stride,
+                    offset,
+                );
+                offset += size * 4;
+            }
+            gl.bind_vertex_array(None);
+            Ok(DynamicMesh { vao, vbo, ebo })
+        }
+    }
+
+    /// Uploads `vertices` / `indices` and draws them as triangles with the bound program.
+    pub fn draw(&self, gl: &glow::Context, vertices: &[f32], indices: &[u32]) {
+        let index_bytes: Vec<u8> = indices.iter().flat_map(|i| i.to_le_bytes()).collect();
+        unsafe {
+            gl.bind_vertex_array(Some(self.vao));
+            gl.bind_buffer(glow::ARRAY_BUFFER, Some(self.vbo));
+            gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, &f32_bytes(vertices), glow::STREAM_DRAW);
+            gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(self.ebo));
+            gl.buffer_data_u8_slice(glow::ELEMENT_ARRAY_BUFFER, &index_bytes, glow::STREAM_DRAW);
+            gl.draw_elements(glow::TRIANGLES, indices.len() as i32, glow::UNSIGNED_INT, 0);
+        }
+    }
+}
+
 fn gl_wrap(wrap: Wrap) -> i32 {
     (match wrap {
         Wrap::Repeat => glow::REPEAT,

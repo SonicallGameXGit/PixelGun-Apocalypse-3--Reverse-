@@ -738,6 +738,15 @@
         }
     },
     {
+        "path": "fonts/Arial.ttf",
+        "type": "Font",
+        "name": "Arial",
+        "source": {
+            "file": "unity_default_resources",
+            "path_id": 10102
+        }
+    },
+    {
         "path": "fonts/Jupiter.ttf",
         "type": "Font",
         "name": "Jupiter",

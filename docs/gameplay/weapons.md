@@ -37,7 +37,7 @@ Spawned prefabs:
   - `Rigidbody`: mass 1, no gravity, `CollisionDetection` 1 (continuous).
   - `TrailRenderer`; inactive child `Sphere`.
   - `Projectile`: explosion `WFXMR_Explosion 1__4274`, `destroyDelay` 0, `timeOut` 20.
-- **Impacts and explosion** are `ParticleSystem`s. Impacts have `WaitForDestroy` 2 s. The explosion has `ExplosionDamage` (radius 6, power 15, damage 100).
+- **Impacts and explosion** are `ParticleSystem`s. Impacts have `WaitForDestroy` (0.3-3 s per prefab, `docs/gameplay/particles.md`). The explosion has `ExplosionDamage` (radius 6, power 15, damage 100).
 
 ## WeaponManager
 
@@ -46,7 +46,7 @@ Spawned prefabs:
 1. Activate every child, which runs `WeaponAnimation.Awake` and `WeaponScript.Awake`, the latter caching `GetComponentInChildren<WeaponAnimation>`.
 2. Deactivate the children again.
 3. `TakeFirstWeapon(allWeapons[index])` (`f29922`): play `takeInAudio`, `SetActive(true)`, `SendMessage("selectWeapon")`, then `canSwitch = true`.
-4. Set every weapon's `autoFire = !manager.autoFire`. The manager starts with `false`, so the weapons start with `true`.
+4. Set every weapon's `autoFire = !manager.autoFire`. The constructor (`f29926`) sets the manager's `autoFire = true` and `textDelay = 1`, so the weapons start with `false` and "Auto fire on" shows for the first second (`docs/gameplay/hud.md`).
 
 **`Update`** (`f29923`):
 
@@ -301,11 +301,9 @@ Coroutines of a weapon are dropped when its GameObject is deactivated.
 
 ## Not implemented
 
-- Audio: weapon sounds are emitted as events only.
-- Particles: impacts, explosion, shotgun smoke. Explosion damage. Rocket trail.
-- `AmmoDisplay` and the `WeaponManager.OnGUI` texts.
-- `ApplyDamage` receivers (`PlayerDamage`, zombies).
-- Network sync (`WeaponSync`). Third-person weapon visuals.
+- Network sync (`WeaponSync`), third-person weapon visuals, and damage to other players (`HitBox` receivers exist only on remote players, `docs/gameplay/damage.md`).
+
+Sounds, particles, trails, the explosion, `AmmoDisplay` and the `WeaponManager.OnGUI` texts are covered in `docs/gameplay/audio.md`, `docs/gameplay/particles.md` and `docs/gameplay/hud.md`.
 
 Tests (`cargo test`) cover:
 
