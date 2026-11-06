@@ -61,10 +61,25 @@ pub struct RenderSettings {
     pub skybox_material: Option<String>,
 }
 
+pub enum ColliderShape {
+    /// Non-convex MeshCollider: triangles of an `assets/models/*.obj` mesh.
+    Mesh { mesh_asset: String },
+    /// BoxCollider in the node's local space.
+    Box { center: Vec3, size: Vec3 },
+}
+
+pub struct ColliderInstance {
+    pub world: Mat4,
+    pub shape: ColliderShape,
+    pub is_trigger: bool,
+}
+
 pub struct Scene {
     pub name: String,
     pub render: RenderSettings,
     pub renderers: Vec<MeshRendererInstance>,
+    /// Enabled colliders on active GameObjects (static map geometry, ladder volumes).
+    pub colliders: Vec<ColliderInstance>,
     pub lights: Vec<DirectionalLight>,
     pub camera: Option<CameraInfo>,
     pub spawn_points: Vec<SpawnPoint>,
@@ -187,6 +202,7 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
         name: name.to_string(),
         render,
         renderers: Vec::new(),
+        colliders: Vec::new(),
         lights: Vec::new(),
         camera: None,
         spawn_points: Vec::new(),
@@ -233,6 +249,31 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
                 }),
                 None => scene.skipped_renderers += 1,
             }
+        }
+
+        for collider in node["components"].as_array().into_iter().flatten() {
+            let data = &collider["data"];
+            if !enabled(data) {
+                continue;
+            }
+            let shape = match collider["type"].as_str() {
+                Some("MeshCollider") => match ref_of(&data["m_Mesh"]).and_then(|(_, a)| a) {
+                    Some(mesh_asset) => ColliderShape::Mesh {
+                        mesh_asset: mesh_asset.to_string(),
+                    },
+                    None => continue,
+                },
+                Some("BoxCollider") => ColliderShape::Box {
+                    center: vec3_of(&data["m_Center"]),
+                    size: vec3_of(&data["m_Size"]),
+                },
+                _ => continue,
+            };
+            scene.colliders.push(ColliderInstance {
+                world,
+                shape,
+                is_trigger: data["m_IsTrigger"].as_bool().unwrap_or(false),
+            });
         }
 
         if let Some(light) = component(node, "Light") {

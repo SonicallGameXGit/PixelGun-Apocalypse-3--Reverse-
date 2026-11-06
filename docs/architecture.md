@@ -14,16 +14,18 @@ Client: `crates/pga3-client` (binary). Procedural, data-oriented Rust; GL calls 
 | `serde` / `serde_json` | `assets/data/*.json` | |
 | `anyhow` | error handling | |
 
-Physics, audio and networking crates are not chosen yet (see AGENTS.md "Tech stack").
+**Physics: custom** (`physics.rs`), not rapier: the game only needs static triangle-mesh/box queries plus a PhysX-style character controller, whose exact behaviour (skin width, step offset, slide) is easier to match in ~1k lines of own code than through a general rigid-body engine. Audio and networking crates are not chosen yet (see AGENTS.md "Tech stack").
 
 ## Modules
 
 | File | Role |
 |------|------|
-| `main.rs` | args, window/GL setup, event loop, free-fly camera, screenshot mode |
+| `main.rs` | args, window/GL setup, event loop, walk/fly modes, screenshot mode |
 | `assets.rs` | finds `assets/`, parses `data/materials.json` and `data/textures.json` |
 | `scene.rs` | `data/scenes/<Scene>.json` → world matrices, renderers, directional lights, camera, spawn points, RenderSettings |
 | `obj.rs` | OBJ meshes from `assets/models/` back into Unity mesh space |
+| `physics.rs` | collision world (scene MeshColliders/BoxColliders in a grid), exact capsule sweeps, `SphereCast`, CharacterController (PhysX-style up/side/down passes) |
+| `player.rs` | local player: ports of `FPScontroller`, `FPSinput`, `FPSMouseLook`, `CameraBob`; Unity frame order and keyboard axes (spec: `docs/gameplay/movement.md`) |
 | `gfx.rs` | GL helpers: programs, mesh/texture upload, framebuffer readback |
 | `render.rs` | scene renderer: ports of the original shaders |
 
@@ -51,7 +53,7 @@ Not implemented yet: particles (`Mobile/Particles/*`, `WFX/*`), `Standard`, poin
 ## Running
 
 ```bash
-cargo run -p pga3-client -- [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--screenshot out.png]
+cargo run -p pga3-client -- [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--screenshot out.png]
 ```
 
-Scenes: `Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village` and `ZM_*` variants. Controls: click to capture the mouse, Esc to release/quit, WASD, Space/C up/down, Shift fast, Tab next spawn point, P prints the current `--camera` value. `--screenshot` renders a few frames, saves a PNG and exits; agents use it to verify rendering. The assets folder is found automatically or via `PGA3_ASSETS`.
+Scenes: `Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village` and `ZM_*` variants. The game starts walking at spawn point N (default 0) with the original controls: WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone, mouse look. F toggles a free-fly camera (WASD, Space/C up/down, Shift fast; F again drops the player there); `--camera`/`--fly` start in fly mode. Click captures the mouse, Esc releases/quits, Tab goes to the next spawn point, P prints the current `--camera` value. `--screenshot` renders a few frames, saves a PNG and exits; agents use it to verify rendering. The assets folder is found automatically or via `PGA3_ASSETS`.

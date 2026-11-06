@@ -1,15 +1,19 @@
 //! Pixel Gun Apocalypse 3 open-source client.
 //!
-//! Current milestone: scene viewer. Loads a map from `assets/data/scenes/` and renders it with the
-//! original shading; free-fly camera (no collision yet).
+//! Current milestone: walking. Loads a map from `assets/data/scenes/`, renders it with the
+//! original shading and spawns the local player (original movement and collision) at a spawn
+//! point; a free-fly camera is available for inspection.
 //!
-//! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--screenshot out.png]`
-//! Controls: click = capture mouse, Esc = release / quit, WASD = move, Space/C = up/down,
-//! Shift = fast, Tab = next spawn point.
+//! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--screenshot out.png]`
+//! Controls: click = capture mouse, Esc = release / quit, F = walk/fly toggle, Tab = next spawn.
+//! Walking (original keys): WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone.
+//! Flying: WASD, Space/C up/down, Shift fast.
 
 mod assets;
 mod gfx;
 mod obj;
+mod physics;
+mod player;
 mod render;
 mod scene;
 
@@ -35,13 +39,19 @@ use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 
+use physics::CollisionWorld;
+use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
 use render::{SceneRenderer, View};
 use scene::Scene;
+
+/// `Input.GetAxis("Mouse X"/"Mouse Y")` sensitivity in this build's InputManager.
+const MOUSE_AXIS_SENSITIVITY: f32 = 0.1;
 
 struct Args {
     scene: String,
     spawn: Option<usize>,
     camera: Option<[f32; 5]>,
+    fly: bool,
     screenshot: Option<PathBuf>,
 }
 
@@ -50,6 +60,7 @@ fn parse_args() -> Result<Args> {
         scene: "Bridge".to_string(),
         spawn: None,
         camera: None,
+        fly: false,
         screenshot: None,
     };
     let mut iter = std::env::args().skip(1);
@@ -64,6 +75,7 @@ fn parse_args() -> Result<Args> {
                 };
                 args.camera = Some(values);
             }
+            "--fly" => args.fly = true,
             "--screenshot" => {
                 args.screenshot = Some(PathBuf::from(iter.next().context("--screenshot PATH")?))
             }
@@ -107,8 +119,18 @@ struct Input {
     up: bool,
     down: bool,
     fast: bool,
+    run: bool,
+    /// Keys that went down since the last frame (`GetKeyDown`).
+    jump_pressed: bool,
+    crouch_pressed: bool,
+    prone_pressed: bool,
     mouse_delta: (f64, f64),
     grabbed: bool,
+}
+
+enum Mode {
+    Walk,
+    Fly,
 }
 
 /// Field order is drop order: GL objects, then the surface and context, the window last
@@ -116,6 +138,12 @@ struct Input {
 struct Running {
     renderer: SceneRenderer,
     scene: Scene,
+    world: CollisionWorld,
+    player: Player,
+    mode: Mode,
+    horizontal: KeyAxis,
+    vertical: KeyAxis,
+    fixed_time: f32,
     camera: FlyCamera,
     fov: (f32, f32, f32),
     input: Input,
@@ -172,6 +200,13 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
     let loading = Instant::now();
     let scene = scene::load_scene(&assets, &args.scene)?;
     let renderer = SceneRenderer::new(&gl, &assets, &scene)?;
+    let world = physics::build_world(&assets, &scene)?;
+    let mut player = Player::from_prefab(&assets, "german")?;
+    println!(
+        "collision: {} colliders, {} triangles",
+        scene.colliders.len(),
+        world.triangle_count()
+    );
     println!(
         "{}: {} renderers ({} skipped), {} spawn points, {:?}, loaded in {:.2?}",
         scene.name,
@@ -195,17 +230,20 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
         camera.position = c.position;
         camera.look(c.rotation);
     }
-    let mut spawn_index = 0;
-    if let Some(index) = args.spawn {
-        spawn_index = index;
-        place_at_spawn(&mut camera, &scene, index);
-    }
+    let spawn_index = args.spawn.unwrap_or(0);
+    let mut mode = if args.fly || scene.spawn_points.is_empty() {
+        Mode::Fly
+    } else {
+        Mode::Walk
+    };
+    place_at_spawn(&mut player, &mut camera, &scene, spawn_index);
     if let Some([x, y, z, yaw, pitch]) = args.camera {
         camera = FlyCamera {
             position: Vec3::new(x, y, z),
             yaw,
             pitch,
         };
+        mode = Mode::Fly;
     }
 
     Ok(Running {
@@ -215,6 +253,12 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
         gl,
         scene,
         renderer,
+        world,
+        player,
+        mode,
+        horizontal: KeyAxis::movement(),
+        vertical: KeyAxis::movement(),
+        fixed_time: 0.0,
         camera,
         fov: (fov, near, far),
         input: Input::default(),
@@ -224,16 +268,14 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
     })
 }
 
-/// Eye height placeholder until the player prefab's CharacterController is wired in.
-const EYE_HEIGHT: f32 = 1.6;
-
-fn place_at_spawn(camera: &mut FlyCamera, scene: &Scene, index: usize) {
+fn place_at_spawn(player: &mut Player, camera: &mut FlyCamera, scene: &Scene, index: usize) {
     if scene.spawn_points.is_empty() {
         return;
     }
     let spawn = &scene.spawn_points[index % scene.spawn_points.len()];
-    camera.position = spawn.position + Vec3::Y * EYE_HEIGHT;
-    camera.look(spawn.rotation);
+    player.spawn(spawn.position, spawn.rotation);
+    camera.position = player.camera_position();
+    camera.look(player.camera_rotation());
     println!(
         "spawn point {} ({}) at {}",
         index % scene.spawn_points.len(),
@@ -260,6 +302,49 @@ impl Running {
     }
 
     fn update(&mut self, dt: f32) {
+        match self.mode {
+            Mode::Walk => self.update_walk(dt),
+            Mode::Fly => self.update_fly(dt),
+        }
+        let i = &mut self.input;
+        i.jump_pressed = false;
+        i.crouch_pressed = false;
+        i.prone_pressed = false;
+    }
+
+    /// One Unity frame for the local player: FixedUpdate steps, Update, LateUpdate.
+    fn update_walk(&mut self, dt: f32) {
+        let dt = dt.min(MAXIMUM_DELTA_TIME);
+        let (dx, dy) = std::mem::take(&mut self.input.mouse_delta);
+        let i = &self.input;
+        let input = FrameInput {
+            horizontal: self.horizontal.update(i.right, i.left, dt),
+            vertical: self.vertical.update(i.forward, i.back, dt),
+            jump_down: i.jump_pressed,
+            run_held: i.run,
+            crouch_down: i.crouch_pressed,
+            prone_down: i.prone_pressed,
+            mouse_x: dx as f32 * MOUSE_AXIS_SENSITIVITY,
+            // Unity's Mouse Y grows upwards; window coordinates grow downwards.
+            mouse_y: -dy as f32 * MOUSE_AXIS_SENSITIVITY,
+        };
+        self.fixed_time += dt;
+        while self.fixed_time >= FIXED_DELTA_TIME {
+            self.fixed_time -= FIXED_DELTA_TIME;
+            self.player.fixed_update();
+        }
+        self.player.update(&self.world, dt, input.vertical, &input);
+        self.player.late_update(&input);
+        for event in self.player.events.drain(..) {
+            if let player::PlayerEvent::FallDamage(amount) = event {
+                println!("fall damage {amount:.1}");
+            }
+        }
+        self.camera.position = self.player.camera_position();
+        self.camera.look(self.player.camera_rotation());
+    }
+
+    fn update_fly(&mut self, dt: f32) {
         const SENSITIVITY: f32 = 0.15;
         let (dx, dy) = std::mem::take(&mut self.input.mouse_delta);
         self.camera.yaw += dx as f32 * SENSITIVITY;
@@ -270,18 +355,27 @@ impl Running {
         let axis = |positive: bool, negative: bool| (positive as i32 - negative as i32) as f32;
         let wish = rotation * Vec3::new(axis(i.right, i.left), 0.0, axis(i.forward, i.back))
             + Vec3::Y * axis(i.up, i.down);
-        let speed = if i.fast { 30.0 } else { 8.0 };
+        let speed = if i.fast || i.run { 30.0 } else { 8.0 };
         self.camera.position += wish.normalize_or_zero() * speed * dt;
     }
 
     fn render(&mut self) {
         let size = self.window.inner_size();
-        let view = View {
-            position: self.camera.position,
-            rotation: self.camera.rotation(),
-            fov_y_degrees: self.fov.0,
-            near: self.fov.1,
-            far: self.fov.2,
+        let view = match self.mode {
+            Mode::Walk => View {
+                position: self.player.camera_position(),
+                rotation: self.player.camera_rotation(),
+                fov_y_degrees: self.player.camera_fov,
+                near: self.player.camera_near,
+                far: self.player.camera_far,
+            },
+            Mode::Fly => View {
+                position: self.camera.position,
+                rotation: self.camera.rotation(),
+                fov_y_degrees: self.fov.0,
+                near: self.fov.1,
+                far: self.fov.2,
+            },
         };
         self.renderer.draw(&self.gl, &view, size.width, size.height);
     }
@@ -334,18 +428,45 @@ impl ApplicationHandler for App {
                 ..
             } => {
                 let pressed = state == ElementState::Pressed;
+                let down = pressed && !repeat;
                 let i = &mut app.input;
                 match code {
-                    KeyCode::KeyW => i.forward = pressed,
-                    KeyCode::KeyS => i.back = pressed,
-                    KeyCode::KeyA => i.left = pressed,
-                    KeyCode::KeyD => i.right = pressed,
-                    KeyCode::Space => i.up = pressed,
-                    KeyCode::KeyC => i.down = pressed,
-                    KeyCode::ShiftLeft | KeyCode::ShiftRight => i.fast = pressed,
-                    KeyCode::Tab if pressed && !repeat => {
+                    KeyCode::KeyW | KeyCode::ArrowUp => i.forward = pressed,
+                    KeyCode::KeyS | KeyCode::ArrowDown => i.back = pressed,
+                    KeyCode::KeyA | KeyCode::ArrowLeft => i.left = pressed,
+                    KeyCode::KeyD | KeyCode::ArrowRight => i.right = pressed,
+                    KeyCode::Space => {
+                        i.up = pressed;
+                        i.jump_pressed |= down;
+                    }
+                    KeyCode::KeyC => {
+                        i.down = pressed;
+                        i.crouch_pressed |= down;
+                    }
+                    KeyCode::ControlLeft => i.prone_pressed |= down,
+                    KeyCode::ShiftLeft => i.run = pressed,
+                    KeyCode::ShiftRight => i.fast = pressed,
+                    KeyCode::KeyF if down => {
+                        app.mode = match app.mode {
+                            Mode::Walk => Mode::Fly,
+                            Mode::Fly => {
+                                // Drop the player where the fly camera is.
+                                let eye = app.player.camera_position() - app.player.position;
+                                let yaw = Quat::from_rotation_y(app.camera.yaw.to_radians());
+                                app.player.spawn(app.camera.position - eye, yaw);
+                                app.player.rotation_y = 0.0;
+                                Mode::Walk
+                            }
+                        };
+                    }
+                    KeyCode::Tab if down => {
                         app.spawn_index += 1;
-                        place_at_spawn(&mut app.camera, &app.scene, app.spawn_index);
+                        place_at_spawn(
+                            &mut app.player,
+                            &mut app.camera,
+                            &app.scene,
+                            app.spawn_index,
+                        );
                     }
                     KeyCode::KeyP if pressed && !repeat => {
                         let c = &app.camera;

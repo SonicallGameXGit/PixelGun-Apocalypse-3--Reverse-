@@ -26,7 +26,7 @@ Use the REA MCP tools / skill (`reverse-engineer-anything`) for all reverse-engi
 - `inspect_wasm_artifact`: WebAssembly module inspection (needs WABT via `REA_WABT_BIN_DIRECTORY`).
 - `inspect_il2cpp_metadata`: IL2CPP metadata. NOTE: this build's metadata is v24.1, which REA does not support (see `docs/original-build.md`). Use the existing Il2CppDumper output in `research/il2cpp-dump/` instead.
 
-Other research tools (in `research/tools/`, gitignored, set up per `tools/extract/README.md`): **Il2CppDumper** (built from source for .NET 10) and **UnityPy** (venv at `research/tools/venv`). The auto-mode safety check may block running freshly downloaded third-party code; if so, give the user the exact `! <command>` to run.
+Other research tools (in `research/tools/`, gitignored, set up per `tools/extract/README.md`): **Il2CppDumper** (built from source for .NET 10) and **UnityPy** (venv at `research/tools/venv`). **Reading game code:** WABT `wasm2c` + `tools/re/` (`wasm_index.py` maps IL2CPP method names to wasm function indices, `wasm_func.py` prints named, folded C per method); setup and conventions in `tools/re/README.md`. The auto-mode safety check may block running freshly downloaded third-party code; if so, give the user the exact `! <command>` to run.
 - `analyze_web_bundle`, `analyze_javascript_application`, `export_web_scripts`, `recover_javascript_sources`: loader/glue JS.
 - `capture_browser_scenario`, `observe_web_session`, `inspect_web_network_capture`: **runtime evidence**, especially for the multiplayer protocol (WebSocket/WebRTC/HTTP traffic against real servers).
 - `open_binary` + decompile tools: native or wasm code analysis.
@@ -41,7 +41,7 @@ Rules (from REA): separate **observations, inferences, unknowns**; cite evidence
 - All scene/prefab/material/settings data plus **every MonoBehaviour's fields (decoded byte-exact)** are in `assets/data/` (format: `docs/assets.md`). Gameplay values (weapon stats, movement speeds, input axes, physics/timestep) come from there, not from guesses.
 - Maps are converted Source-engine BSP geometry (`VBSP_Object.model_N` + MeshColliders) inside the scene files; players/weapons/effects are Resources prefabs.
 - Platform SDK: GameArter (`Garter`), PacoGames' backend.
-- Client status: scene viewer renders every map with ported original shaders (`docs/architecture.md`). Verify rendering changes with `--screenshot` (see there).
+- Client status: every map renders with ported original shaders (confirmed identical to the original by the user) and the local player walks with the decompiled `FPScontroller`/`FPSinput`/`FPSMouseLook`/`CameraBob` logic on a custom PhysX-style CharacterController (`docs/gameplay/movement.md`, `docs/architecture.md`). Verify rendering changes with `--screenshot`; movement with `cargo test` (includes every spawn point of every map).
 
 ## Repository layout
 
@@ -52,6 +52,7 @@ Cargo.toml              Rust workspace
 crates/
   pga3-client/          the game client binary (OpenGL)
 tools/extract/          COMMITTED. Reproducible extraction pipeline (Python/UnityPy for now)
+tools/re/               COMMITTED. wasm2c-based decompilation helpers (IL2CPP name mapping)
 assets/                 COMMITTED. Extracted original assets as plain files (see below)
   textures/ audio/ models/ fonts/ ui/sprites/ shaders/ data/  + manifest.json
 docs/                   COMMITTED. Findings, protocol spec, gameplay spec, architecture
@@ -80,7 +81,7 @@ research/               GITIGNORED (except research/README.md). Raw RE material
 - **Language:** Rust (edition 2024, toolchain in `rust-toolchain.toml`).
 - **Graphics:** OpenGL 3.3 core via `glow` (also targets WebGL2, so a wasm build stays possible); windowing `winit` 0.30 + `glutin` 0.32.
 - **Math:** `glam` (decided; see `docs/architecture.md`). Game state stays in Unity world space (left-handed, +Y up); conventions in `docs/architecture.md`.
-- **Physics:** custom/`rapier3d`, whichever hits the 95%+ behavioural match against the original (Unity PhysX CharacterController behaviour, gravity, step offsets, etc. must be measured, not assumed).
+- **Physics:** custom (`physics.rs`; decided over `rapier3d`, see `docs/architecture.md`). The PhysX CharacterController behaviour it infers (step validation, slide) still has to be measured against the original (`docs/unknowns.md`).
 - **Audio:** `rodio`/`kira` or similar.
 - **Networking:** protocol is dictated by the original servers. Find out (via REA runtime capture) what the original uses and implement exactly that.
 - Add dependencies freely when justified; record them in `docs/architecture.md` and README.

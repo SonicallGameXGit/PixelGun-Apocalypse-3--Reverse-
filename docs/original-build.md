@@ -49,4 +49,5 @@ Header: `UnityFS`, format version 6, `5.x.x`, `2018.3.14f1`, total size 12,301,8
 ## IL2CPP metadata
 
 - `global-metadata.dat`: magic `0xFAB11BAF`, version **24**, header size **272 bytes**, i.e. the **v24.1** variant introduced in Unity 2018.3 (base v24 has 264 bytes).
+- Method bodies: `pga3-v18.wasm` (Emscripten fastcomp, 455 imports). Il2CppDumper's method addresses are function pointers into **per-signature tables**: slot = `(ptr & mask) + base`, with mask/base read from each exported `dynCall_<sig>`; struct-returning methods use a hidden result pointer (`iii` → `viii`). `tools/re/wasm_index.py` resolves every method this way (type-checked: 0 mismatches, 21 unresolved) and `tools/re/wasm_func.py` prints named, simplified `wasm2c` C. See `tools/re/README.md`.
 - REA `inspect_il2cpp_metadata` rejects it (`unexpected-header-size: stringLiterals starts at 272, not immediately after the 264-byte header`; evidence `ev_9983a375…`). Il2CppDumper (v24.1-aware, WebGL wasm supported) succeeded: output in `research/il2cpp-dump/`, summary in `docs/code-structure.md`.

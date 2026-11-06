@@ -14,7 +14,7 @@ The implementation is independent. It has no Unity and no original code, only be
 
 ## Status
 
-Reverse engineering in progress; not playable yet. The client already loads every map and renders it with the original shading (textures, lighting, fog, skybox) in a free-fly viewer. Done so far: the original build is unpacked, the code structure is recovered, the multiplayer stack is identified (PUN Classic 1.91 on Photon Cloud), and the assets are extracted into `assets/`: textures, sprites, audio, meshes, fonts, shaders, plus all scenes, prefabs, materials, settings and decoded script data (weapon stats, movement values, ...) as JSON. See [`docs/`](docs/).
+Reverse engineering in progress; not playable yet. The client loads every map, renders it identically to the original (textures, lighting, fog, skybox), and lets you walk, run, jump, crouch and go prone with the original movement code ported from the decompiled game, on collision with the original map geometry. Done so far: the original build is unpacked, the code structure is recovered, the multiplayer stack is identified (PUN Classic 1.91 on Photon Cloud), and the assets are extracted into `assets/`: textures, sprites, audio, meshes, fonts, shaders, plus all scenes, prefabs, materials, settings and decoded script data (weapon stats, movement values, ...) as JSON. See [`docs/`](docs/).
 
 ## Assets
 
@@ -27,6 +27,7 @@ Original assets (textures, sounds, the OST, models, ...) are extracted from the 
 | `crates/pga3-client/` | Game client (Rust + OpenGL) |
 | `assets/` | Extracted original assets as regular files (`manifest.json` maps each to its Unity origin) |
 | `tools/extract/` | Reproducible asset extraction pipeline |
+| `tools/re/` | Helpers for reading the original game code (wasm2c + IL2CPP names) |
 | `docs/` | Findings, protocol and gameplay specs, architecture |
 | `research/` | Raw RE material (gitignored): saved page, original build, captures |
 | `AGENTS.md` | Context and rules for AI agents |
@@ -41,7 +42,7 @@ Done with the [REA (Reverse Engineer Anything)](https://github.com/morluto/rea) 
 cargo run -p pga3-client -- Bridge          # any map: Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village, ZM_*
 ```
 
-Click to capture the mouse, WASD to fly, Space/C up/down, Shift fast, Tab next spawn point, Esc to release/quit. More options: [`docs/architecture.md`](docs/architecture.md).
+Click to capture the mouse. Original controls: WASD/arrows move, Space jump, Left Shift run, C crouch, Left Ctrl prone. F toggles free-fly, Tab jumps to the next spawn point, Esc releases the mouse / quits. More options: [`docs/architecture.md`](docs/architecture.md).
 
 Requires a recent stable Rust toolchain (see `rust-toolchain.toml`) and OpenGL 3.3. Crates: winit, glutin, glow, glam, image, serde_json, anyhow (rationale in `docs/architecture.md`).
 

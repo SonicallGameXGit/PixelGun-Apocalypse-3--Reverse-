@@ -10,7 +10,10 @@ Existing:
 - `assets.md`: extraction pipeline, published asset counts, gaps.
 - `architecture.md`: client crates and rationale, modules, coordinate conventions, renderer (shader ports), how to run.
 - `unknowns.md`: open questions.
+- `gameplay/movement.md`: player movement, input, mouse look, camera bob, CharacterController model (decompiled `FPScontroller` & co.).
 
 Planned:
 
-- `gameplay/`: weapons, movement, modes, progression, balance tables.
+- `gameplay/`: weapons, damage, ladders, modes, progression, balance tables.
+
+Tooling for reading the original code (wasm2c + IL2CPP names): `tools/re/README.md`.
