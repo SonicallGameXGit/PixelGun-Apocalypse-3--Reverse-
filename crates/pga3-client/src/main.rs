@@ -4,7 +4,8 @@
 //! original shading and spawns the local player (original movement and collision) at a spawn
 //! point; a free-fly camera is available for inspection.
 //!
-//! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--screenshot out.png]`
+//! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--stats]
+//! [--screenshot out.png]`
 //! Controls: click = capture mouse, Esc = release / quit, F = walk/fly toggle, Tab = next spawn.
 //! Walking (original keys): WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone.
 //! Flying: WASD, Space/C up/down, Shift fast.
@@ -31,7 +32,7 @@ use glutin::context::{
 use glutin::display::{GetGlDisplay, GlDisplay};
 use glutin::surface::{GlSurface, Surface, SwapInterval, WindowSurface};
 use glutin_winit::{DisplayBuilder, GlWindow};
-use raw_window_handle::HasWindowHandle;
+use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use winit::application::ApplicationHandler;
 use winit::dpi::LogicalSize;
 use winit::event::{DeviceEvent, DeviceId, ElementState, KeyEvent, MouseButton, WindowEvent};
@@ -53,6 +54,8 @@ struct Args {
     camera: Option<[f32; 5]>,
     fly: bool,
     screenshot: Option<PathBuf>,
+    /// Print frame-time statistics every second.
+    stats: bool,
 }
 
 fn parse_args() -> Result<Args> {
@@ -62,6 +65,7 @@ fn parse_args() -> Result<Args> {
         camera: None,
         fly: false,
         screenshot: None,
+        stats: false,
     };
     let mut iter = std::env::args().skip(1);
     while let Some(arg) = iter.next() {
@@ -76,6 +80,7 @@ fn parse_args() -> Result<Args> {
                 args.camera = Some(values);
             }
             "--fly" => args.fly = true,
+            "--stats" => args.stats = true,
             "--screenshot" => {
                 args.screenshot = Some(PathBuf::from(iter.next().context("--screenshot PATH")?))
             }
@@ -150,6 +155,11 @@ struct Running {
     spawn_index: usize,
     last_frame: Instant,
     frames: u32,
+    /// Frame-time statistics since `stats_start`: count, sum, max, CPU time in update+render.
+    stats_start: Instant,
+    stats_frames: u32,
+    stats_max: f32,
+    stats_cpu: f32,
     gl: glow::Context,
     surface: Surface<WindowSurface>,
     context: PossiblyCurrentContext,
@@ -192,7 +202,16 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
     let surface_attributes = window.build_surface_attributes(Default::default())?;
     let surface = unsafe { display.create_window_surface(&config, &surface_attributes) }?;
     let context = not_current.make_current(&surface)?;
-    let _ = surface.set_swap_interval(&context, SwapInterval::Wait(NonZeroU32::MIN));
+    // On Wayland winit already paces RedrawRequested to the compositor's frame callbacks
+    // (`pre_present_notify`); a blocking EGL swap on top of that waits a second refresh and
+    // halves the frame rate. Elsewhere the swap interval is the vsync.
+    let wayland = matches!(raw_handle, Some(RawWindowHandle::Wayland(_)));
+    let interval = if wayland || std::env::var_os("PGA3_NO_VSYNC").is_some() {
+        SwapInterval::DontWait
+    } else {
+        SwapInterval::Wait(NonZeroU32::MIN)
+    };
+    let _ = surface.set_swap_interval(&context, interval);
     let gl =
         unsafe { glow::Context::from_loader_function_cstr(|name| display.get_proc_address(name)) };
 
@@ -265,6 +284,10 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
         spawn_index,
         last_frame: Instant::now(),
         frames: 0,
+        stats_start: Instant::now(),
+        stats_frames: 0,
+        stats_max: 0.0,
+        stats_cpu: 0.0,
     })
 }
 
@@ -321,6 +344,7 @@ impl Running {
             horizontal: self.horizontal.update(i.right, i.left, dt),
             vertical: self.vertical.update(i.forward, i.back, dt),
             jump_down: i.jump_pressed,
+            jump_held: i.up,
             run_held: i.run,
             crouch_down: i.crouch_pressed,
             prone_down: i.prone_pressed,
@@ -331,7 +355,8 @@ impl Running {
         self.fixed_time += dt;
         while self.fixed_time >= FIXED_DELTA_TIME {
             self.fixed_time -= FIXED_DELTA_TIME;
-            self.player.fixed_update();
+            self.player
+                .fixed_update(&self.world, &self.scene.ladders, &input);
         }
         self.player.update(&self.world, dt, input.vertical, &input);
         self.player.late_update(&input);
@@ -492,6 +517,26 @@ impl ApplicationHandler for App {
                 app.update(dt);
                 app.render();
                 app.frames += 1;
+                if self.args.stats {
+                    app.stats_frames += 1;
+                    app.stats_max = app.stats_max.max(dt);
+                    app.stats_cpu += now.elapsed().as_secs_f32();
+                    let elapsed = app.stats_start.elapsed().as_secs_f32();
+                    if elapsed >= 1.0 {
+                        let n = app.stats_frames as f32;
+                        println!(
+                            "{:.0} fps, frame {:.2} ms avg / {:.2} ms max, update+render CPU {:.2} ms",
+                            n / elapsed,
+                            elapsed / n * 1000.0,
+                            app.stats_max * 1000.0,
+                            app.stats_cpu / n * 1000.0
+                        );
+                        app.stats_start = Instant::now();
+                        app.stats_frames = 0;
+                        app.stats_max = 0.0;
+                        app.stats_cpu = 0.0;
+                    }
+                }
                 if let (Some(path), true) = (&self.args.screenshot, app.frames == 3) {
                     let size = app.window.inner_size();
                     let pixels = gfx::read_framebuffer(&app.gl, size.width, size.height);
@@ -508,6 +553,7 @@ impl ApplicationHandler for App {
                     }
                     event_loop.exit();
                 }
+                app.window.pre_present_notify();
                 if let Err(error) = app.surface.swap_buffers(&app.context) {
                     eprintln!("swap_buffers: {error}");
                 }

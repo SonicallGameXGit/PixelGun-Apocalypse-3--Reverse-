@@ -13,7 +13,8 @@ use glam::{Quat, Vec3};
 use serde_json::Value;
 
 use crate::assets::{f32_of, load_json};
-use crate::physics::{CharacterController, CollisionWorld, ControllerHit};
+use crate::physics::{CharacterController, CollisionWorld, ControllerHit, capsule_overlaps_box};
+use crate::scene::LadderInstance;
 
 /// `RoomMultiplayerMenu.sens` default (`.cctor`), saved in PlayerPrefs as "sens".
 pub const DEFAULT_MOUSE_SENSITIVITY: f32 = 1.8;
@@ -193,12 +194,33 @@ pub struct FrameInput {
     pub vertical: f32,
     /// `GetKeyDown(Space)`, `GetKey(LeftShift)`, `GetKeyDown(C)`, `GetKeyDown(LeftControl)`.
     pub jump_down: bool,
+    /// `GetKey(Space)` (LadderPlayer lets go of the ladder while it is held).
+    pub jump_held: bool,
     pub run_held: bool,
     pub crouch_down: bool,
     pub prone_down: bool,
     /// `Input.GetAxis("Mouse X")` / `("Mouse Y")`.
     pub mouse_x: f32,
     pub mouse_y: f32,
+}
+
+/// `LadderPlayer` state.
+#[derive(Clone, Debug)]
+pub struct LadderPlayer {
+    pub climb_speed: f32,
+    pub climb_down_threshold: f32,
+    pub climb_direction: Vec3,
+    pub lateral_move: Vec3,
+    pub ladder_movement: Vec3,
+    /// Index into the scene's ladders.
+    pub current_ladder: Option<usize>,
+    pub latched_to_ladder: bool,
+    /// Never set anywhere in the decompiled code.
+    pub in_landing_pad: bool,
+    pub trigger: bool,
+    /// Whether the controller overlapped each ladder trigger after the last physics step
+    /// (`OnTriggerEnter` fires on the change to true).
+    pub inside_trigger: Vec<bool>,
 }
 
 #[derive(Clone, Debug)]
@@ -253,6 +275,7 @@ pub struct Player {
     pub time_in_air: f32,
 
     pub camera_bob: CameraBob,
+    pub ladder: LadderPlayer,
     /// `Time.time`.
     pub time: f32,
     pub events: Vec<PlayerEvent>,
@@ -354,6 +377,7 @@ impl Player {
             eprintln!("warning: {prefab}: moving platforms are not implemented");
         }
 
+        let ladder = &component(nodes, &root, "LadderPlayer")?["fields"];
         let look = &component(nodes, "LookObject", "FPSMouseLook")?["fields"];
         let bob = &component(nodes, "Main Camera", "CameraBob")?["fields"];
         let camera_local_position = local_position(nodes, "Main Camera")?;
@@ -415,6 +439,18 @@ impl Player {
                 bobbing_speed: 0.0,
                 current_amount: 0.0,
             },
+            ladder: LadderPlayer {
+                climb_speed: f32_of(&ladder["climbSpeed"]),
+                climb_down_threshold: f32_of(&ladder["climbDownThreshold"]),
+                climb_direction: Vec3::ZERO,
+                lateral_move: Vec3::ZERO,
+                ladder_movement: Vec3::ZERO,
+                current_ladder: None,
+                latched_to_ladder: false,
+                in_landing_pad: false,
+                trigger: false,
+                inside_trigger: Vec::new(),
+            },
             time: 0.0,
             events: Vec::new(),
         })
@@ -447,8 +483,21 @@ impl Player {
     // -----------------------------------------------------------------------------------------
     // Unity callbacks
 
-    /// One `FixedUpdate` step: `FPScontroller.FixedUpdate` (fall damage) and `CameraBob`.
-    pub fn fixed_update(&mut self) {
+    /// One fixed step: the `FixedUpdate`s of `FPScontroller` (fall damage), `LadderPlayer` and
+    /// `CameraBob`, then the physics step's trigger events (`Ladder.OnTriggerEnter`).
+    pub fn fixed_update(
+        &mut self,
+        world: &CollisionWorld,
+        ladders: &[LadderInstance],
+        input: &FrameInput,
+    ) {
+        self.fpscontroller_fixed_update();
+        self.ladder_fixed_update(world, input);
+        self.camera_bob_fixed_update(FIXED_DELTA_TIME);
+        self.trigger_events(ladders);
+    }
+
+    fn fpscontroller_fixed_update(&mut self) {
         let dt = FIXED_DELTA_TIME;
         self.player_y_speed = (self.previous_position_y - self.position.y) / dt;
         if !self.grounded && self.player_y_speed > 0.0 {
@@ -469,7 +518,6 @@ impl Player {
             }
             self.previous_grounded = self.grounded;
         }
-        self.camera_bob_fixed_update(dt);
     }
 
     /// `FPScontroller.Update` followed by both `FPSMouseLook.Update`s.
@@ -548,6 +596,91 @@ impl Player {
     }
 
     // -----------------------------------------------------------------------------------------
+    // Ladder / LadderPlayer
+
+    /// `Ladder.OnTriggerEnter` for the triggers the controller started overlapping in this
+    /// physics step (the root is tagged "Player", so it latches).
+    fn trigger_events(&mut self, ladders: &[LadderInstance]) {
+        let capsule = self.controller.proxy_capsule(self.position, self.rotation);
+        self.ladder.inside_trigger.resize(ladders.len(), false);
+        for (index, ladder) in ladders.iter().enumerate() {
+            let inside = capsule_overlaps_box(
+                &capsule,
+                ladder.world,
+                ladder.trigger_center,
+                ladder.trigger_size,
+            );
+            if inside && !self.ladder.inside_trigger[index] {
+                self.latch_ladder(index, ladder);
+            }
+            self.ladder.inside_trigger[index] = inside;
+        }
+    }
+
+    fn latch_ladder(&mut self, index: usize, ladder: &LadderInstance) {
+        self.ladder.current_ladder = Some(index);
+        self.ladder.latched_to_ladder = true;
+        self.ladder.climb_direction = ladder.climb_direction;
+        self.on_ladder();
+        self.ladder.trigger = true;
+    }
+
+    fn unlatch_ladder(&mut self) {
+        self.ladder.latched_to_ladder = false;
+        self.ladder.current_ladder = None;
+        self.ladder.trigger = false;
+        self.off_ladder();
+    }
+
+    /// `LadderPlayer.FixedUpdate`.
+    fn ladder_fixed_update(&mut self, world: &CollisionWorld, input: &FrameInput) {
+        if !self.ladder.latched_to_ladder {
+            return;
+        }
+        if self.ladder.trigger {
+            self.ladder_raycast_check(world);
+        }
+        if input.jump_held {
+            self.unlatch_ladder();
+        }
+        // The original carries on after letting go: this step still moves.
+        let mut vertical_move = normalized(self.ladder.climb_direction) * input.vertical;
+        let camera_forward = self.camera_rotation() * Vec3::Z;
+        let sign = if camera_forward.y > self.ladder.climb_down_threshold {
+            1.0
+        } else {
+            -1.0
+        };
+        vertical_move *= sign;
+        let lateral = if self.ladder.in_landing_pad {
+            Vec3::new(input.horizontal, 0.0, input.vertical)
+        } else {
+            Vec3::new(input.horizontal, 0.0, 0.0)
+        };
+        self.ladder.lateral_move = self.rotation * lateral;
+        self.ladder.ladder_movement = vertical_move + self.ladder.lateral_move;
+        let motion = self.ladder.ladder_movement * self.ladder.climb_speed * FIXED_DELTA_TIME;
+        self.controller_move(world, motion);
+    }
+
+    /// `LadderPlayer.RaycastCheck`: lets go when nothing is within one radius in front of the
+    /// capsule (the ladder's solid `MiddleCollider`).
+    fn ladder_raycast_check(&mut self, world: &CollisionWorld) {
+        let cc = &self.controller;
+        // transform.position + center, not rotated, as decompiled.
+        let middle = self.position + cc.center;
+        let bottom = middle - Vec3::Y * cc.height * 0.5;
+        let top = bottom + Vec3::Y * cc.height;
+        let forward = self.rotation * Vec3::Z;
+        if world
+            .capsule_cast(bottom, top, cc.radius, forward, cc.radius)
+            .is_none()
+        {
+            self.unlatch_ladder();
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------
     // FPScontroller
 
     fn update_function(&mut self, world: &CollisionWorld, dt: f32) {
@@ -572,13 +705,7 @@ impl Player {
         }
 
         self.ground_normal = Vec3::ZERO;
-        let mut hits = Vec::new();
-        self.movement.collision_flags =
-            self.controller
-                .move_by(world, &mut self.position, self.rotation, offset, &mut hits);
-        for hit in &hits {
-            self.on_controller_collider_hit(hit);
-        }
+        self.movement.collision_flags = self.controller_move(world, offset);
         self.movement.last_hit_point = self.movement.hit_point;
         self.last_ground_normal = self.ground_normal;
 
@@ -696,6 +823,31 @@ impl Player {
             }
         }
         velocity
+    }
+
+    /// `CharacterController.Move`, with `OnControllerColliderHit` for every contact.
+    fn controller_move(&mut self, world: &CollisionWorld, motion: Vec3) -> u8 {
+        let mut hits = Vec::new();
+        let flags =
+            self.controller
+                .move_by(world, &mut self.position, self.rotation, motion, &mut hits);
+        for hit in &hits {
+            self.on_controller_collider_hit(hit);
+        }
+        flags
+    }
+
+    /// `FPScontroller.OnLadder` (SendMessage from `LadderPlayer.LatchLadder`).
+    fn on_ladder(&mut self) {
+        self.on_ladder = true;
+        self.input_move_direction = Vec3::ZERO;
+        self.movement.enable_gravity = false;
+    }
+
+    /// `FPScontroller.OffLadder` (its camera-forward computation is unused).
+    fn off_ladder(&mut self) {
+        self.on_ladder = false;
+        self.movement.enable_gravity = true;
     }
 
     fn on_controller_collider_hit(&mut self, hit: &ControllerHit) {
@@ -987,6 +1139,7 @@ fn move_towards(current: f32, target: f32, max_delta: f32) -> f32 {
 mod tests {
     use super::*;
     use crate::assets::find_assets_dir;
+    use crate::scene::LadderInstance;
     use glam::Mat4;
 
     fn flat_world() -> CollisionWorld {
@@ -996,6 +1149,7 @@ mod tests {
             Vec3::new(0.0, -0.5, 0.0),
             Vec3::new(400.0, 1.0, 400.0),
             false,
+            0,
         );
         world
     }
@@ -1010,6 +1164,77 @@ mod tests {
     fn step(player: &mut Player, world: &CollisionWorld, input: &FrameInput, dt: f32) {
         player.update(world, dt, input.vertical, input);
         player.late_update(input);
+    }
+
+    #[test]
+    fn climbs_ladder_and_lets_go_with_space() {
+        let (mut player, mut world) = player_on_floor();
+        // Laid out like the maps' ladders (Crash): a solid 0.088 m MiddleCollider with a
+        // 0.078 m trigger slab 0.16-0.24 m in front of it.
+        world.add_box(
+            Mat4::IDENTITY,
+            Vec3::new(0.0, 2.4, 1.044),
+            Vec3::new(1.15, 4.8, 0.088),
+            false,
+            0,
+        );
+        let ladder = LadderInstance {
+            world: Mat4::IDENTITY,
+            trigger_center: Vec3::new(0.0, 2.6, 0.803),
+            trigger_size: Vec3::new(1.7, 5.2, 0.078),
+            climb_direction: Vec3::new(0.0, 4.7, 0.0),
+        };
+        world.add_box(
+            Mat4::IDENTITY,
+            ladder.trigger_center,
+            ladder.trigger_size,
+            true,
+            crate::physics::IGNORE_RAYCAST_LAYER,
+        );
+        let ladders = [ladder];
+        let dt = FIXED_DELTA_TIME;
+        let frame = |player: &mut Player, input: &FrameInput| {
+            player.fixed_update(&world, &ladders, input);
+            step(player, &world, input, dt);
+        };
+        let forward = FrameInput {
+            vertical: 1.0,
+            ..Default::default()
+        };
+        for _ in 0..50 {
+            frame(&mut player, &FrameInput::default());
+        }
+        let ground = player.position.y;
+        while !player.on_ladder {
+            frame(&mut player, &forward);
+        }
+        assert!(player.ladder.latched_to_ladder && !player.movement.enable_gravity);
+        let start = player.position.y;
+        for _ in 0..10 {
+            frame(&mut player, &forward);
+        }
+        // climbSpeed 6 m/s along the ladder: 10 fixed steps = 1.2 m.
+        let climbed = player.position.y - start;
+        assert!((climbed - 1.2).abs() < 0.01, "climbed {climbed}");
+        // Looking down past climbDownThreshold (-0.6) makes forward climb down.
+        player.rotation_y = -60.0;
+        for _ in 0..5 {
+            frame(&mut player, &forward);
+        }
+        let down = player.position.y - start - climbed;
+        assert!((down + 0.6).abs() < 0.01, "down {down}");
+        player.rotation_y = 0.0;
+
+        let jump = FrameInput {
+            jump_held: true,
+            ..forward
+        };
+        frame(&mut player, &jump);
+        assert!(!player.on_ladder && player.movement.enable_gravity);
+        for _ in 0..200 {
+            frame(&mut player, &FrameInput::default());
+        }
+        assert!((player.position.y - ground).abs() < 1e-3, "fell back down");
     }
 
     #[test]
@@ -1143,7 +1368,7 @@ mod tests {
                 let dt = 1.0 / 60.0;
                 let run = |player: &mut Player, input: FrameInput, frames: usize| {
                     for _ in 0..frames {
-                        player.fixed_update();
+                        player.fixed_update(&world, &scene.ladders, &input);
                         step(player, &world, &input, dt);
                     }
                 };
@@ -1185,5 +1410,121 @@ mod tests {
             }
         }
         assert!(checked > 100, "only {checked} spawns checked");
+    }
+}
+
+#[cfg(test)]
+mod bench {
+    use super::*;
+    use crate::assets::find_assets_dir;
+
+    #[test]
+    #[ignore]
+    fn movement_cost() {
+        let assets = find_assets_dir().expect("assets");
+        for name in ["Bridge", "Crash", "Castle"] {
+            let scene = crate::scene::load_scene(&assets, name).expect("scene");
+            let world = crate::physics::build_world(&assets, &scene).expect("world");
+            let mut player = Player::from_prefab(&assets, "german").expect("prefab");
+            let spawn = &scene.spawn_points[0];
+            player.spawn(spawn.position, spawn.rotation);
+            let input = FrameInput {
+                vertical: 1.0,
+                run_held: true,
+                mouse_x: 3.0,
+                ..Default::default()
+            };
+            let frames = 2000;
+            let start = std::time::Instant::now();
+            for _ in 0..frames {
+                player.fixed_update(&world, &scene.ladders, &input);
+                player.update(&world, 1.0 / 60.0, input.vertical, &input);
+                player.late_update(&input);
+            }
+            let per = start.elapsed() / frames;
+            eprintln!(
+                "{name}: {per:?} per frame, {} triangles",
+                world.triangle_count()
+            );
+        }
+    }
+}
+
+#[cfg(test)]
+mod stuck_sweep {
+    use super::*;
+    use crate::assets::find_assets_dir;
+
+    /// Diagnostic (`cargo test --release -- --ignored report_unexplained_stops --nocapture`):
+    /// runs from every spawn in 16 directions and reports stops with nothing in front at chest
+    /// height, with the heights at which something is in front (knee-high walls, beams).
+    #[test]
+    #[ignore]
+    fn report_unexplained_stops() {
+        let assets = find_assets_dir().expect("assets");
+        let mut names: Vec<String> = std::fs::read_dir(assets.join("data/scenes"))
+            .expect("scenes")
+            .filter_map(|e| e.ok()?.file_name().into_string().ok())
+            .filter_map(|n| n.strip_suffix(".json").map(str::to_string))
+            .collect();
+        names.sort();
+        let mut total = 0;
+        for name in names {
+            let scene = crate::scene::load_scene(&assets, &name).expect("scene");
+            if scene.spawn_points.is_empty() {
+                continue;
+            }
+            let world = crate::physics::build_world(&assets, &scene).expect("world");
+            let mut stops = 0;
+            for spawn in &scene.spawn_points {
+                for direction in 0..16 {
+                    let mut player = Player::from_prefab(&assets, "german").expect("prefab");
+                    let yaw =
+                        Quat::from_rotation_y(direction as f32 * std::f32::consts::TAU / 16.0);
+                    player.spawn(spawn.position, yaw);
+                    let input = FrameInput {
+                        vertical: 1.0,
+                        run_held: true,
+                        ..Default::default()
+                    };
+                    let mut history = Vec::new();
+                    for frame in 0..360 {
+                        if frame % 3 == 0 {
+                            player.fixed_update(&world, &scene.ladders, &input);
+                        }
+                        let i = if frame < 60 {
+                            FrameInput::default()
+                        } else {
+                            input
+                        };
+                        player.update(&world, 1.0 / 144.0, i.vertical, &i);
+                        player.late_update(&i);
+                        history.push(player.position);
+                    }
+                    let last = history[history.len() - 1];
+                    let before = history[history.len() - 72];
+                    let moved = Vec3::new(last.x - before.x, 0.0, last.z - before.z).length();
+                    let forward = player.rotation * Vec3::Z;
+                    let chest = last + Vec3::Y * 1.2;
+                    let wall = world.sphere_cast(chest - forward * 0.3, 0.3, forward, 1.2);
+                    if moved < 0.05 && wall.is_none() && player.grounded {
+                        stops += 1;
+                        // Height of what is in front (a low wall or a head-height beam).
+                        let probes: Vec<f32> = [0.2f32, 0.45, 0.7, 0.95, 1.7, 2.1, 2.3]
+                            .into_iter()
+                            .filter(|h| {
+                                let origin = last + Vec3::Y * *h - forward * 0.2;
+                                world.sphere_cast(origin, 0.15, forward, 1.0).is_some()
+                            })
+                            .collect();
+                        eprintln!(
+                            "{name}: stopped at {last} facing {forward}, blocked at {probes:?} m"
+                        );
+                    }
+                }
+            }
+            total += stops;
+        }
+        eprintln!("stops without a chest-height wall: {total}");
     }
 }

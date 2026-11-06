@@ -72,6 +72,18 @@ pub struct ColliderInstance {
     pub world: Mat4,
     pub shape: ColliderShape,
     pub is_trigger: bool,
+    /// GameObject layer (queries filter by layer mask).
+    pub layer: u32,
+}
+
+/// A `Ladder` MonoBehaviour: its trigger volume and `Ladder.Start`'s climb direction.
+pub struct LadderInstance {
+    /// World matrix of the Ladder GameObject (its BoxCollider trigger is in this space).
+    pub world: Mat4,
+    pub trigger_center: Vec3,
+    pub trigger_size: Vec3,
+    /// `ladderTop.position - ladderBottom.position`.
+    pub climb_direction: Vec3,
 }
 
 pub struct Scene {
@@ -80,6 +92,7 @@ pub struct Scene {
     pub renderers: Vec<MeshRendererInstance>,
     /// Enabled colliders on active GameObjects (static map geometry, ladder volumes).
     pub colliders: Vec<ColliderInstance>,
+    pub ladders: Vec<LadderInstance>,
     pub lights: Vec<DirectionalLight>,
     pub camera: Option<CameraInfo>,
     pub spawn_points: Vec<SpawnPoint>,
@@ -203,6 +216,7 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
         render,
         renderers: Vec::new(),
         colliders: Vec::new(),
+        ladders: Vec::new(),
         lights: Vec::new(),
         camera: None,
         spawn_points: Vec::new(),
@@ -273,6 +287,28 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
                 world,
                 shape,
                 is_trigger: data["m_IsTrigger"].as_bool().unwrap_or(false),
+                layer: node["layer"].as_u64().unwrap_or(0) as u32,
+            });
+        }
+
+        let ladder = node["components"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .find(|c| {
+                c["type"] == "MonoBehaviour" && c["script"] == "Ladder" && c["enabled"] != false
+            });
+        let trigger = component(node, "BoxCollider");
+        if let (Some(ladder), Some(trigger)) = (ladder, trigger) {
+            let position_of = |field: &str| {
+                let reference = ladder["fields"][field]["ref"].as_str().unwrap_or_default();
+                resolve(reference).0.transform_point3(Vec3::ZERO)
+            };
+            scene.ladders.push(LadderInstance {
+                world,
+                trigger_center: vec3_of(&trigger["m_Center"]),
+                trigger_size: vec3_of(&trigger["m_Size"]),
+                climb_direction: position_of("ladderTop") - position_of("ladderBottom"),
             });
         }
 

@@ -41,7 +41,7 @@ Rules (from REA): separate **observations, inferences, unknowns**; cite evidence
 - All scene/prefab/material/settings data plus **every MonoBehaviour's fields (decoded byte-exact)** are in `assets/data/` (format: `docs/assets.md`). Gameplay values (weapon stats, movement speeds, input axes, physics/timestep) come from there, not from guesses.
 - Maps are converted Source-engine BSP geometry (`VBSP_Object.model_N` + MeshColliders) inside the scene files; players/weapons/effects are Resources prefabs.
 - Platform SDK: GameArter (`Garter`), PacoGames' backend.
-- Client status: every map renders with ported original shaders (confirmed identical to the original by the user) and the local player walks with the decompiled `FPScontroller`/`FPSinput`/`FPSMouseLook`/`CameraBob` logic on a custom PhysX-style CharacterController (`docs/gameplay/movement.md`, `docs/architecture.md`). Verify rendering changes with `--screenshot`; movement with `cargo test` (includes every spawn point of every map).
+- Client status: every map renders with ported original shaders (confirmed identical to the original by the user) and the local player walks with the decompiled `FPScontroller`/`FPSinput`/`FPSMouseLook`/`CameraBob`/`LadderPlayer` logic on a port of the PhysX 3.4 CharacterController (`docs/gameplay/movement.md`, `docs/architecture.md`). Verify rendering changes with `--screenshot`; movement with `cargo test` (includes every spawn point of every map).
 
 ## Repository layout
 
@@ -81,7 +81,7 @@ research/               GITIGNORED (except research/README.md). Raw RE material
 - **Language:** Rust (edition 2024, toolchain in `rust-toolchain.toml`).
 - **Graphics:** OpenGL 3.3 core via `glow` (also targets WebGL2, so a wasm build stays possible); windowing `winit` 0.30 + `glutin` 0.32.
 - **Math:** `glam` (decided; see `docs/architecture.md`). Game state stays in Unity world space (left-handed, +Y up); conventions in `docs/architecture.md`.
-- **Physics:** custom (`physics.rs`; decided over `rapier3d`, see `docs/architecture.md`). The PhysX CharacterController behaviour it infers (step validation, slide) still has to be measured against the original (`docs/unknowns.md`).
+- **Physics:** custom (`physics.rs`; decided over `rapier3d`, see `docs/architecture.md`). The CharacterController is a port of the PhysX 3.4 controller source (BSD-3-Clause, NVIDIAGameWorks/PhysX-3.4; local copy in `research/notes/physx/`), which is what Unity 2018.3 runs. Read that source before changing collision behaviour; do not guess PhysX behaviour.
 - **Audio:** `rodio`/`kira` or similar.
 - **Networking:** protocol is dictated by the original servers. Find out (via REA runtime capture) what the original uses and implement exactly that.
 - Add dependencies freely when justified; record them in `docs/architecture.md` and README.

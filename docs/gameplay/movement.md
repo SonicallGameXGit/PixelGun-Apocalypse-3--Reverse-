@@ -1,13 +1,14 @@
 # Player movement and collision
 
-Implementation: `crates/pga3-client/src/player.rs` (scripts), `physics.rs` (CharacterController, collision world).
+Implementation: `crates/pga3-client/src/player.rs` (scripts), `physics.rs` (CharacterController, collision world, queries).
 
 Labels: **observed** = read from decompiled code or extracted data; **inferred** = reasoned, not yet measured against the original; **unknown** = listed in `unknowns.md`.
 
 ## Evidence
 
 - Values: player prefab `assets/data/prefabs/resources/german.json` (`mercenarys.json` and `zombie.json` are the other player prefabs), `assets/data/settings/{InputManager,TimeManager,PhysicsManager}.json`.
-- Code: `pga3-v18.wasm` translated with `wasm2c` and annotated with `tools/re/` (see `tools/re/README.md`). The wasm function indices below are in the WABT index space (imports first). Decompiled listings are kept in `research/notes/wasm/` (gitignored): `fpscontroller_compact.c`, `input.c`, `camerabob.c`, `roommenu.c`, `spawnplayer.c`.
+- Code: `pga3-v18.wasm` translated with `wasm2c` and annotated with `tools/re/` (see `tools/re/README.md`). The wasm function indices below are in the WABT index space (imports first). Decompiled listings are kept in `research/notes/wasm/` (gitignored): `fpscontroller_compact.c`, `input.c`, `camerabob.c`, `roommenu.c`, `spawnplayer.c`, `ladder.c`.
+- Engine: Unity 2018.3's CharacterController and scene queries are PhysX 3.4. Its source is public under BSD-3-Clause: <https://github.com/NVIDIAGameWorks/PhysX-3.4>, files `PhysX_3.4/Source/PhysXCharacterKinematic/src/Cct*.cpp` and `PhysX_3.4/Source/GeomUtils/src/{GuInternal.h, GuMTD.cpp, sweep/GuSweepCapsuleTriangle.cpp, mesh/GuSweepsMesh.cpp}` (local copies in `research/notes/physx/`, gitignored).
 
 | Method | wasm function |
 |--------|---------------|
@@ -18,12 +19,16 @@ Labels: **observed** = read from decompiled code or extracted data; **inferred**
 | `FPSMouseLook.Update` | f28849 |
 | `CameraBob.Awake` / `FixedUpdate` / `.ctor` | f65539 / f65540 / f29906 |
 | `RoomMultiplayerMenu.Start` / `.cctor` / `SpawnPlayer` | f29719 / f29739 / f29731 |
+| `FPScontroller.OnLadder` / `OffLadder` | f28877 / f28878 |
+| `Ladder.Start` / `ClimbDirection` / `OnTriggerEnter` | f38664 / f38665 / f38666 |
+| `LadderPlayer.LatchLadder` / `Start` / `UnlatchLadder` / `FixedUpdate` / `RaycastCheck` | f38667 / f38669 / f38670 / f38671 / f38672 |
+| `Physics.SphereCast(origin, radius, direction, out hit, maxDistance)` | f62646 (layer mask `0xFFFFFFFB`, QueryTriggerInteraction.UseGlobal) |
 
 `FPScontroller` is Unity's stock `CharacterMotor` (Standard Assets) with game-specific running, crouch, prone, ladder and fall-damage code. The stock parts were checked line by line against the decompiled code. Moving platforms are disabled in the prefab and are not ported.
 
 ## Player prefab (observed)
 
-`German` root, layer 2. Hierarchy used by movement: `German` (CharacterController, FPScontroller, FPSinput, FPSMouseLook axes 1) → `LookObject` (local (-0.01062, 1.9171467, -0.0956), FPSMouseLook axes 2) → `Main Camera` (local (0, 0, 0.178226), FOV 65, near 0.2, far 1000, CameraBob).
+`German` root, layer 2 (Ignore Raycast), tag 6 (Unity's built-in "Player"). Hierarchy used by movement: `German` (CharacterController, FPScontroller, FPSinput, FPSMouseLook axes 1) → `LookObject` (local (-0.01062, 1.9171467, -0.0956), FPSMouseLook axes 2) → `Main Camera` (local (0, 0, 0.178226), FOV 65, near 0.2, far 1000, CameraBob).
 
 | Component | Values |
 |-----------|--------|
@@ -37,7 +42,7 @@ Labels: **observed** = read from decompiled code or extracted data; **inferred**
 ## Frame order (observed)
 
 - `useFixedUpdate` is never set (prefab and constructor), so `FPScontroller.Update` moves the player once per rendered frame with `Time.deltaTime`, capped at `Maximum Allowed Timestep` 0.33333334 s.
-- `FixedUpdate` (0.02 s) runs fall-damage bookkeeping and `CameraBob`.
+- `FixedUpdate` (0.02 s) runs fall-damage bookkeeping, `LadderPlayer` and `CameraBob`; the physics step after it raises the trigger events (`Ladder.OnTriggerEnter`).
 - `FPSinput.LateUpdate` writes the inputs, so a key press moves the player on the next frame.
 
 ## Input (observed)
@@ -118,6 +123,7 @@ elif !grounded && groundNormal.y > 0.01: grounded = true; jumping = false; OnLan
 
 ### Crouch / Prone (observed)
 
+- `Physics.SphereCast` here uses the default layer mask (all layers but 2, Ignore Raycast). Every trigger in the maps (the ladder volumes) is on layer 2, so the cast only sees solid map geometry.
 - **Crouch**:
   - C toggles `crouch` when not running, off ladders and `canStand`; this also clears prone.
   - Every frame: `Physics.SphereCast(position, radius, up, standartHeight)` from the feet.
@@ -154,35 +160,75 @@ elif !grounded && groundNormal.y > 0.01: grounded = true; jumping = false; OnLan
 
 `RoomMultiplayerMenu.SpawnPlayer` instantiates the player prefab (`PhotonNetwork.Instantiate`) at a random spawn point of the team, with the spawn point's position and rotation. Spawn points float 1–3 m above the floor; the player drops onto it.
 
-## CharacterController (PhysX) model
+## Ladders (observed)
 
-Unity's `CharacterController` is the PhysX 3.x capsule controller.
+Maps with ladders: Crash, Fight, Pete, Scaz, Village (and their `ZM_` variants). Each `Ladder` GameObject (layer 2, tag "Ladder") has a trigger BoxCollider, a solid `MiddleCollider` child (layer 0) and `LadderBottom` / `LadderTop` transforms. On Crash the trigger is a 0.078 m slab 0.16-0.24 m in front of the 0.088 m MiddleCollider.
 
-- **Observed**:
-  - capsule height/radius/center and skin width (contact offset) from the prefab;
-  - collision flags Sides 1, Above 2, Below 4;
-  - map colliders are non-convex MeshColliders (BSP meshes) and BoxColliders;
-  - `queriesHitBackfaces` off, `queriesHitTriggers` on.
-- **Inferred** from the PhysX controller's design, to be measured against the original:
-  - The motion is split into up (+ stepOffset), side and down (- stepOffset) passes.
-  - Each pass sweeps the capsule inflated by the skin width, and slides (`friction 1, bump 0`) in the side pass (10 iterations max). The up and down passes do not slide.
-  - The capsule rests one skin width (0.08 m) above the floor. With center.y 1.03, the root sits 0.15 m above it.
-  - No auto-step while moving up.
-  - In the side pass, the slide normal is made horizontal.
-  - Step validation: if the down pass lands on a contact higher than the original bottom + stepOffset, the move is redone without the step. Ledges above 0.3 m therefore block.
-  - Overlap recovery pushes the capsule out of penetrations before moving.
-  - Back faces are ignored; the capsule's centre offset rotates with the root's yaw.
-- The client's sweeps are exact capsule-triangle time-of-impact tests:
-  - segment ends vs face, edges and vertices;
-  - triangle vertices vs the capsule side;
-  - triangle edges vs the segment.
+- `Ladder.Start`: `climbDirection = ladderTop.position - ladderBottom.position` (4.71 m straight up on Crash).
+- `Ladder.OnTriggerEnter(other)`: if `other.transform.root.tag == "Player"`, `root.GetComponent<LadderPlayer>().LatchLadder(this)`. It fires only when the overlap starts, so a player who let go inside the volume does not latch again until leaving it.
+- `LadderPlayer.LatchLadder`: store the ladder, `latchedToLadder = true`, copy its climb direction, `SendMessage("OnLadder")`, `trigger = true`.
+- `FPScontroller.OnLadder`: `onLadder = true`, `inputMoveDirection = 0`, `movement.enableGravity = false`. While `onLadder`, `Update` clears grounded/crouch/prone each frame and running is off. `FPSinput` still writes the walking input, so `UpdateFunction` keeps moving the player horizontally (air control, no gravity), mostly into the MiddleCollider.
+- `LadderPlayer.FixedUpdate` (only while latched):
+  1. if `trigger`: `RaycastCheck()`;
+  2. if `GetKey(Space)`: `UnlatchLadder()`. The method carries on, so that step still moves;
+  3. `vertical = climbDirection.normalized * GetAxis("Vertical")`, negated when `Camera.main.forward.y <= climbDownThreshold` (-0.6, about 37° down);
+  4. `lateral = transform.TransformDirection(GetAxis("Horizontal"), 0, inLandingPad ? GetAxis("Vertical") : 0)`; `inLandingPad` is never set;
+  5. `controller.Move((vertical + lateral) * climbSpeed (6) * Time.deltaTime (0.02))`.
+- `RaycastCheck`: `p = position + controller.center` (not rotated), `bottom = p - up * height/2`, `top = bottom + up * height`; `if (!Physics.CapsuleCast(bottom, top, radius, transform.forward, out hit, radius)) UnlatchLadder()`. The player lets go when nothing is within one radius in front, for example above the top of the MiddleCollider.
+- `UnlatchLadder`: clear the latch, ladder and `trigger`, then `SendMessage("OffLadder", ladderMovement)`. `FPScontroller.OffLadder`: `onLadder = false`, `enableGravity = true`; it also computes the camera's forward direction and never uses it.
+- **Inferred**: trigger overlap uses PhysX's kinematic proxy capsule, which is the controller capsule scaled by `PxControllerDesc::scaleCoeff` (default 0.8; Unity does not expose it). On Crash both 0.8 and 1.0 reach the trigger slab.
 
-  The world is a 4 m uniform grid of triangles.
-- `Physics.SphereCast` (crouch checks) ignores colliders the sphere starts inside. It includes triggers, so ladder volumes also block standing up.
+## CharacterController (PhysX 3.4 port)
+
+Unity's `CharacterController` is the PhysX 3.4 capsule controller. `physics.rs` ports `SweepTest::moveCharacter` and `doSweepTest` (`CctCharacterController.cpp`) for this game's settings. Paths that need other settings (other controllers, obstacles, moving platforms, the walk experiment, constrained climbing) are left out.
+
+- **Mapping from Unity** (inferred from Unity's documented behaviour; only the values are observed):
+  - capsule radius 0.36;
+  - cylinder height `2.2 - 2·0.36`;
+  - contact offset = skinWidth 0.08;
+  - stepOffset 0.3;
+  - `slopeLimit = cos(90°)`, which is -4.4e-8 in float;
+  - `minDist` = minMoveDistance 0;
+  - climbing mode `eEASY` (the PhysX default);
+  - manager defaults: overlap recovery on, precise sweeps on, prevent-vertical-sliding off.
+- **Consequence of slopeLimit 90**: `testSlope(n) = n·up >= 0 && n·up < slopeLimit` is never true. So the down-pass check that redoes the move as a "walk experiment" never runs, and no surface is non-walkable. There is no step validation and no flattening of the slide normal.
+- **moveCharacter**:
+  - `stepOffset = 0` when the motion goes up (jumping).
+  - The motion is split into `up = max(y, 0)`, `side = (x, 0, z)` and `down = min(y, 0)`.
+  - If the side part is not almost zero (each component above 1e-6), the up pass gets `+stepOffset` and the down pass `-stepOffset`.
+  - Passes:
+    - **Up**: 1 iteration, or 10 when there is no side motion. If it collided, the step is clamped to the height actually gained. Flag Above.
+    - **Side**: 10 iterations. Flag Sides.
+    - **Down**: 1 iteration. Flag Below, only when the motion's y is ≤ 0.
+- **doSweepTest** (one pass):
+  - Loop up to the iteration limit:
+    - Stop when the remaining length is ≤ `minDist`.
+    - Stop when the new direction points against the pass direction (Quake 2 rule).
+    - Sweep the real (not inflated) capsule for `length + contactOffset`.
+    - No hit: move to the target.
+    - Hit at distance 0 (the capsule already overlaps something): overlap recovery. `computeMTD` pushes the capsule inflated by the contact offset out of the geometry (up to 4 iterations; contacts combined per axis as in `GuMTD.cpp processContacts`) and ends the pass.
+    - Otherwise:
+      - move `distance - contactOffset` (only if positive);
+      - `collisionResponse` with bump 0 and friction 1: target = current + (tangential part of the reflected direction) × remaining length, not normalised;
+      - every hit calls `OnControllerColliderHit`.
+- **Sweep rules** (`GuSweepCapsuleTriangle.cpp`, `GuSweepsMesh.cpp`, `GuInternal.h`):
+  - triangles with `normal·direction > 0` are culled (back faces);
+  - a triangle the capsule already intersects is a hit at distance 0;
+  - among hits within 1e-3 (relative) of the closest, the triangle most opposed to the motion wins (`keepTriangle`).
+
+  The client computes the exact time of impact (segment ends vs face, edges and vertices; triangle vertices vs the capsule side; triangle edges vs the segment) over a 4 m uniform grid. BoxColliders become 12 outward-facing triangles.
+- **Results**:
+  - The capsule rests one contact offset (0.08 m) above the floor; the root is 0.15 m above it.
+  - Ledges up to 0.3 m are stepped onto directly.
+  - Higher edges are climbed only by the slide over the rounded bottom (the contact must be below the bottom sphere's centre after the step-up pass, at most about 0.74 m).
+    - `CharacterMotor` recomputes the velocity from the actual displacement every frame, so on a steep edge that slide creeps (0.15 mm per frame on Crash's 0.63 m walls) and acts as a wall unless you jump.
+    - The same happens in the original, because the algorithm and inputs are the same.
+  - The standing capsule needs 2.36 m of headroom (2.2 m + 2 × 0.08 m). Only `FPScontroller` changes `CharacterController.height` (checked: the only callers of `set_height` are `Update`, `Crouch` and `Prone`), so lower openings (for example 1.78 m on Castle, 1.89 m on Bridge) need crouching in the original too.
+- **Unity queries** (`Physics.SphereCast`, `Physics.CapsuleCast`): the same sweep, default layer mask (all but Ignore Raycast), triggers included (`queriesHitTriggers`). Colliders the shape starts inside are not reported, as Unity's documentation states for these casts.
 
 ## Not ported yet
 
-- Ladders (`Ladder` trigger volumes with `MiddleCollider` boxes, `LadderPlayer`), moving platforms (disabled).
+- Moving platforms (disabled in the prefab).
 - Aim sensitivity (weapons), `PlayerDamage`, footstep/jump sounds (`FPSSoundController` receives `OnJump` / `OnLand` / `OnFall`), and network sync of the movement.
 
 ## Tests
@@ -192,5 +238,12 @@ Unity's `CharacterController` is the PhysX 3.x capsule controller.
 - jump apex 1.6 m;
 - crouch to height 1.5 at 2.5 m/s;
 - Unity axis smoothing;
-- capsule sweep, slide and step;
+- capsule sweep, slide along a wall, stepping onto a 0.2 m ledge, sliding over a 0.5 m edge, being stopped by a 1 m wall, walking under a 2.4 m ceiling;
+- the SphereCast layer mask;
+- capsule-box trigger overlap;
+- ladders: latch on entering the trigger, climb at 6 m/s, climb down when looking down, let go with Space and fall back;
 - every spawn point of every map: the player settles exactly at floor + 0.15 m and survives running in four directions.
+
+Diagnostics (ignored by default, run with `cargo test --release -p pga3-client -- --ignored --nocapture <name>`):
+- `movement_cost`: time per frame of the player update (7-34 µs);
+- `report_unexplained_stops`: runs from every spawn in 16 directions and lists the stops with no wall at chest height, with the heights at which something is in front. Current result: 8 places (each also in the `ZM_` copy), all real geometry: 1.78-1.89 m openings and 0.63 m walls.

@@ -14,7 +14,7 @@ Client: `crates/pga3-client` (binary). Procedural, data-oriented Rust; GL calls 
 | `serde` / `serde_json` | `assets/data/*.json` | |
 | `anyhow` | error handling | |
 
-**Physics: custom** (`physics.rs`), not rapier: the game only needs static triangle-mesh/box queries plus a PhysX-style character controller, whose exact behaviour (skin width, step offset, slide) is easier to match in ~1k lines of own code than through a general rigid-body engine. Audio and networking crates are not chosen yet (see AGENTS.md "Tech stack").
+**Physics: custom** (`physics.rs`), not rapier: the game only needs static triangle-mesh/box queries plus Unity's CharacterController. That controller is PhysX 3.4's character controller, whose source is public (BSD-3-Clause, NVIDIAGameWorks/PhysX-3.4, `PhysXCharacterKinematic/src/CctCharacterController.cpp`). `physics.rs` ports its `moveCharacter` / `doSweepTest` / `collisionResponse` / `computeMTD` and the sweep rules of `GuSweepCapsuleTriangle.cpp` / `GuSweepsMesh.cpp` for the settings this game uses (details: `docs/gameplay/movement.md`). A general rigid-body engine would not reproduce that behaviour. Audio and networking crates are not chosen yet (see AGENTS.md "Tech stack").
 
 ## Modules
 
@@ -24,8 +24,8 @@ Client: `crates/pga3-client` (binary). Procedural, data-oriented Rust; GL calls 
 | `assets.rs` | finds `assets/`, parses `data/materials.json` and `data/textures.json` |
 | `scene.rs` | `data/scenes/<Scene>.json` → world matrices, renderers, directional lights, camera, spawn points, RenderSettings |
 | `obj.rs` | OBJ meshes from `assets/models/` back into Unity mesh space |
-| `physics.rs` | collision world (scene MeshColliders/BoxColliders in a grid), exact capsule sweeps, `SphereCast`, CharacterController (PhysX-style up/side/down passes) |
-| `player.rs` | local player: ports of `FPScontroller`, `FPSinput`, `FPSMouseLook`, `CameraBob`; Unity frame order and keyboard axes (spec: `docs/gameplay/movement.md`) |
+| `physics.rs` | collision world (scene MeshColliders/BoxColliders in a grid, with layers and trigger flags), exact capsule sweeps, `SphereCast` / `CapsuleCast`, capsule-box trigger overlap, CharacterController (port of the PhysX 3.4 controller) |
+| `player.rs` | local player: ports of `FPScontroller`, `FPSinput`, `FPSMouseLook`, `CameraBob`, `LadderPlayer` / `Ladder`; Unity frame order and keyboard axes (spec: `docs/gameplay/movement.md`) |
 | `gfx.rs` | GL helpers: programs, mesh/texture upload, framebuffer readback |
 | `render.rs` | scene renderer: ports of the original shaders |
 
@@ -53,7 +53,9 @@ Not implemented yet: particles (`Mobile/Particles/*`, `WFX/*`), `Standard`, poin
 ## Running
 
 ```bash
-cargo run -p pga3-client -- [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--screenshot out.png]
+cargo run --release -p pga3-client -- [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--stats] [--screenshot out.png]
 ```
 
-Scenes: `Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village` and `ZM_*` variants. The game starts walking at spawn point N (default 0) with the original controls: WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone, mouse look. F toggles a free-fly camera (WASD, Space/C up/down, Shift fast; F again drops the player there); `--camera`/`--fly` start in fly mode. Click captures the mouse, Esc releases/quits, Tab goes to the next spawn point, P prints the current `--camera` value. `--screenshot` renders a few frames, saves a PNG and exits; agents use it to verify rendering. The assets folder is found automatically or via `PGA3_ASSETS`.
+Scenes: `Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village` and `ZM_*` variants. The game starts walking at spawn point N (default 0) with the original controls: WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone, mouse look. F toggles a free-fly camera (WASD, Space/C up/down, Shift fast; F again drops the player there); `--camera`/`--fly` start in fly mode. Click captures the mouse, Esc releases/quits, Tab goes to the next spawn point, P prints the current `--camera` value. `--screenshot` renders a few frames, saves a PNG and exits; agents use it to verify rendering. `--stats` prints the frame rate, frame times and CPU time once per second. The assets folder is found automatically or via `PGA3_ASSETS`.
+
+Frame pacing: the client renders once per display refresh. On Wayland, winit paces `RedrawRequested` to the compositor's frame callbacks (`Window::pre_present_notify` before each swap), so the EGL swap interval is 0; a blocking swap on top of that waited a second refresh and halved the frame rate (72 fps on a 144 Hz monitor). On X11 and other platforms the swap interval 1 is the vsync. `PGA3_NO_VSYNC=1` renders uncapped (benchmarking). Measured on the maintainer's machine: 144 fps on a 144 Hz monitor, 0.1 ms CPU per frame, player movement 7-34 µs per frame.
