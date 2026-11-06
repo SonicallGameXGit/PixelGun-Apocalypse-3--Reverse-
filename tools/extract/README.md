@@ -37,6 +37,9 @@ research/tools/venv/bin/python -I tools/extract/export_world.py "$PWD/$B/unpacke
 
 # 7. shaders -> assets/shaders/
 research/tools/venv/bin/python -I tools/extract/export_shaders.py "$PWD/$B/unpacked" "$PWD/assets"
+
+# 8. skinning (bind poses, bone weights) of the published skinned meshes -> assets/data/skins/
+research/tools/venv/bin/python -I tools/extract/export_skins.py "$PWD/$B/unpacked" "$PWD/assets"
 ```
 
 ## Scripts
@@ -50,3 +53,4 @@ research/tools/venv/bin/python -I tools/extract/export_shaders.py "$PWD/$B/unpac
 | `mono_decode.py` | decodes stripped MonoBehaviour data with `dump.cs` layouts (Unity 2018.3 rules) |
 | `dotnet_meta.py` | reads field flags (`NotSerialized`) from Il2CppDumper's DummyDll; `dump.cs` omits them |
 | `export_shaders.py` | game shaders → ShaderLab text with GLSL ES programs |
+| `export_skins.py` | bind poses + per-vertex bone indices/weights of skinned meshes → `assets/data/skins/` |

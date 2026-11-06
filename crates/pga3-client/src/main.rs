@@ -1,29 +1,35 @@
 //! Pixel Gun Apocalypse 3 open-source client.
 //!
-//! Current milestone: walking. Loads a map from `assets/data/scenes/`, renders it with the
+//! Current milestone: animations. Loads a map from `assets/data/scenes/`, renders it with the
 //! original shading and spawns the local player (original movement and collision) at a spawn
-//! point; a free-fly camera is available for inspection.
+//! point with its animated first-person weapon; a free-fly camera is available for inspection
+//! and shows the player's animated third-person body.
 //!
 //! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch] [--fly] [--stats]
-//! [--screenshot out.png]`
+//! [--screenshot out.png [--wait SECONDS]]`
 //! Controls: click = capture mouse, Esc = release / quit, F = walk/fly toggle, Tab = next spawn.
 //! Walking (original keys): WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone.
 //! Flying: WASD, Space/C up/down, Shift fast.
 
+mod anim;
 mod assets;
+mod character;
 mod gfx;
 mod obj;
 mod physics;
 mod player;
+mod prefab;
+mod primitives;
 mod render;
 mod scene;
+mod skin;
 
 use std::num::NonZeroU32;
 use std::path::PathBuf;
 use std::time::Instant;
 
 use anyhow::{Context, Result, bail};
-use glam::{EulerRot, Quat, Vec3};
+use glam::{EulerRot, Mat4, Quat, Vec3};
 use glutin::config::{ConfigTemplateBuilder, GlConfig};
 use glutin::context::{
     ContextApi, ContextAttributesBuilder, GlProfile, NotCurrentGlContext, PossiblyCurrentContext,
@@ -40,10 +46,15 @@ use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 
+use character::{CharacterAnimation, CharacterInput};
 use physics::CollisionWorld;
 use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
-use render::{SceneRenderer, View};
+use prefab::PrefabInstance;
+use render::{PrefabModels, SceneRenderer, View};
 use scene::Scene;
+
+/// Player prefab spawned by the client (as `Player::from_prefab`).
+const PLAYER_PREFAB: &str = "german";
 
 /// `Input.GetAxis("Mouse X"/"Mouse Y")` sensitivity in this build's InputManager.
 const MOUSE_AXIS_SENSITIVITY: f32 = 0.1;
@@ -54,6 +65,8 @@ struct Args {
     camera: Option<[f32; 5]>,
     fly: bool,
     screenshot: Option<PathBuf>,
+    /// Seconds to run before taking the screenshot (animations in progress).
+    wait: f32,
     /// Print frame-time statistics every second.
     stats: bool,
 }
@@ -65,6 +78,7 @@ fn parse_args() -> Result<Args> {
         camera: None,
         fly: false,
         screenshot: None,
+        wait: 0.0,
         stats: false,
     };
     let mut iter = std::env::args().skip(1);
@@ -80,6 +94,7 @@ fn parse_args() -> Result<Args> {
                 args.camera = Some(values);
             }
             "--fly" => args.fly = true,
+            "--wait" => args.wait = iter.next().context("--wait SECONDS")?.parse()?,
             "--stats" => args.stats = true,
             "--screenshot" => {
                 args.screenshot = Some(PathBuf::from(iter.next().context("--screenshot PATH")?))
@@ -131,6 +146,29 @@ struct Input {
     prone_pressed: bool,
     mouse_delta: (f64, f64),
     grabbed: bool,
+    /// Letter keys only, as `CF2Input.GetKey(KeyCode.W)` etc. in `CharacterAnimation`.
+    key_w: bool,
+    key_a: bool,
+    key_s: bool,
+    key_d: bool,
+    key_r: bool,
+}
+
+/// The local player's prefab instance as the owner sees it (`localObjectsToDeactivate` applied):
+/// only the first-person weapon under `Weapon Camera` is visible.
+struct LocalAvatar {
+    prefab: PrefabInstance,
+    models: PrefabModels,
+    main_camera: Option<usize>,
+    weapon_camera: Option<usize>,
+}
+
+/// The same prefab as other players see it (`LookObject` hidden): the animated third-person
+/// body, driven by `CharacterAnimation`. Drawn in fly mode as a debugging view.
+struct BodyView {
+    prefab: PrefabInstance,
+    models: PrefabModels,
+    character: Option<CharacterAnimation>,
 }
 
 enum Mode {
@@ -142,6 +180,8 @@ enum Mode {
 /// (dropping the window first leaves the EGL surface dangling and crashes on exit).
 struct Running {
     renderer: SceneRenderer,
+    local: LocalAvatar,
+    body: BodyView,
     scene: Scene,
     world: CollisionWorld,
     player: Player,
@@ -154,6 +194,7 @@ struct Running {
     input: Input,
     spawn_index: usize,
     last_frame: Instant,
+    started: Instant,
     frames: u32,
     /// Frame-time statistics since `stats_start`: count, sum, max, CPU time in update+render.
     stats_start: Instant,
@@ -220,7 +261,9 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
     let scene = scene::load_scene(&assets, &args.scene)?;
     let renderer = SceneRenderer::new(&gl, &assets, &scene)?;
     let world = physics::build_world(&assets, &scene)?;
-    let mut player = Player::from_prefab(&assets, "german")?;
+    let mut player = Player::from_prefab(&assets, PLAYER_PREFAB)?;
+    let mut renderer = renderer;
+    let (local, body) = load_avatars(&gl, &assets, &mut renderer)?;
     println!(
         "collision: {} colliders, {} triangles",
         scene.colliders.len(),
@@ -272,6 +315,8 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
         gl,
         scene,
         renderer,
+        local,
+        body,
         world,
         player,
         mode,
@@ -283,12 +328,67 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
         input: Input::default(),
         spawn_index,
         last_frame: Instant::now(),
+        started: Instant::now(),
         frames: 0,
         stats_start: Instant::now(),
         stats_frames: 0,
         stats_max: 0.0,
         stats_cpu: 0.0,
     })
+}
+
+/// Instantiates the player prefab twice (owner view and remote view) and runs the start-up
+/// scripts in Unity's order: `PlayerNetworkController.Awake` deactivations, Animation
+/// `playAutomatically`, `WeaponManager.Awake` (weapon take-in), `CharacterAnimation.Start`.
+fn load_avatars(
+    gl: &glow::Context,
+    assets: &std::path::Path,
+    renderer: &mut SceneRenderer,
+) -> Result<(LocalAvatar, BodyView)> {
+    let mut clips = anim::ClipLibrary::new(assets)?;
+    let mut local = PrefabInstance::load(assets, PLAYER_PREFAB, &mut clips)?;
+    let mut remote = PrefabInstance::load(assets, PLAYER_PREFAB, &mut clips)?;
+    let controller = local
+        .find_scripts("PlayerNetworkController")
+        .first()
+        .map(|(_, c)| c["fields"].clone());
+    if let Some(fields) = &controller {
+        local.set_active_refs(&fields["localObjectsToDeactivate"], false);
+    }
+    // Remote view: only LookObject (the first-person rig) is hidden. The original also hides
+    // SpawnObject and Base_mesh and shows a team body mesh chosen elsewhere (docs/unknowns.md).
+    if let Some(look) = remote.find("LookObject") {
+        remote.nodes[look].active_self = false;
+    }
+    local.play_automatically();
+    remote.play_automatically();
+    let weapons = character::weapon_manager_awake(&mut local);
+    let character = CharacterAnimation::start(&mut remote, &mut clips);
+    let local_models = renderer.prepare_prefab(gl, &local)?;
+    let remote_models = renderer.prepare_prefab(gl, &remote)?;
+    println!(
+        "{PLAYER_PREFAB}: {} renderers ({} skipped), {} animations; weapon {:?}",
+        local.renderers.len(),
+        local.skipped_renderers,
+        local.animations.len(),
+        weapons
+            .as_ref()
+            .and_then(|w| w.all_weapons.get(w.index))
+            .map(|&n| local.nodes[n].name.clone())
+    );
+    Ok((
+        LocalAvatar {
+            main_camera: local.find("Main Camera"),
+            weapon_camera: local.find("Weapon Camera"),
+            prefab: local,
+            models: local_models,
+        },
+        BodyView {
+            prefab: remote,
+            models: remote_models,
+            character,
+        },
+    ))
 }
 
 fn place_at_spawn(player: &mut Player, camera: &mut FlyCamera, scene: &Scene, index: usize) {
@@ -325,10 +425,17 @@ impl Running {
     }
 
     fn update(&mut self, dt: f32) {
+        let dt_frame = match self.mode {
+            Mode::Walk => dt.min(MAXIMUM_DELTA_TIME),
+            Mode::Fly => dt,
+        };
+        self.local.prefab.begin_frame(dt_frame);
+        self.body.prefab.begin_frame(dt_frame);
         match self.mode {
             Mode::Walk => self.update_walk(dt),
             Mode::Fly => self.update_fly(dt),
         }
+        self.late_animation_update();
         let i = &mut self.input;
         i.jump_pressed = false;
         i.crouch_pressed = false;
@@ -352,21 +459,29 @@ impl Running {
             // Unity's Mouse Y grows upwards; window coordinates grow downwards.
             mouse_y: -dy as f32 * MOUSE_AXIS_SENSITIVITY,
         };
+        self.step_player(dt, &input);
+        self.camera.position = self.player.camera_position();
+        self.camera.look(self.player.camera_rotation());
+    }
+
+    /// FixedUpdate steps, Update, the animation pass, LateUpdate.
+    fn step_player(&mut self, dt: f32, input: &FrameInput) {
         self.fixed_time += dt;
         while self.fixed_time >= FIXED_DELTA_TIME {
             self.fixed_time -= FIXED_DELTA_TIME;
             self.player
-                .fixed_update(&self.world, &self.scene.ladders, &input);
+                .fixed_update(&self.world, &self.scene.ladders, input);
         }
-        self.player.update(&self.world, dt, input.vertical, &input);
-        self.player.late_update(&input);
+        self.player.update(&self.world, dt, input.vertical, input);
+        // Unity evaluates animations between Update and LateUpdate.
+        self.local.prefab.update_animations();
+        self.body.prefab.update_animations();
+        self.player.late_update(input);
         for event in self.player.events.drain(..) {
             if let player::PlayerEvent::FallDamage(amount) = event {
                 println!("fall damage {amount:.1}");
             }
         }
-        self.camera.position = self.player.camera_position();
-        self.camera.look(self.player.camera_rotation());
     }
 
     fn update_fly(&mut self, dt: f32) {
@@ -382,6 +497,45 @@ impl Running {
             + Vec3::Y * axis(i.up, i.down);
         let speed = if i.fast || i.run { 30.0 } else { 8.0 };
         self.camera.position += wish.normalize_or_zero() * speed * dt;
+        // The player keeps being simulated without input, so the body seen from the fly camera
+        // stands (and animates) where it was left.
+        self.step_player(dt.min(MAXIMUM_DELTA_TIME), &FrameInput::default());
+    }
+
+    /// `CharacterAnimation.LateUpdate`, then the transforms rendering uses.
+    fn late_animation_update(&mut self) {
+        let p = &self.player;
+        // In fly mode the movement keys drive the camera, not the player.
+        let keys = matches!(self.mode, Mode::Walk);
+        let i = &self.input;
+        let input = CharacterInput {
+            crouch: p.crouch,
+            prone: p.prone,
+            grounded: p.grounded,
+            walking: p.walking,
+            running: p.running,
+            key_w: keys && i.key_w,
+            key_a: keys && i.key_a,
+            key_s: keys && i.key_s,
+            key_d: keys && i.key_d,
+            key_r: keys && i.key_r,
+        };
+        if let Some(character) = &mut self.body.character {
+            character.late_update(&mut self.body.prefab, &input);
+        }
+        let root = Mat4::from_rotation_translation(self.player.rotation, self.player.position);
+        let camera = Mat4::from_rotation_translation(
+            self.player.camera_rotation(),
+            self.player.camera_position(),
+        );
+        for prefab in [&mut self.local.prefab, &mut self.body.prefab] {
+            prefab.world_override[0] = Some(root);
+        }
+        if let Some(node) = self.local.main_camera {
+            self.local.prefab.world_override[node] = Some(camera);
+        }
+        self.local.prefab.update_world();
+        self.body.prefab.update_world();
     }
 
     fn render(&mut self) {
@@ -402,7 +556,63 @@ impl Running {
                 far: self.fov.2,
             },
         };
-        self.renderer.draw(&self.gl, &view, size.width, size.height);
+        let (w, h) = (size.width, size.height);
+        self.renderer.draw(&self.gl, &view, w, h);
+        match self.mode {
+            Mode::Walk => {
+                let local = &self.local;
+                let main_mask = local
+                    .main_camera
+                    .and_then(|n| local.prefab.camera(n))
+                    .map_or(u32::MAX, |c| c.culling_mask);
+                self.renderer.draw_models(
+                    &self.gl,
+                    &view,
+                    w,
+                    h,
+                    &local.prefab,
+                    &local.models,
+                    main_mask,
+                    false,
+                );
+                // Weapon Camera (depth 2, clear flags Depth only, culling mask = layer 9).
+                if let Some(node) = local.weapon_camera
+                    && let Some(camera) = local.prefab.camera(node)
+                {
+                    let (_, rotation, position) =
+                        local.prefab.world[node].to_scale_rotation_translation();
+                    let weapon_view = View {
+                        position,
+                        rotation,
+                        fov_y_degrees: camera.fov_y_degrees,
+                        near: camera.near,
+                        far: camera.far,
+                    };
+                    self.renderer.draw_models(
+                        &self.gl,
+                        &weapon_view,
+                        w,
+                        h,
+                        &local.prefab,
+                        &local.models,
+                        camera.culling_mask,
+                        camera.clear_flags == 3,
+                    );
+                }
+            }
+            Mode::Fly => {
+                self.renderer.draw_models(
+                    &self.gl,
+                    &view,
+                    w,
+                    h,
+                    &self.body.prefab,
+                    &self.body.models,
+                    u32::MAX,
+                    false,
+                );
+            }
+        }
     }
 }
 
@@ -455,6 +665,14 @@ impl ApplicationHandler for App {
                 let pressed = state == ElementState::Pressed;
                 let down = pressed && !repeat;
                 let i = &mut app.input;
+                match code {
+                    KeyCode::KeyW => i.key_w = pressed,
+                    KeyCode::KeyS => i.key_s = pressed,
+                    KeyCode::KeyA => i.key_a = pressed,
+                    KeyCode::KeyD => i.key_d = pressed,
+                    KeyCode::KeyR => i.key_r = pressed,
+                    _ => {}
+                }
                 match code {
                     KeyCode::KeyW | KeyCode::ArrowUp => i.forward = pressed,
                     KeyCode::KeyS | KeyCode::ArrowDown => i.back = pressed,
@@ -537,7 +755,9 @@ impl ApplicationHandler for App {
                         app.stats_cpu = 0.0;
                     }
                 }
-                if let (Some(path), true) = (&self.args.screenshot, app.frames == 3) {
+                let ready =
+                    app.frames >= 3 && app.started.elapsed().as_secs_f32() >= self.args.wait;
+                if let (Some(path), true) = (&self.args.screenshot, ready) {
                     let size = app.window.inner_size();
                     let pixels = gfx::read_framebuffer(&app.gl, size.width, size.height);
                     let result = image::save_buffer(

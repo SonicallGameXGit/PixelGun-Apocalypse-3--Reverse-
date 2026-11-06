@@ -11,6 +11,7 @@ Existing:
 - `architecture.md`: client crates and rationale, modules, coordinate conventions, renderer (shader ports), how to run.
 - `unknowns.md`: open questions.
 - `gameplay/movement.md`: player movement, input, mouse look, camera bob, CharacterController model (decompiled `FPScontroller` & co.).
+- `gameplay/animation.md`: legacy clips, the native `Animation` component (Play/CrossFade/update), skinning, built-in meshes, `WeaponAnimation`/`CharacterAnimation` ports.
 
 Planned:
 

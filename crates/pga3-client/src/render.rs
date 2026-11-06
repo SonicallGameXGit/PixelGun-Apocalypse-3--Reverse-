@@ -14,15 +14,18 @@ use glow::HasContext;
 
 use crate::assets::{Material, ShaderKind, TextureInfo, load_materials, load_texture_infos};
 use crate::gfx::{GpuMesh, compile_program, upload_mesh, upload_texture};
-use crate::obj::parse_obj;
+use crate::obj::{MeshData, parse_obj};
+use crate::prefab::{MeshSource, PrefabInstance};
+use crate::primitives::Primitive;
 use crate::scene::{FogMode, Scene};
+use crate::skin::{SkinData, load_skin};
 
-const LIT_VS: &str = r#"#version 330 core
+/// Shared part of the lit vertex shaders: `lit_outputs` does the projection, UVs, ambient and
+/// fog of the compiled `Mobile/Diffuse` / `Diffuse` vertex programs.
+const LIT_VS_COMMON: &str = r#"#version 330 core
 in vec3 a_position;
 in vec3 a_normal;
 in vec2 a_uv;
-uniform mat4 u_object_to_world;
-uniform mat3 u_normal_matrix;
 uniform mat4 u_view_proj;
 uniform vec4 u_main_st;
 uniform vec3 u_ambient_linear;
@@ -32,11 +35,10 @@ out vec2 v_uv;
 out vec3 v_normal;
 out vec3 v_ambient;
 out float v_fog;
-void main() {
-    vec4 world = u_object_to_world * vec4(a_position, 1.0);
+void lit_outputs(vec4 world, vec3 world_normal) {
     gl_Position = u_view_proj * world;
     v_uv = a_uv * u_main_st.xy + u_main_st.zw;
-    v_normal = normalize(u_normal_matrix * a_normal);
+    v_normal = normalize(world_normal);
     // ShadeSH9 (flat ambient = L0 term only), then Unity's LinearToGammaSpace approximation.
     vec3 sh = max(u_ambient_linear, vec3(0.0));
     v_ambient = max(exp2(log2(sh) * 0.416666657) * 1.05499995 - 0.0549999997, vec3(0.0));
@@ -54,6 +56,32 @@ void main() {
     }
 }
 "#;
+
+const LIT_VS_MAIN: &str = r#"
+uniform mat4 u_object_to_world;
+uniform mat3 u_normal_matrix;
+void main() {
+    lit_outputs(u_object_to_world * vec4(a_position, 1.0), u_normal_matrix * a_normal);
+}
+"#;
+
+/// GPU skinning (`SkinnedMeshRenderer`): `u_bones[i] = bone[i].localToWorldMatrix *
+/// bindpose[i]`; weights are pre-limited to the quality level's bone count (`skin.rs`).
+const SKINNED_VS_MAIN: &str = r#"
+in vec4 a_bone_indices;
+in vec4 a_bone_weights;
+uniform mat4 u_bones[MAX_BONES];
+void main() {
+    mat4 skin = u_bones[int(a_bone_indices.x)] * a_bone_weights.x
+        + u_bones[int(a_bone_indices.y)] * a_bone_weights.y
+        + u_bones[int(a_bone_indices.z)] * a_bone_weights.z
+        + u_bones[int(a_bone_indices.w)] * a_bone_weights.w;
+    lit_outputs(skin * vec4(a_position, 1.0), mat3(skin) * a_normal);
+}
+"#;
+
+/// Upper bound of `m_Bones` per skinned mesh in this build is 60.
+const MAX_BONES: usize = 64;
 
 const LIT_FS: &str = r#"#version 330 core
 in vec2 v_uv;
@@ -210,8 +238,13 @@ fn gl_perspective(fov_y_degrees: f32, aspect: f32, near: f32, far: f32) -> Mat4 
 
 pub struct SceneRenderer {
     lit: Program,
+    skinned: Program,
     decal: Program,
     sky: Program,
+    resources: Resources,
+    materials: HashMap<String, Material>,
+    /// `QualitySettings.blendWeights` of the active level.
+    skin_bones: usize,
     draws: Vec<Draw>,
     skybox: Option<Skybox>,
     to_light: Vec3,
@@ -241,18 +274,36 @@ fn srgb_to_linear(c: f32) -> f32 {
     }
 }
 
-struct Loader<'a> {
-    gl: &'a glow::Context,
+/// GPU resources shared by the scene and every prepared prefab.
+struct Resources {
     assets: PathBuf,
     texture_infos: HashMap<String, TextureInfo>,
     textures: HashMap<String, glow::Texture>,
     meshes: HashMap<String, GpuMesh>,
+    builtin_meshes: HashMap<Primitive, GpuMesh>,
+    /// Skinned meshes (position, normal, uv, bone indices, bone weights) by asset path.
+    skinned_meshes: HashMap<String, (GpuMesh, Vec<Mat4>)>,
     white: glow::Texture,
     missing_textures: usize,
 }
 
-impl Loader<'_> {
-    fn texture(&mut self, path: Option<&str>) -> glow::Texture {
+fn interleave(data: &MeshData, skin: Option<&SkinData>) -> Vec<f32> {
+    let stride = if skin.is_some() { 16 } else { 8 };
+    let mut vertices = Vec::with_capacity(data.positions.len() * stride);
+    for i in 0..data.positions.len() {
+        vertices.extend_from_slice(&data.positions[i]);
+        vertices.extend_from_slice(&data.normals[i]);
+        vertices.extend_from_slice(&data.uvs[i]);
+        if let Some(skin) = skin {
+            vertices.extend(skin.bone_indices[i].iter().map(|&b| b as f32));
+            vertices.extend_from_slice(&skin.bone_weights[i]);
+        }
+    }
+    vertices
+}
+
+impl Resources {
+    fn texture(&mut self, gl: &glow::Context, path: Option<&str>) -> glow::Texture {
         let Some(path) = path else {
             return self.white;
         };
@@ -264,7 +315,7 @@ impl Loader<'_> {
             Ok(img) => {
                 // PNGs are top-down; GL (like Unity) samples row 0 at v = 0, the bottom.
                 let rgba = image::imageops::flip_vertical(&img.to_rgba8());
-                upload_texture(self.gl, rgba.width(), rgba.height(), rgba.as_raw(), &info)
+                upload_texture(gl, rgba.width(), rgba.height(), rgba.as_raw(), &info)
                     .unwrap_or(self.white)
             }
             Err(error) => {
@@ -277,22 +328,82 @@ impl Loader<'_> {
         texture
     }
 
-    fn mesh(&mut self, path: &str) -> Result<&GpuMesh> {
+    fn read_obj(&self, path: &str) -> Result<MeshData> {
+        let text = std::fs::read_to_string(self.assets.join(path))
+            .with_context(|| format!("reading {path}"))?;
+        parse_obj(&text).with_context(|| format!("parsing {path}"))
+    }
+
+    fn mesh(&mut self, gl: &glow::Context, path: &str) -> Result<&GpuMesh> {
         if !self.meshes.contains_key(path) {
-            let text = std::fs::read_to_string(self.assets.join(path))
-                .with_context(|| format!("reading {path}"))?;
-            let data = parse_obj(&text).with_context(|| format!("parsing {path}"))?;
-            let mut vertices = Vec::with_capacity(data.positions.len() * 8);
-            for i in 0..data.positions.len() {
-                vertices.extend_from_slice(&data.positions[i]);
-                vertices.extend_from_slice(&data.normals[i]);
-                vertices.extend_from_slice(&data.uvs[i]);
-            }
-            let mesh = upload_mesh(self.gl, &vertices, &[3, 3, 2], &data.submeshes)?;
+            let data = self.read_obj(path)?;
+            let mesh = upload_mesh(gl, &interleave(&data, None), &[3, 3, 2], &data.submeshes)?;
             self.meshes.insert(path.to_string(), mesh);
         }
         Ok(&self.meshes[path])
     }
+
+    fn builtin(&mut self, gl: &glow::Context, primitive: Primitive) -> Result<&GpuMesh> {
+        if let std::collections::hash_map::Entry::Vacant(entry) =
+            self.builtin_meshes.entry(primitive)
+        {
+            let data = primitive.mesh();
+            entry.insert(upload_mesh(
+                gl,
+                &interleave(&data, None),
+                &[3, 3, 2],
+                &data.submeshes,
+            )?);
+        }
+        Ok(&self.builtin_meshes[&primitive])
+    }
+
+    /// Skinned mesh and its bind poses.
+    fn skinned(
+        &mut self,
+        gl: &glow::Context,
+        path: &str,
+        bones: usize,
+    ) -> Result<&(GpuMesh, Vec<Mat4>)> {
+        if !self.skinned_meshes.contains_key(path) {
+            let data = self.read_obj(path)?;
+            let skin = load_skin(&self.assets, path, bones)?;
+            if skin.bone_indices.len() != data.positions.len() {
+                anyhow::bail!(
+                    "{path}: skin has {} vertices, mesh {}",
+                    skin.bone_indices.len(),
+                    data.positions.len()
+                );
+            }
+            let mesh = upload_mesh(
+                gl,
+                &interleave(&data, Some(&skin)),
+                &[3, 3, 2, 4, 4],
+                &data.submeshes,
+            )?;
+            self.skinned_meshes
+                .insert(path.to_string(), (mesh, skin.bind_poses));
+        }
+        Ok(&self.skinned_meshes[path])
+    }
+}
+
+/// One draw of a prepared prefab: a (renderer, material slot) pair.
+struct ModelDraw {
+    renderer: usize,
+    vao: glow::VertexArray,
+    offset: i32,
+    count: i32,
+    texture: glow::Texture,
+    main_st: Vec4,
+    color: Vec4,
+    /// Bind poses for skinned renderers.
+    bind_poses: Option<Vec<Mat4>>,
+}
+
+/// GPU-side data of a `PrefabInstance`, from `SceneRenderer::prepare_prefab`.
+pub struct PrefabModels {
+    draws: Vec<ModelDraw>,
 }
 
 fn skybox_mesh(gl: &glow::Context) -> Result<GpuMesh> {
@@ -322,25 +433,44 @@ fn skybox_mesh(gl: &glow::Context) -> Result<GpuMesh> {
 impl SceneRenderer {
     pub fn new(gl: &glow::Context, assets: &Path, scene: &Scene) -> Result<SceneRenderer> {
         let attributes = ["a_position", "a_normal", "a_uv"];
+        let lit_uniforms = [
+            "u_object_to_world",
+            "u_normal_matrix",
+            "u_view_proj",
+            "u_main_st",
+            "u_ambient_linear",
+            "u_fog_mode",
+            "u_fog_params",
+            "u_main_tex",
+            "u_color",
+            "u_to_light",
+            "u_light_color",
+            "u_fog_color",
+            "u_bones",
+        ];
         let lit = Program::new(
             gl,
-            LIT_VS,
+            &format!("{LIT_VS_COMMON}{LIT_VS_MAIN}"),
             LIT_FS,
             &attributes,
+            &lit_uniforms,
+        )?;
+        let skinned_vs = format!(
+            "{LIT_VS_COMMON}{}",
+            SKINNED_VS_MAIN.replace("MAX_BONES", &MAX_BONES.to_string())
+        );
+        let skinned = Program::new(
+            gl,
+            &skinned_vs,
+            LIT_FS,
             &[
-                "u_object_to_world",
-                "u_normal_matrix",
-                "u_view_proj",
-                "u_main_st",
-                "u_ambient_linear",
-                "u_fog_mode",
-                "u_fog_params",
-                "u_main_tex",
-                "u_color",
-                "u_to_light",
-                "u_light_color",
-                "u_fog_color",
+                "a_position",
+                "a_normal",
+                "a_uv",
+                "a_bone_indices",
+                "a_bone_weights",
             ],
+            &lit_uniforms,
         )?;
         let decal = Program::new(
             gl,
@@ -365,12 +495,13 @@ impl SceneRenderer {
 
         let materials = load_materials(assets)?;
         let white = upload_texture(gl, 1, 1, &[255, 255, 255, 255], &TextureInfo::default())?;
-        let mut loader = Loader {
-            gl,
+        let mut loader = Resources {
             assets: assets.to_path_buf(),
             texture_infos: load_texture_infos(assets)?,
             textures: HashMap::new(),
             meshes: HashMap::new(),
+            builtin_meshes: HashMap::new(),
+            skinned_meshes: HashMap::new(),
             white,
             missing_textures: 0,
         };
@@ -379,7 +510,7 @@ impl SceneRenderer {
 
         for renderer in &scene.renderers {
             let (vao, submeshes) = {
-                let mesh = loader.mesh(&renderer.mesh_asset)?;
+                let mesh = loader.mesh(gl, &renderer.mesh_asset)?;
                 (mesh.vao, mesh.submeshes.clone())
             };
             if submeshes.is_empty() {
@@ -404,7 +535,7 @@ impl SceneRenderer {
                     }
                 };
                 let (texture_path, main_st) = material.texture("_MainTex");
-                let texture = loader.texture(texture_path);
+                let texture = loader.texture(gl, texture_path);
                 draws.push(Draw {
                     pass,
                     vao,
@@ -481,8 +612,12 @@ impl SceneRenderer {
 
         Ok(SceneRenderer {
             lit,
+            skinned,
             decal,
             sky,
+            resources: loader,
+            materials,
+            skin_bones: crate::skin::quality_bone_count(assets)?,
             draws,
             skybox,
             to_light: main_light.map(|l| l.to_light).unwrap_or(Vec3::Y),
@@ -500,7 +635,11 @@ impl SceneRenderer {
         })
     }
 
-    fn load_skybox(gl: &glow::Context, loader: &mut Loader, material: &Material) -> Result<Skybox> {
+    fn load_skybox(
+        gl: &glow::Context,
+        loader: &mut Resources,
+        material: &Material,
+    ) -> Result<Skybox> {
         let names = [
             "_FrontTex",
             "_BackTex",
@@ -509,7 +648,7 @@ impl SceneRenderer {
             "_UpTex",
             "_DownTex",
         ];
-        let faces = names.map(|name| loader.texture(material.texture(name).0));
+        let faces = names.map(|name| loader.texture(gl, material.texture(name).0));
         Ok(Skybox {
             mesh: skybox_mesh(gl)?,
             faces,
@@ -642,6 +781,194 @@ impl SceneRenderer {
             gl.disable(glow::POLYGON_OFFSET_FILL);
             gl.depth_mask(true);
             gl.bind_vertex_array(None);
+        }
+    }
+}
+
+impl SceneRenderer {
+    /// Uploads the meshes/textures of a prefab instance's renderers.
+    pub fn prepare_prefab(
+        &mut self,
+        gl: &glow::Context,
+        prefab: &PrefabInstance,
+    ) -> Result<PrefabModels> {
+        let mut draws = Vec::new();
+        for (index, renderer) in prefab.renderers.iter().enumerate() {
+            let (vao, submeshes, bind_poses) = match (&renderer.mesh, &renderer.skin) {
+                (MeshSource::Asset(path), Some(_)) => {
+                    let (mesh, poses) = self.resources.skinned(gl, path, self.skin_bones)?;
+                    (mesh.vao, mesh.submeshes.clone(), Some(poses.clone()))
+                }
+                (MeshSource::Asset(path), None) => {
+                    let mesh = self.resources.mesh(gl, path)?;
+                    (mesh.vao, mesh.submeshes.clone(), None)
+                }
+                (MeshSource::Builtin(primitive), _) => {
+                    let mesh = self.resources.builtin(gl, *primitive)?;
+                    (mesh.vao, mesh.submeshes.clone(), None)
+                }
+            };
+            if submeshes.is_empty() {
+                continue;
+            }
+            for (slot, material_ref) in renderer.materials.iter().enumerate() {
+                let Some(material) = material_ref.as_ref().and_then(|r| self.materials.get(r))
+                else {
+                    continue;
+                };
+                let color = match material.shader {
+                    ShaderKind::MobileDiffuse => Vec4::ONE,
+                    ShaderKind::Diffuse => material.color("_Color"),
+                    // Prefab renderers with other shaders are transparent particle effects
+                    // (`Mobile/Particles/Additive`, `Legacy Shaders/Particles/Alpha Blended`);
+                    // drawing them as opaque Diffuse would be wrong, so they are skipped and
+                    // reported until those shaders are ported.
+                    _ => {
+                        *self
+                            .stats
+                            .unsupported_shaders
+                            .entry(material.shader_name.clone())
+                            .or_default() += 1;
+                        continue;
+                    }
+                };
+                let (offset, count) = submeshes[slot.min(submeshes.len() - 1)];
+                let (texture_path, main_st) = material.texture("_MainTex");
+                let texture = self.resources.texture(gl, texture_path);
+                draws.push(ModelDraw {
+                    renderer: index,
+                    vao,
+                    offset,
+                    count,
+                    texture,
+                    main_st,
+                    color,
+                    bind_poses: bind_poses.clone(),
+                });
+            }
+        }
+        Ok(PrefabModels { draws })
+    }
+
+    fn set_lighting(&self, gl: &glow::Context, p: &Program, view_proj: &Mat4) {
+        unsafe {
+            gl.uniform_matrix_4_f32_slice(p.u("u_view_proj"), false, &view_proj.to_cols_array());
+            let a = self.ambient_linear;
+            gl.uniform_3_f32(p.u("u_ambient_linear"), a.x, a.y, a.z);
+            gl.uniform_1_i32(p.u("u_fog_mode"), self.fog_mode);
+            let f = self.fog_params;
+            gl.uniform_4_f32(p.u("u_fog_params"), f.x, f.y, f.z, f.w);
+            let c = self.fog_color;
+            gl.uniform_3_f32(p.u("u_fog_color"), c.x, c.y, c.z);
+            let l = self.to_light;
+            gl.uniform_3_f32(p.u("u_to_light"), l.x, l.y, l.z);
+            let c = self.light_color;
+            gl.uniform_3_f32(p.u("u_light_color"), c.x, c.y, c.z);
+            gl.uniform_1_i32(p.u("u_main_tex"), 0);
+        }
+    }
+
+    /// Draws the renderers of `prefab` whose GameObject is active and whose layer is in the
+    /// camera's culling mask. `clear_depth` = camera clear flags "Depth only" (3), as the
+    /// player's `Weapon Camera` uses.
+    #[allow(clippy::too_many_arguments)]
+    pub fn draw_models(
+        &self,
+        gl: &glow::Context,
+        view: &View,
+        width: u32,
+        height: u32,
+        prefab: &PrefabInstance,
+        models: &PrefabModels,
+        culling_mask: u32,
+        clear_depth: bool,
+    ) {
+        let aspect = width as f32 / height.max(1) as f32;
+        let (view_matrix, projection) = view.matrices(aspect);
+        let view_proj = projection * view_matrix;
+        let visible = |renderer: usize| {
+            let r = &prefab.renderers[renderer];
+            let layer = prefab.nodes[r.node].layer;
+            r.enabled && culling_mask & (1 << layer) != 0 && prefab.active_in_hierarchy(r.node)
+        };
+        unsafe {
+            gl.viewport(0, 0, width as i32, height as i32);
+            if clear_depth {
+                gl.depth_mask(true);
+                gl.clear(glow::DEPTH_BUFFER_BIT);
+            }
+            gl.enable(glow::DEPTH_TEST);
+            gl.depth_func(glow::LEQUAL);
+            gl.enable(glow::CULL_FACE);
+            gl.cull_face(glow::BACK);
+            gl.disable(glow::BLEND);
+            gl.active_texture(glow::TEXTURE0);
+
+            let p = &self.lit;
+            gl.use_program(Some(p.handle));
+            self.set_lighting(gl, p, &view_proj);
+            for d in models.draws.iter().filter(|d| d.bind_poses.is_none()) {
+                if !visible(d.renderer) {
+                    continue;
+                }
+                let world = prefab.world[prefab.renderers[d.renderer].node];
+                let normal = Mat3::from_mat4(world).inverse().transpose();
+                gl.front_face(if world.determinant() < 0.0 {
+                    glow::CCW
+                } else {
+                    glow::CW
+                });
+                gl.uniform_matrix_4_f32_slice(
+                    p.u("u_object_to_world"),
+                    false,
+                    &world.to_cols_array(),
+                );
+                gl.uniform_matrix_3_f32_slice(
+                    p.u("u_normal_matrix"),
+                    false,
+                    &normal.to_cols_array(),
+                );
+                self.draw_model(gl, p, d);
+            }
+
+            let p = &self.skinned;
+            gl.use_program(Some(p.handle));
+            self.set_lighting(gl, p, &view_proj);
+            gl.front_face(glow::CW);
+            let mut palette = vec![0.0f32; MAX_BONES * 16];
+            for d in models.draws.iter() {
+                let Some(bind_poses) = &d.bind_poses else {
+                    continue;
+                };
+                if !visible(d.renderer) {
+                    continue;
+                }
+                let Some(skin) = &prefab.renderers[d.renderer].skin else {
+                    continue;
+                };
+                for (i, bind_pose) in bind_poses.iter().enumerate().take(MAX_BONES) {
+                    let bone = skin.bones.get(i).copied().flatten();
+                    let matrix = match bone {
+                        Some(node) => prefab.world[node] * *bind_pose,
+                        None => Mat4::IDENTITY,
+                    };
+                    palette[i * 16..i * 16 + 16].copy_from_slice(&matrix.to_cols_array());
+                }
+                gl.uniform_matrix_4_f32_slice(p.u("u_bones"), false, &palette);
+                self.draw_model(gl, p, d);
+            }
+            gl.bind_vertex_array(None);
+        }
+    }
+
+    fn draw_model(&self, gl: &glow::Context, p: &Program, d: &ModelDraw) {
+        unsafe {
+            let s = d.main_st;
+            gl.uniform_4_f32(p.u("u_main_st"), s.x, s.y, s.z, s.w);
+            gl.uniform_3_f32(p.u("u_color"), d.color.x, d.color.y, d.color.z);
+            gl.bind_texture(glow::TEXTURE_2D, Some(d.texture));
+            gl.bind_vertex_array(Some(d.vao));
+            gl.draw_elements(glow::TRIANGLES, d.count, glow::UNSIGNED_INT, d.offset);
         }
     }
 }
