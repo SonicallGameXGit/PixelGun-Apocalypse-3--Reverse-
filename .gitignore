@@ -1,0 +1,48 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+
+# Raw reverse-engineering material (see research/README.md)
+/research/*
+!/research/README.md
+
+# Extraction scratch / temp
+/tmp/
+*.tmp
+*.log
+
+# REA / analysis artifacts
+*.rea-snapshot
+*.i64
+*.idb
+*.gpr
+*.rep/
+evidence-bundles/
+
+# Original Unity build files, wherever they end up
+*.unityweb
+*.data.gz
+*.data.br
+*.wasm.gz
+*.wasm.br
+
+# Secrets / captured credentials
+.env
+.env.*
+*.pem
+*.key
+*.har
+*.pcap
+*.pcapng
+
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Claude Code local (shared settings stay tracked)
+.claude/settings.local.json
+.claude/scratch/
