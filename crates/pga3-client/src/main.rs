@@ -46,7 +46,7 @@ use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 
-use character::{CharacterAnimation, CharacterInput};
+use character::{CharacterAnimation, CharacterInput, WeaponInput, WeaponManager};
 use physics::CollisionWorld;
 use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
 use prefab::PrefabInstance;
@@ -159,8 +159,11 @@ struct Input {
 struct LocalAvatar {
     prefab: PrefabInstance,
     models: PrefabModels,
+    weapons: Option<WeaponManager>,
     main_camera: Option<usize>,
     weapon_camera: Option<usize>,
+    /// Moved by `WalkSway` (`Player::weapon_local_position`).
+    weapon_manager: Option<usize>,
 }
 
 /// The same prefab as other players see it (`LookObject` hidden): the animated third-person
@@ -380,8 +383,10 @@ fn load_avatars(
         LocalAvatar {
             main_camera: local.find("Main Camera"),
             weapon_camera: local.find("Weapon Camera"),
+            weapon_manager: local.find("WeaponManager"),
             prefab: local,
             models: local_models,
+            weapons,
         },
         BodyView {
             prefab: remote,
@@ -473,6 +478,15 @@ impl Running {
                 .fixed_update(&self.world, &self.scene.ladders, input);
         }
         self.player.update(&self.world, dt, input.vertical, input);
+        if let Some(weapons) = &self.local.weapons {
+            let weapon_input = WeaponInput {
+                mouse_x: input.mouse_x,
+                mouse_y: input.mouse_y,
+                vertical: input.vertical,
+                velocity_y: self.player.controller_velocity.y,
+            };
+            weapons.update(&mut self.local.prefab, &weapon_input, dt);
+        }
         // Unity evaluates animations between Update and LateUpdate.
         self.local.prefab.update_animations();
         self.body.prefab.update_animations();
@@ -533,6 +547,9 @@ impl Running {
         }
         if let Some(node) = self.local.main_camera {
             self.local.prefab.world_override[node] = Some(camera);
+        }
+        if let Some(node) = self.local.weapon_manager {
+            self.local.prefab.nodes[node].local.position = self.player.weapon_local_position;
         }
         self.local.prefab.update_world();
         self.body.prefab.update_world();

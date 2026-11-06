@@ -1,5 +1,6 @@
 //! Local player movement: ports of the original `FPScontroller` (a modified Unity
-//! `CharacterMotor`), `FPSinput`, `FPSMouseLook` and `CameraBob`, decompiled from the wasm build.
+//! `CharacterMotor`), `FPSinput`, `FPSMouseLook`, `CameraBob` and `WalkSway`, decompiled from the
+//! wasm build.
 //! Spec with evidence: `docs/gameplay/movement.md`. Values come from the player prefab
 //! (`assets/data/prefabs/resources/german.json`).
 //!
@@ -162,9 +163,10 @@ pub struct Sliding {
     pub speed_control: f32,
 }
 
-/// `CameraBob` on the Main Camera.
+/// State of `CameraBob` (Main Camera) or `WalkSway` (WeaponManager): both classes have the same
+/// fields and share their constructor (`f29906`); they differ only in how prone is handled.
 #[derive(Clone, Debug)]
-pub struct CameraBob {
+pub struct Bob {
     pub walk_bobbing_speed: f32,
     pub run_bobbing_speed: f32,
     pub idle_bobbing_speed: f32,
@@ -235,6 +237,10 @@ pub struct Player {
     pub maximum_y: f32,
     /// `Main Camera` local position (moved by `CameraBob`).
     pub camera_local_position: Vec3,
+    /// `WeaponManager` local position (moved by `WalkSway`), under the Weapon Camera.
+    pub weapon_local_position: Vec3,
+    /// `CharacterController.velocity`: displacement of the last `Move` / its delta time.
+    pub controller_velocity: Vec3,
     pub mouse_sensitivity: f32,
     /// Main Camera field of view (degrees), near and far planes.
     pub camera_fov: f32,
@@ -274,7 +280,9 @@ pub struct Player {
     pub previous_grounded: bool,
     pub time_in_air: f32,
 
-    pub camera_bob: CameraBob,
+    pub camera_bob: Bob,
+    /// `WalkSway` on `WeaponManager` (absent on prefabs without first-person weapons).
+    pub walk_sway: Option<Bob>,
     pub ladder: LadderPlayer,
     /// `Time.time`.
     pub time: f32,
@@ -293,6 +301,44 @@ fn component<'a>(nodes: &'a [Value], node: &str, script_or_type: &str) -> Result
 fn local_position(nodes: &[Value], node: &str) -> Result<Vec3> {
     let t = &component(nodes, node, "Transform")?["data"]["m_LocalPosition"];
     Ok(Vec3::new(f32_of(&t["x"]), f32_of(&t["y"]), f32_of(&t["z"])))
+}
+
+fn bob_from_fields(fields: &Value, midpoint: Vec3) -> Bob {
+    Bob {
+        walk_bobbing_speed: f32_of(&fields["walkBobbingSpeed"]),
+        run_bobbing_speed: f32_of(&fields["runBobbingSpeed"]),
+        idle_bobbing_speed: f32_of(&fields["idleBobbingSpeed"]),
+        bobbing_amount: f32_of(&fields["bobbingAmount"]),
+        smooth: f32_of(&fields["smooth"]),
+        // Awake: midpoint = localPosition.
+        midpoint,
+        timer: 0.0,
+        bobbing_speed: 0.0,
+        current_amount: 0.0,
+    }
+}
+
+/// The sine wave both bob scripts start their `FixedUpdate` with: returns the target local
+/// position (`Vector3.zero` when not grounded, as decompiled) and advances the timer.
+fn bob_wave(bob: &mut Bob, grounded: bool) -> Vec3 {
+    let wave_slice2 = (bob.timer * 2.0).sin();
+    let wave_slice = bob.timer.sin();
+    bob.timer += bob.bobbing_speed;
+    if bob.timer > std::f32::consts::TAU {
+        bob.timer -= std::f32::consts::TAU;
+    }
+    if wave_slice2 == 0.0 {
+        bob.midpoint
+    } else if grounded {
+        // As decompiled: z stays 0, so a prefab z offset is lerped away.
+        Vec3::new(
+            bob.midpoint.x + wave_slice * bob.current_amount,
+            bob.midpoint.y + wave_slice2 * bob.current_amount,
+            0.0,
+        )
+    } else {
+        Vec3::ZERO
+    }
 }
 
 fn flag(value: &Value) -> bool {
@@ -381,6 +427,11 @@ impl Player {
         let look = &component(nodes, "LookObject", "FPSMouseLook")?["fields"];
         let bob = &component(nodes, "Main Camera", "CameraBob")?["fields"];
         let camera_local_position = local_position(nodes, "Main Camera")?;
+        let walk_sway = component(nodes, "WeaponManager", "WalkSway").ok();
+        let weapon_local_position = match walk_sway {
+            Some(_) => local_position(nodes, "WeaponManager")?,
+            None => Vec3::ZERO,
+        };
         let camera = &component(nodes, "Main Camera", "Camera")?["data"];
 
         Ok(Player {
@@ -391,6 +442,8 @@ impl Player {
             minimum_y: f32_of(&look["minimumY"]),
             maximum_y: f32_of(&look["maximumY"]),
             camera_local_position,
+            weapon_local_position,
+            controller_velocity: Vec3::ZERO,
             mouse_sensitivity: DEFAULT_MOUSE_SENSITIVITY,
             camera_fov: f32_of(&camera["field of view"]),
             camera_near: f32_of(&camera["near clip plane"]),
@@ -427,18 +480,8 @@ impl Player {
             previous_position_y: 0.0,
             previous_grounded: false,
             time_in_air: 0.0,
-            camera_bob: CameraBob {
-                walk_bobbing_speed: f32_of(&bob["walkBobbingSpeed"]),
-                run_bobbing_speed: f32_of(&bob["runBobbingSpeed"]),
-                idle_bobbing_speed: f32_of(&bob["idleBobbingSpeed"]),
-                bobbing_amount: f32_of(&bob["bobbingAmount"]),
-                smooth: f32_of(&bob["smooth"]),
-                // Awake: midpoint = localPosition.
-                midpoint: camera_local_position,
-                timer: 0.0,
-                bobbing_speed: 0.0,
-                current_amount: 0.0,
-            },
+            camera_bob: bob_from_fields(bob, camera_local_position),
+            walk_sway: walk_sway.map(|c| bob_from_fields(&c["fields"], weapon_local_position)),
             ladder: LadderPlayer {
                 climb_speed: f32_of(&ladder["climbSpeed"]),
                 climb_down_threshold: f32_of(&ladder["climbDownThreshold"]),
@@ -484,7 +527,7 @@ impl Player {
     // Unity callbacks
 
     /// One fixed step: the `FixedUpdate`s of `FPScontroller` (fall damage), `LadderPlayer` and
-    /// `CameraBob`, then the physics step's trigger events (`Ladder.OnTriggerEnter`).
+    /// `CameraBob`, `WalkSway`, then the physics step's trigger events (`Ladder.OnTriggerEnter`).
     pub fn fixed_update(
         &mut self,
         world: &CollisionWorld,
@@ -494,6 +537,7 @@ impl Player {
         self.fpscontroller_fixed_update();
         self.ladder_fixed_update(world, input);
         self.camera_bob_fixed_update(FIXED_DELTA_TIME);
+        self.walk_sway_fixed_update(FIXED_DELTA_TIME);
         self.trigger_events(ladders);
     }
 
@@ -660,7 +704,7 @@ impl Player {
         self.ladder.lateral_move = self.rotation * lateral;
         self.ladder.ladder_movement = vertical_move + self.ladder.lateral_move;
         let motion = self.ladder.ladder_movement * self.ladder.climb_speed * FIXED_DELTA_TIME;
-        self.controller_move(world, motion);
+        self.controller_move(world, motion, FIXED_DELTA_TIME);
     }
 
     /// `LadderPlayer.RaycastCheck`: lets go when nothing is within one radius in front of the
@@ -705,7 +749,7 @@ impl Player {
         }
 
         self.ground_normal = Vec3::ZERO;
-        self.movement.collision_flags = self.controller_move(world, offset);
+        self.movement.collision_flags = self.controller_move(world, offset, dt);
         self.movement.last_hit_point = self.movement.hit_point;
         self.last_ground_normal = self.ground_normal;
 
@@ -826,11 +870,17 @@ impl Player {
     }
 
     /// `CharacterController.Move`, with `OnControllerColliderHit` for every contact.
-    fn controller_move(&mut self, world: &CollisionWorld, motion: Vec3) -> u8 {
+    /// `CharacterController.Move`; also records `CharacterController.velocity` (the move's
+    /// displacement over the current delta time).
+    fn controller_move(&mut self, world: &CollisionWorld, motion: Vec3, dt: f32) -> u8 {
         let mut hits = Vec::new();
+        let before = self.position;
         let flags =
             self.controller
                 .move_by(world, &mut self.position, self.rotation, motion, &mut hits);
+        if dt > 0.0 {
+            self.controller_velocity = (self.position - before) / dt;
+        }
         for hit in &hits {
             self.on_controller_collider_hit(hit);
         }
@@ -1038,23 +1088,7 @@ impl Player {
             bob.idle_bobbing_speed,
         );
 
-        let mut target = Vec3::ZERO;
-        let wave_slice2 = (bob.timer * 2.0).sin();
-        let wave_slice = bob.timer.sin();
-        bob.timer += bob.bobbing_speed;
-        if bob.timer > std::f32::consts::TAU {
-            bob.timer -= std::f32::consts::TAU;
-        }
-        if wave_slice2 == 0.0 {
-            target = bob.midpoint;
-        } else if self.grounded {
-            // As decompiled: z stays 0, so the camera's prefab z offset is lerped away.
-            target = Vec3::new(
-                bob.midpoint.x + wave_slice * bob.current_amount,
-                bob.midpoint.y + wave_slice2 * bob.current_amount,
-                0.0,
-            );
-        }
+        let target = bob_wave(bob, self.grounded);
         if walking && !running {
             bob.bobbing_speed = walk;
             bob.current_amount = bob.bobbing_amount;
@@ -1068,6 +1102,35 @@ impl Player {
         }
         let t = (dt * bob.smooth).clamp(0.0, 1.0);
         self.camera_local_position = self.camera_local_position.lerp(target, t);
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // WalkSway (`f29905`): CameraBob's wave on the WeaponManager, except that prone uses the idle
+    // sway instead of skipping the update.
+
+    fn walk_sway_fixed_update(&mut self, dt: f32) {
+        let (walking, running, prone, grounded) =
+            (self.walking, self.running, self.prone, self.grounded);
+        let Some(bob) = &mut self.walk_sway else {
+            return;
+        };
+        // timeScale is always 1 here; the original rescales by fixedDeltaTime / 0.02 otherwise.
+        let target = bob_wave(bob, grounded);
+        if walking && !running && !prone {
+            bob.bobbing_speed = bob.walk_bobbing_speed;
+            bob.current_amount = bob.bobbing_amount;
+        }
+        if running {
+            bob.bobbing_speed = bob.run_bobbing_speed;
+            bob.current_amount = bob.bobbing_amount;
+        }
+        if (!running && !walking) || prone {
+            bob.bobbing_speed = bob.idle_bobbing_speed;
+            bob.current_amount = bob.bobbing_amount * 0.3;
+        }
+        // `Time.deltaTime` inside FixedUpdate is the fixed step.
+        let t = (dt * bob.smooth).clamp(0.0, 1.0);
+        self.weapon_local_position = self.weapon_local_position.lerp(target, t);
     }
 }
 
@@ -1332,6 +1395,40 @@ mod tests {
             "{:?}",
             player.movement.velocity
         );
+    }
+
+    /// Largest |offset| of the WalkSway position over `steps` fixed steps with `input`.
+    fn sway_extent(
+        player: &mut Player,
+        world: &CollisionWorld,
+        input: &FrameInput,
+        steps: usize,
+    ) -> f32 {
+        let mut extent = 0.0f32;
+        for _ in 0..steps {
+            player.fixed_update(world, &[], input);
+            step(player, world, input, FIXED_DELTA_TIME);
+            extent = extent.max(player.weapon_local_position.length());
+        }
+        extent
+    }
+
+    #[test]
+    fn walk_sway_moves_the_weapon() {
+        let (mut player, world) = player_on_floor();
+        let idle = FrameInput::default();
+        // Settle, then a full idle period: 2π / 0.005 rad per step = 1257 steps.
+        sway_extent(&mut player, &world, &idle, 100);
+        let idle_extent = sway_extent(&mut player, &world, &idle, 1300);
+        // Amount 0.02 · 0.3 = 0.006 m (x and y each), lerped at 6 · 0.02 per step.
+        assert!(idle_extent > 0.003 && idle_extent < 0.0085, "{idle_extent}");
+        let walk = FrameInput {
+            vertical: 1.0,
+            ..Default::default()
+        };
+        let walk_extent = sway_extent(&mut player, &world, &walk, 300);
+        assert!(player.walking);
+        assert!(walk_extent > 0.01 && walk_extent < 0.0285, "{walk_extent}");
     }
 
     #[test]

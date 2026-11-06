@@ -115,6 +115,47 @@ These meshes belong to Unity, so they are not published. `primitives.rs` regener
 
 For `german`, `index` = 0 is the Machete. Its TakeIn clip lasts 0.933 s at speed 1.3 and is nearly static (a few millimetres of arm motion).
 
+No first-person `Animation` loops: `Idle` is played once in `Awake` and `wrapMode` is then Once. The hand's motion while standing or walking therefore comes from two scripts, not from clips.
+
+**`WalkSway`** on `WeaponManager` (`f29904` Awake, `f29905` FixedUpdate; port in `player.rs`):
+
+- It is `CameraBob`'s algorithm applied to `WeaponManager`'s local position. The two classes share their constructor (`f29906`).
+- Each step: `waveslice2 = sin(2·timer)`, `waveslice = sin(timer)`, then `timer += bobbingSpeed` (wrapped at 2π).
+- *Target position:*
+  - `waveslice2 == 0` → the midpoint (local position at Awake, 0 here);
+  - grounded → `(mid.x + waveslice·amount, mid.y + waveslice2·amount, 0)`;
+  - airborne → `Vector3.zero`.
+- *Speed and amount:*
+  - Walking && !Running && !prone → walk speed, `bobbingAmount`;
+  - Running → run speed, `bobbingAmount`;
+  - (!Running && !Walking) || prone → idle speed, `bobbingAmount · 0.3`.
+- *Difference from `CameraBob`:* `CameraBob` skips the whole update while prone.
+- Then `localPosition = Lerp(localPosition, target, deltaTime · smooth)`. Inside FixedUpdate, `deltaTime` is the 0.02 fixed step.
+- `german` values: walk 0.13, run 0.18, idle 0.005 rad per step; amount 0.02; smooth 6.
+- *Result:* standing sways ±6 mm, with a 12.6 s vertical and 25 s horizontal period. Walking sways ±2 cm, with a 0.48 s vertical and 0.97 s horizontal period.
+
+**`WeaponScript.Update`** (`f29942`) on the active weapon. The motion part is ported in `character.rs`; it runs `Aiming`, `RotationRealism` and `SmoothMove` in that order:
+
+- **`Start`** (`f29936`): `defaultPosition` = the local position; `defaultFov` = `Camera.main.fieldOfView`; `defaultBobbingAmount` = `walkSway.bobbingAmount`.
+- **`Aiming`** (`f29943`):
+  - Aimed and not Running → target = `Aim.aimPosition`, FOV `Aim.toFov`, `walkSway.bobbingAmount = Aim.aimBobbingAmount`.
+  - Otherwise → the defaults.
+  - Then `localPosition = Lerp(localPosition, target, deltaTime / Aim.smoothTime)`, and the FOV is lerped the same way.
+  - Only the not-aimed branch runs until aim input exists.
+- **`RotationRealism`** (`f29944`):
+  - `angleY = amplitude · Mouse X` when `|Mouse X| > 0.1`, else 0.
+  - `angleX = -amplitude · Mouse Y` when `|Mouse Y| > 0.1`, else 0.
+  - `localRotation = Slerp(localRotation, Euler(angleX, angleY, 0), deltaTime · smooth)`.
+  - Values: `RotRealism` amplitude 2, smooth 7 (ints).
+- **`SmoothMove`** (`f29945`):
+  - `offY = -max` when `velocity.y > max + 1`, and `+max` when `velocity.y < -max - 1`, where velocity is `CharacterController.velocity`.
+  - `offZ = clamp(-Vertical, -max, max)`.
+  - `localPosition = Lerp(localPosition, localPosition + (0, offY, offZ), deltaTime · Smooth)`.
+  - Values: `SmoothMovement` maxAmount 0.1, Smooth 3. Its target is relative to the current position, so it competes with `Aiming`'s pull back to `defaultPosition`.
+- **Not ported yet:** `cameraRecoilDo`, the gun-type fixed updates and `InputUpdate` (firing, reloading, aiming input).
+
+**`CharacterController.velocity` (inferred):** taken as the last `Move`'s displacement divided by that step's delta time.
+
 **`CharacterAnimation`** (`f65552` Start, `f65553` configureAnimations, `f65555` LateUpdate):
 
 - **Start / configureAnimations:** every clip slot gets `WrapMode.Loop`, except `jumpPose`, `pistolIdle`, `knifeIdle` and `gunIdle`.
@@ -150,7 +191,7 @@ The Weapon Camera's local transform is identity under the Main Camera. The clien
 ## Client frame order
 
 1. `begin_frame`: the animation clock advances.
-2. FixedUpdate and Update of the player.
+2. FixedUpdate steps (`FPScontroller`, `LadderPlayer`, `CameraBob`, `WalkSway`), then the Updates (`FPScontroller`/`FPSinput`/`FPSMouseLook`, then `WeaponScript`).
 3. `Animation` update and sampling.
 4. `FPScontroller` LateUpdate.
 5. `CharacterAnimation.LateUpdate`.
@@ -166,5 +207,5 @@ These are tracked in `docs/unknowns.md`:
 
 - Which team body mesh a remote player shows.
 - The exact blending normalisation for weights summing to less than 1.
-- `HeadLookController`, `WalkSway`, `WeaponScript` sway/aim, and remote animation playback (`PlayerNetworkController`).
+- `HeadLookController`, aiming and firing (`WeaponScript.InputUpdate`, recoil), and remote animation playback (`PlayerNetworkController`).
 - Particle shaders: prefab renderers using them are skipped for now.

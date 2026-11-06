@@ -25,13 +25,13 @@ Client: `crates/pga3-client` (binary). Procedural, data-oriented Rust; GL calls 
 | `scene.rs` | `data/scenes/<Scene>.json` → world matrices, renderers, directional lights, camera, spawn points, RenderSettings |
 | `obj.rs` | OBJ meshes from `assets/models/` back into Unity mesh space |
 | `physics.rs` | collision world (scene MeshColliders/BoxColliders in a grid, with layers and trigger flags), exact capsule sweeps, `SphereCast` / `CapsuleCast`, capsule-box trigger overlap, CharacterController (port of the PhysX 3.4 controller) |
-| `player.rs` | local player: ports of `FPScontroller`, `FPSinput`, `FPSMouseLook`, `CameraBob`, `LadderPlayer` / `Ladder`; Unity frame order and keyboard axes (spec: `docs/gameplay/movement.md`) |
+| `player.rs` | local player: ports of `FPScontroller`, `FPSinput`, `FPSMouseLook`, `CameraBob`, `WalkSway`, `LadderPlayer` / `Ladder`; Unity frame order and keyboard axes (spec: `docs/gameplay/movement.md`) |
 | `gfx.rs` | GL helpers: programs, mesh/texture upload, framebuffer readback |
 | `render.rs` | scene renderer: ports of the original shaders; prefab models (static and GPU-skinned) per camera culling mask |
 | `prefab.rs` | instances a `data/prefabs/resources/<name>.json` prefab: node hierarchy, renderers (meshes, built-in primitives, skins), `Animation` components, cameras, world matrices |
 | `anim.rs` | legacy `AnimationClip` evaluation and the `Animation` component (ports of Unity's native Play/CrossFade/update; spec: `docs/gameplay/animation.md`) |
 | `skin.rs` | skin sidecars (`data/skins/`), quality bone limit (`blendWeights`) |
-| `character.rs` | ports of `WeaponManager`/`WeaponAnimation` (first-person hands) and `CharacterAnimation` (third-person body) |
+| `character.rs` | ports of `WeaponManager`/`WeaponAnimation` (first-person hands), `WeaponScript`'s weapon motion (`Aiming`, `RotationRealism`, `SmoothMove`) and `CharacterAnimation` (third-person body) |
 | `primitives.rs` | Unity's built-in Cube/Cylinder, generated in code (not published) |
 
 ## Coordinate conventions (important for network compatibility)
