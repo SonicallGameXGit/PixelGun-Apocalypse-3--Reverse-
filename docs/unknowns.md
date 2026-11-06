@@ -8,3 +8,4 @@
 | 4 | Method bodies (gameplay math: movement, damage, recoil, spread) | Decompile `pga3-v18.wasm` with function names from `script.json` |
 | 5 | Is there music beyond the 22.8 s lobby loop (the "OST")? | Play the original and compare; check network for streamed audio |
 | 6 | Redistribution of bundled commercial fonts (Ebrima, Impact) | User decision |
+| 7 | Renderer fidelity is unverified against the original (ambient linearisation in gamma mode, skybox face orientation, small see-through triangles on `Castle` stone pillars: original map gaps or ours?) | Screenshots of the original at known camera poses |

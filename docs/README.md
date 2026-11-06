@@ -8,9 +8,9 @@ Existing:
 - `code-structure.md`: assemblies, game classes, scenes.
 - `protocol.md`: multiplayer (PUN Classic 1.91 / Photon Cloud), server settings, RPC list.
 - `assets.md`: extraction pipeline, published asset counts, gaps.
+- `architecture.md`: client crates and rationale, modules, coordinate conventions, renderer (shader ports), how to run.
 - `unknowns.md`: open questions.
 
 Planned:
 
-- `architecture.md`: stack decisions (windowing, math crate, physics, audio) and rationale.
 - `gameplay/`: weapons, movement, modes, progression, balance tables.

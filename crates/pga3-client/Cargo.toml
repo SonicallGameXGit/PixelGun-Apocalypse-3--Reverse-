@@ -6,3 +6,13 @@ edition.workspace = true
 publish.workspace = true
 
 [dependencies]
+anyhow = "1.0.104"
+glam = "0.34.2"
+glow = "0.18.0"
+glutin = "0.32.3"
+glutin-winit = "0.5.0"
+image = { version = "0.25.10", default-features = false, features = ["png"] }
+raw-window-handle = "0.6.2"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+winit = "0.30.13"

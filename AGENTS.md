@@ -41,6 +41,7 @@ Rules (from REA): separate **observations, inferences, unknowns**; cite evidence
 - All scene/prefab/material/settings data plus **every MonoBehaviour's fields (decoded byte-exact)** are in `assets/data/` (format: `docs/assets.md`). Gameplay values (weapon stats, movement speeds, input axes, physics/timestep) come from there, not from guesses.
 - Maps are converted Source-engine BSP geometry (`VBSP_Object.model_N` + MeshColliders) inside the scene files; players/weapons/effects are Resources prefabs.
 - Platform SDK: GameArter (`Garter`), PacoGames' backend.
+- Client status: scene viewer renders every map with ported original shaders (`docs/architecture.md`). Verify rendering changes with `--screenshot` (see there).
 
 ## Repository layout
 
@@ -77,8 +78,8 @@ research/               GITIGNORED (except research/README.md). Raw RE material
 ## Tech stack
 
 - **Language:** Rust (edition 2024, toolchain in `rust-toolchain.toml`).
-- **Graphics:** OpenGL (target: GL 3.3 core; keep the renderer behind a small abstraction so a WebGL/wasm build remains possible). Planned crates: `glow` or `gl`, windowing via `winit` + `glutin` (or `sdl2`).
-- **Math:** `glam` or `nalgebra` (pick one early and record the decision in `docs/architecture.md`).
+- **Graphics:** OpenGL 3.3 core via `glow` (also targets WebGL2, so a wasm build stays possible); windowing `winit` 0.30 + `glutin` 0.32.
+- **Math:** `glam` (decided; see `docs/architecture.md`). Game state stays in Unity world space (left-handed, +Y up); conventions in `docs/architecture.md`.
 - **Physics:** custom/`rapier3d`, whichever hits the 95%+ behavioural match against the original (Unity PhysX CharacterController behaviour, gravity, step offsets, etc. must be measured, not assumed).
 - **Audio:** `rodio`/`kira` or similar.
 - **Networking:** protocol is dictated by the original servers. Find out (via REA runtime capture) what the original uses and implement exactly that.

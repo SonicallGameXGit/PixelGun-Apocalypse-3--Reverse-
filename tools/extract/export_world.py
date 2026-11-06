@@ -81,7 +81,8 @@ def clean(value, assets_file):
         if set(value.keys()) == {'m_FileID', 'm_PathID'}:
             return make_ref(assets_file, value)
         return {k: clean(v, assets_file) for k, v in value.items()}
-    if isinstance(value, list):
+    # UnityPy returns map entries (e.g. Material m_TexEnvs) as tuples.
+    if isinstance(value, (list, tuple)):
         return [clean(v, assets_file) for v in value]
     if isinstance(value, float):
         return f32(value)
@@ -265,6 +266,29 @@ for key, obj in objects.items():
             shader['name'] = objects[shader['ref']].read().m_ParsedForm.m_Name
         materials[key] = data
 write_json('materials.json', materials)
+
+# --- texture sampler/import settings (keyed by published path) ----------------------------------
+FILTER_MODES = {0: 'point', 1: 'bilinear', 2: 'trilinear'}
+WRAP_MODES = {0: 'repeat', 1: 'clamp', 2: 'mirror', 3: 'mirror_once'}
+textures = {}
+for key, obj in objects.items():
+    if obj.type.name == 'Texture2D' and key in published:
+        tree = obj.read_typetree()
+        settings = tree['m_TextureSettings']
+        textures[published[key]] = {
+            'ref': key,
+            'width': tree['m_Width'],
+            'height': tree['m_Height'],
+            'format': tree['m_TextureFormat'],
+            'mip_count': tree['m_MipCount'],
+            'filter': FILTER_MODES.get(settings['m_FilterMode'], settings['m_FilterMode']),
+            'aniso': settings['m_Aniso'],
+            'mip_bias': f32(settings['m_MipBias']),
+            'wrap_u': WRAP_MODES.get(settings['m_WrapU'], settings['m_WrapU']),
+            'wrap_v': WRAP_MODES.get(settings['m_WrapV'], settings['m_WrapV']),
+            'color_space': 'srgb' if tree.get('m_ColorSpace', 1) == 1 else 'linear',
+        }
+write_json('textures.json', dict(sorted(textures.items())))
 
 # --- animation clips / controllers (raw, decoded later) -------------------------------------------
 for kind in ('AnimationClip', 'AnimatorController'):

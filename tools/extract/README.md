@@ -32,7 +32,7 @@ python3 -I tools/extract/publish_assets.py research/extracted assets
 dotnet research/tools/Il2CppDumper/Il2CppDumper/bin/Release/net10.0/Il2CppDumper.dll \
     $B/raw/pga3-v18.wasm $B/unpacked/Il2CppData/Metadata/global-metadata.dat research/il2cpp-dump
 
-# 6. scenes, prefabs, materials, decoded script data, settings, animations -> assets/data/
+# 6. scenes, prefabs, materials, texture sampler settings, decoded script data, settings, animations -> assets/data/
 research/tools/venv/bin/python -I tools/extract/export_world.py "$PWD/$B/unpacked" "$PWD/assets" "$PWD/research/il2cpp-dump"
 
 # 7. shaders -> assets/shaders/
