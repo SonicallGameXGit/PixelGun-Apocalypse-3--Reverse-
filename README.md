@@ -14,7 +14,7 @@ The implementation is independent. It has no Unity and no original code, only be
 
 ## Status
 
-Reverse engineering in progress; nothing is playable yet. Done so far: the original build is unpacked, the code structure is recovered, the multiplayer stack is identified (PUN Classic 1.91 on Photon Cloud), and 550 assets (textures, sprites, audio, meshes, fonts) are extracted into `assets/`. See [`docs/`](docs/).
+Reverse engineering in progress; nothing is playable yet. Done so far: the original build is unpacked, the code structure is recovered, the multiplayer stack is identified (PUN Classic 1.91 on Photon Cloud), and the assets are extracted into `assets/`: textures, sprites, audio, meshes, fonts, shaders, plus all scenes, prefabs, materials, settings and decoded script data (weapon stats, movement values, ...) as JSON. See [`docs/`](docs/).
 
 ## Assets
 

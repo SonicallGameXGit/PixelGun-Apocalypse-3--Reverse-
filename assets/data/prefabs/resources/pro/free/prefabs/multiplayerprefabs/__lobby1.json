@@ -1,0 +1,143 @@
+{
+    "file": "resources.assets",
+    "resources_path": "pro/free/prefabs/multiplayerprefabs/__lobby1",
+    "root": "resources.assets:401",
+    "nodes": [
+        {
+            "ref": "resources.assets:401",
+            "name": "__Lobby1",
+            "active": false,
+            "layer": 0,
+            "tag": 20002,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16286",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:41237",
+                    "enabled": true,
+                    "script": "ConnectMenu",
+                    "script_ref": "globalgamemanagers.assets:403",
+                    "fields_complete": true,
+                    "fields": {
+                        "timer": 0.0,
+                        "redtimer": 0.0,
+                        "guiSKin": { "ref": "resources.assets:40960" },
+                        "blackScreen": { "ref": "sharedassets0.assets:55", "asset": "textures/loading.png" },
+                        "top": { "ref": "sharedassets0.assets:31", "asset": "textures/Top.png" },
+                        "lockicon": { "ref": "sharedassets0.assets:99", "asset": "textures/Lock.png" },
+                        "btnTexture2": null,
+                        "btnTexture3": null,
+                        "fadeTexture0": null,
+                        "tex": null,
+                        "Clan": "",
+                        "WEAPONSALLOW": "[WEP02][WEP06][WEP07][WEP08][WEP05][WEP04][WEP03]",
+                        "allMaps": [
+                            { "mapName": "Wordys", "mapPreview": null },
+                            { "mapName": "ZM_Wordys", "mapPreview": null },
+                            { "mapName": "Dust", "mapPreview": null },
+                            { "mapName": "ZM_Dust", "mapPreview": null },
+                            { "mapName": "HighRise", "mapPreview": null },
+                            { "mapName": "ZM_HighRise", "mapPreview": null },
+                            { "mapName": "Hangar", "mapPreview": null },
+                            { "mapName": "ZM_Hangar", "mapPreview": null },
+                            { "mapName": "Empire", "mapPreview": null },
+                            { "mapName": "ZM_Empire", "mapPreview": null },
+                            { "mapName": "Firing", "mapPreview": null },
+                            { "mapName": "ZM_Firing", "mapPreview": null },
+                            { "mapName": "Carbon", "mapPreview": null },
+                            { "mapName": "ZM_Carbon", "mapPreview": null },
+                            { "mapName": "Container", "mapPreview": null },
+                            { "mapName": "Container", "mapPreview": null },
+                            { "mapName": "Crash", "mapPreview": null },
+                            { "mapName": "ZM_Crash", "mapPreview": null },
+                            { "mapName": "Dome", "mapPreview": null },
+                            { "mapName": "ZM_Dome", "mapPreview": null }
+                        ],
+                        "SearchRoom": "",
+                        "RankTextures": [],
+                        "Level": [],
+                        "Serverchoose": null
+                    }
+                }
+            ],
+            "children": ["resources.assets:415"],
+            "parent": null
+        },
+        {
+            "ref": "resources.assets:415",
+            "name": "Camera",
+            "active": false,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16300",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.1736482, "y": 0.0, "z": 0.0, "w": 0.9848078 },
+                        "m_LocalPosition": { "x": 0.0, "y": 113.0, "z": -247.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "Camera",
+                    "ref": "resources.assets:32095",
+                    "data": {
+                        "m_Enabled": 1,
+                        "m_ClearFlags": 1,
+                        "m_BackGroundColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.019607844 },
+                        "m_projectionMatrixMode": 1,
+                        "m_SensorSize": { "x": 36.0, "y": 24.0 },
+                        "m_LensShift": { "x": 0.0, "y": 0.0 },
+                        "m_GateFitMode": 2,
+                        "m_FocalLength": 50.0,
+                        "m_NormalizedViewPortRect": { "x": 0.0, "y": 0.0, "width": 1.0, "height": 1.0 },
+                        "near clip plane": 0.3,
+                        "far clip plane": 600.0,
+                        "field of view": 21.0,
+                        "orthographic": false,
+                        "orthographic size": 100.0,
+                        "m_Depth": 0.0,
+                        "m_CullingMask": { "m_Bits": 4294967295 },
+                        "m_RenderingPath": -1,
+                        "m_TargetTexture": null,
+                        "m_TargetDisplay": 0,
+                        "m_TargetEye": 3,
+                        "m_HDR": false,
+                        "m_AllowMSAA": true,
+                        "m_AllowDynamicResolution": false,
+                        "m_ForceIntoRT": false,
+                        "m_OcclusionCulling": true,
+                        "m_StereoConvergence": 10.0,
+                        "m_StereoSeparation": 0.022
+                    }
+                },
+                {
+                    "type": "FlareLayer",
+                    "ref": "resources.assets:40310",
+                    "data": { "m_Enabled": 1 }
+                },
+                {
+                    "type": "GUILayer",
+                    "ref": "resources.assets:39879",
+                    "data": { "m_Enabled": 1 }
+                },
+                {
+                    "type": "AudioListener",
+                    "ref": "resources.assets:39187",
+                    "data": { "m_Enabled": 1 }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:401"
+        }
+    ]
+}

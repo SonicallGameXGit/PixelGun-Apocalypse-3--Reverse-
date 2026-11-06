@@ -1,0 +1,295 @@
+{
+    "ref": "resources.assets:40956",
+    "enabled": true,
+    "script": "GleyMobileAds.AdSettings",
+    "script_ref": "globalgamemanagers.assets:216",
+    "name": "AdSettingsData",
+    "fields_complete": true,
+    "fields": {
+        "mediationSettings": [
+            {
+                "advertiser": 0,
+                "advertiserName": "Admob",
+                "bannerSettings": { "adType": 1, "orderAndroid": 1, "orderiOS": 1, "orderWindows": 1, "weightAndroid": 1, "weightiOS": 1, "weightWindows": 1 },
+                "interstitialSettings": { "adType": 2, "orderAndroid": 1, "orderiOS": 1, "orderWindows": 1, "weightAndroid": 1, "weightiOS": 1, "weightWindows": 1 },
+                "rewardedSettings": { "adType": 3, "orderAndroid": 1, "orderiOS": 1, "orderWindows": 1, "weightAndroid": 1, "weightiOS": 1, "weightWindows": 1 }
+            }
+        ],
+        "advertiserSettings": [
+            {
+                "advertiser": 2,
+                "useSDK": false,
+                "preprocessorDirective": "USE_ADCOLONY",
+                "sdkLink": "https://github.com/AdColony/",
+                "platformSettings": [
+                    {
+                        "platform": 0,
+                        "enabled": true,
+                        "appId": { "id": "appcb5be6e5a09b474eb8", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "vz119b1cd8d0594c5992", "displayName": "Interstitial Zone ID", "notRequired": false },
+                        "idRewarded": { "id": "vz33378235795d408394", "displayName": "Rewarded Zone ID", "notRequired": false },
+                        "hasBanner": false,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    },
+                    {
+                        "platform": 1,
+                        "enabled": false,
+                        "appId": { "id": "appa1201d8d2d044b9683", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "vz13ac404725764a27a3", "displayName": "Interstitial Zone ID", "notRequired": false },
+                        "idRewarded": { "id": "vz3172574768ab4a2a90", "displayName": "Rewarded Zone ID", "notRequired": false },
+                        "hasBanner": false,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    }
+                ]
+            },
+            {
+                "advertiser": 0,
+                "useSDK": true,
+                "preprocessorDirective": "USE_ADMOB",
+                "sdkLink": "https://github.com/googleads/googleads-mobile-unity/releases",
+                "platformSettings": [
+                    {
+                        "platform": 0,
+                        "enabled": true,
+                        "appId": { "id": "ca-app-pub-6067734839208909~7762850193", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "Banner ID", "notRequired": false },
+                        "idInterstitial": { "id": "ca-app-pub-6067734839208909/3823605184", "displayName": "Interstitial ID", "notRequired": false },
+                        "idRewarded": { "id": "", "displayName": "Rewarded Video ID", "notRequired": false },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": true
+                    },
+                    {
+                        "platform": 1,
+                        "enabled": false,
+                        "appId": { "id": "ca-app-pub-9463523453603371~2685264649", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "ca-app-pub-9463523453603371/2710427661", "displayName": "Banner ID", "notRequired": false },
+                        "idInterstitial": { "id": "ca-app-pub-9463523453603371/4161997845", "displayName": "Interstitial ID", "notRequired": false },
+                        "idRewarded": { "id": "ca-app-pub-9463523453603371/6486021143", "displayName": "Rewarded Video ID", "notRequired": false },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    }
+                ]
+            },
+            {
+                "advertiser": 3,
+                "useSDK": false,
+                "preprocessorDirective": "USE_CHARTBOOST",
+                "sdkLink": "https://answers.chartboost.com/en-us/articles/download",
+                "platformSettings": [
+                    {
+                        "platform": 0,
+                        "enabled": true,
+                        "appId": { "id": "5551a69304b0161024d3ce3a", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "13090e636f18dde540fda0b2cdf51b72ab49d357", "displayName": "App Signature", "notRequired": false },
+                        "idRewarded": { "id": "", "displayName": "", "notRequired": true },
+                        "hasBanner": false,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    },
+                    {
+                        "platform": 1,
+                        "enabled": true,
+                        "appId": { "id": "5551aa4c0d6025451f44c36e", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "cb0f64f685cae2d9a018c61eea8ddcd80edef860", "displayName": "App Signature", "notRequired": false },
+                        "idRewarded": { "id": "", "displayName": "", "notRequired": true },
+                        "hasBanner": false,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    }
+                ]
+            },
+            {
+                "advertiser": 5,
+                "useSDK": false,
+                "preprocessorDirective": "USE_HEYZAP",
+                "sdkLink": "https://developers.heyzap.com/docs/unity_sdk_setup_and_requirements",
+                "platformSettings": [
+                    {
+                        "platform": 0,
+                        "enabled": true,
+                        "appId": { "id": "ce00eb175bc13ad9ee55726cd53bc7fb", "displayName": "Publisher ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "", "displayName": "", "notRequired": true },
+                        "idRewarded": { "id": "", "displayName": "", "notRequired": true },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    },
+                    {
+                        "platform": 1,
+                        "enabled": true,
+                        "appId": { "id": "ce00eb175bc13ad9ee55726cd53bc7fb", "displayName": "Publisher ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "", "displayName": "", "notRequired": true },
+                        "idRewarded": { "id": "", "displayName": "", "notRequired": true },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    }
+                ]
+            },
+            {
+                "advertiser": 4,
+                "useSDK": false,
+                "preprocessorDirective": "USE_UNITYADS",
+                "sdkLink": "https://www.assetstore.unity3d.com/en/#!/content/66123",
+                "platformSettings": [
+                    {
+                        "platform": 0,
+                        "enabled": true,
+                        "appId": { "id": "38203", "displayName": "Game ID", "notRequired": false },
+                        "idBanner": { "id": "banner", "displayName": "Placement ID Banner", "notRequired": false },
+                        "idInterstitial": { "id": "video", "displayName": "Placement ID Interstitial", "notRequired": false },
+                        "idRewarded": { "id": "rewardedVideo", "displayName": "Placement ID Rewarded", "notRequired": false },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    },
+                    {
+                        "platform": 1,
+                        "enabled": false,
+                        "appId": { "id": "1857235", "displayName": "Game ID", "notRequired": false },
+                        "idBanner": { "id": "banner", "displayName": "Placement ID Banner", "notRequired": false },
+                        "idInterstitial": { "id": "video", "displayName": "Placement ID Interstitial", "notRequired": false },
+                        "idRewarded": { "id": "rewardedVideo", "displayName": "Placement ID Rewarded", "notRequired": false },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    }
+                ]
+            },
+            {
+                "advertiser": 1,
+                "useSDK": false,
+                "preprocessorDirective": "USE_VUNGLE",
+                "sdkLink": "https://v.vungle.com/sdk",
+                "platformSettings": [
+                    {
+                        "platform": 0,
+                        "enabled": true,
+                        "appId": { "id": "5551ac6358fd41a431000117", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "JUMPY___INTERSTITIAL___ANDROID-5683467", "displayName": "Interstitial Placement ID", "notRequired": false },
+                        "idRewarded": { "id": "JUMPY___REWARDED___ANDROID-3719001", "displayName": "Rewarded Placement ID", "notRequired": false },
+                        "hasBanner": false,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    },
+                    {
+                        "platform": 1,
+                        "enabled": true,
+                        "appId": { "id": "5551abdb6e0965aa31000180", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "JUMPY___INTERSTITIAL___IOS-2563045", "displayName": "Interstitial Placement ID", "notRequired": false },
+                        "idRewarded": { "id": "JUMPY___REWARDED___IOS-7019611", "displayName": "Rewarded Placement ID", "notRequired": false },
+                        "hasBanner": false,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    },
+                    {
+                        "platform": 2,
+                        "enabled": false,
+                        "appId": { "id": "", "displayName": "App ID", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "", "displayName": "Interstitial Placement ID", "notRequired": false },
+                        "idRewarded": { "id": "", "displayName": "Rewarded Placement ID", "notRequired": false },
+                        "hasBanner": false,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    }
+                ]
+            },
+            {
+                "advertiser": 6,
+                "useSDK": false,
+                "preprocessorDirective": "USE_APPLOVIN",
+                "sdkLink": "https://dash.applovin.com/docs/integration#unity3dIntegration",
+                "platformSettings": [
+                    {
+                        "platform": 0,
+                        "enabled": true,
+                        "appId": { "id": "ZShGR5ndD6rqdLgXw4Xwzg2wZToDpdoM5UdWZP8oV-c7JHfEMC9JtBERk0eWdRukwWEUwNHQLuXfACuWO1rGC3", "displayName": "SDK key", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "", "displayName": "", "notRequired": true },
+                        "idRewarded": { "id": "", "displayName": "", "notRequired": true },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    },
+                    {
+                        "platform": 1,
+                        "enabled": true,
+                        "appId": { "id": "ZShGR5ndD6rqdLgXw4Xwzg2wZToDpdoM5UdWZP8oV-c7JHfEMC9JtBERk0eWdRukwWEUwNHQLuXfACuWO1rGC3", "displayName": "SDK key", "notRequired": false },
+                        "idBanner": { "id": "", "displayName": "", "notRequired": true },
+                        "idInterstitial": { "id": "", "displayName": "", "notRequired": true },
+                        "idRewarded": { "id": "", "displayName": "", "notRequired": true },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    }
+                ]
+            },
+            {
+                "advertiser": 7,
+                "useSDK": false,
+                "preprocessorDirective": "USE_FACEBOOKADS",
+                "sdkLink": "https://developers.facebook.com/docs/audience-network/download#unity",
+                "platformSettings": [
+                    {
+                        "platform": 0,
+                        "enabled": false,
+                        "appId": { "id": "", "displayName": "", "notRequired": true },
+                        "idBanner": { "id": "", "displayName": "Banner Placement ID", "notRequired": false },
+                        "idInterstitial": { "id": "", "displayName": "Interstitial Placement ID", "notRequired": false },
+                        "idRewarded": { "id": "", "displayName": "Rewarded Placement ID", "notRequired": false },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    },
+                    {
+                        "platform": 1,
+                        "enabled": false,
+                        "appId": { "id": "", "displayName": "", "notRequired": true },
+                        "idBanner": { "id": "", "displayName": "Banner Placement ID", "notRequired": false },
+                        "idInterstitial": { "id": "", "displayName": "Interstitial Placement ID", "notRequired": false },
+                        "idRewarded": { "id": "", "displayName": "Rewarded Placement ID", "notRequired": false },
+                        "hasBanner": true,
+                        "hasInterstitial": true,
+                        "hasRewarded": true,
+                        "directedForChildren": false
+                    }
+                ]
+            }
+        ],
+        "debugMode": false,
+        "usePlaymaker": false,
+        "bannerMediation": 0,
+        "interstitialMediation": 0,
+        "rewardedMediation": 0,
+        "externalFileUrl": ""
+    }
+}

@@ -1,0 +1,1449 @@
+{
+    "scene": "Crash",
+    "build_index": 3,
+    "file": "level3",
+    "settings": {
+        "RenderSettings": {
+            "m_Fog": false,
+            "m_FogColor": { "r": 1.0, "g": 0.69803923, "b": 0.69803923, "a": 1.0 },
+            "m_FogMode": 2,
+            "m_FogDensity": 0.01,
+            "m_LinearFogStart": 0.0,
+            "m_LinearFogEnd": 300.0,
+            "m_AmbientSkyColor": { "r": 0.6985294, "g": 0.6985294, "b": 0.6985294, "a": 1.0 },
+            "m_AmbientEquatorColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+            "m_AmbientGroundColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+            "m_AmbientIntensity": 1.0,
+            "m_AmbientMode": 3,
+            "m_SubtractiveShadowColor": { "r": 0.42, "g": 0.478, "b": 0.627, "a": 1.0 },
+            "m_SkyboxMaterial": { "ref": "sharedassets1.assets:34" },
+            "m_HaloStrength": 0.5,
+            "m_FlareStrength": 1.0,
+            "m_FlareFadeSpeed": 3.0,
+            "m_HaloTexture": null,
+            "m_SpotCookie": { "ref": "unity_default_resources:10001" },
+            "m_DefaultReflectionMode": 0,
+            "m_DefaultReflectionResolution": 128,
+            "m_ReflectionBounces": 1,
+            "m_ReflectionIntensity": 1.0,
+            "m_CustomReflection": null,
+            "m_AmbientProbe": { "sh[ 0]": 0.0, "sh[ 1]": 0.0, "sh[ 2]": 0.0, "sh[ 3]": 0.0, "sh[ 4]": 0.0, "sh[ 5]": 0.0, "sh[ 6]": 0.0, "sh[ 7]": 0.0, "sh[ 8]": 0.0, "sh[ 9]": 0.0, "sh[10]": 0.0, "sh[11]": 0.0, "sh[12]": 0.0, "sh[13]": 0.0, "sh[14]": 0.0, "sh[15]": 0.0, "sh[16]": 0.0, "sh[17]": 0.0, "sh[18]": 0.0, "sh[19]": 0.0, "sh[20]": 0.0, "sh[21]": 0.0, "sh[22]": 0.0, "sh[23]": 0.0, "sh[24]": 0.0, "sh[25]": 0.0, "sh[26]": 0.0 },
+            "m_GeneratedSkyboxReflection": null,
+            "m_Sun": null,
+            "m_IndirectSpecularColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 },
+            "m_UseRadianceAmbientProbe": false
+        },
+        "LightmapSettings": {
+            "m_EnlightenSceneMapping": {
+                "m_Renderers": [],
+                "m_Systems": [],
+                "m_Probesets": [],
+                "m_SystemAtlases": [],
+                "m_TerrainChunks": []
+            },
+            "m_LightProbes": null,
+            "m_Lightmaps": [],
+            "m_LightmapsMode": 1,
+            "m_GISettings": { "m_BounceScale": 1.0, "m_IndirectOutputScale": 1.0, "m_AlbedoBoost": 1.0, "m_EnvironmentLightingMode": 0, "m_EnableBakedLightmaps": false, "m_EnableRealtimeLightmaps": false },
+            "m_UseShadowmask": false
+        }
+    },
+    "game_objects": 36,
+    "roots": ["level3:1", "level3:2", "level3:8", "level3:18", "level3:29", "level3:34", "level3:35"],
+    "nodes": [
+        {
+            "ref": "level3:1",
+            "name": "Team B SpawnPoints",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:37",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["level3:32", "level3:7", "level3:19", "level3:9"],
+            "parent": null
+        },
+        {
+            "ref": "level3:32",
+            "name": "SpawnPoint5",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:68",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 4.8857174, "y": -5.37, "z": -33.595074 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:1"
+        },
+        {
+            "ref": "level3:7",
+            "name": "SpawnPoint6",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:43",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -24.893368, "y": -4.66, "z": -33.234673 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:1"
+        },
+        {
+            "ref": "level3:19",
+            "name": "SpawnPoint7",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:55",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -20.147373, "y": -10.28, "z": -15.28376 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:1"
+        },
+        {
+            "ref": "level3:9",
+            "name": "SpawnPoint8",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:45",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 4.146101, "y": -10.4, "z": -15.328747 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:1"
+        },
+        {
+            "ref": "level3:2",
+            "name": "Team A SpawnPoints",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:38",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["level3:17", "level3:10", "level3:36", "level3:11"],
+            "parent": null
+        },
+        {
+            "ref": "level3:17",
+            "name": "SpawnPoint1",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:53",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 4.399601, "y": -9.96, "z": 12.261223 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:2"
+        },
+        {
+            "ref": "level3:10",
+            "name": "SpawnPoint2",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:46",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -19.700195, "y": -10.27, "z": 12.217129 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:2"
+        },
+        {
+            "ref": "level3:36",
+            "name": "SpawnPoint3",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:72",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -21.20919, "y": -5.12, "z": 30.941114 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:2"
+        },
+        {
+            "ref": "level3:11",
+            "name": "SpawnPoint4",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:47",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 7.590353, "y": -4.99, "z": 30.915922 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:2"
+        },
+        {
+            "ref": "level3:8",
+            "name": "map1",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:44",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.7071068, "y": 0.0, "z": 0.0, "w": 0.7071068 },
+                        "m_LocalPosition": { "x": -4.7, "y": 3.29, "z": -5.1 },
+                        "m_LocalScale": { "x": 0.03944616, "y": 0.03944616, "z": 0.03944616 }
+                    }
+                }
+            ],
+            "children": ["level3:16", "level3:33", "level3:20", "level3:23", "level3:12", "level3:28", "level3:6"],
+            "parent": null
+        },
+        {
+            "ref": "level3:16",
+            "name": "VBSP_Object.model_0",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:52",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level3:83",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets3.assets:30", "asset": "models/VBSP_Object.model_0__30.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level3:76",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets3.assets:2" },
+                            { "ref": "sharedassets3.assets:3" },
+                            { "ref": "sharedassets3.assets:13" },
+                            { "ref": "sharedassets3.assets:14" },
+                            { "ref": "sharedassets3.assets:15" },
+                            { "ref": "sharedassets3.assets:16" },
+                            { "ref": "sharedassets3.assets:17" },
+                            { "ref": "sharedassets3.assets:18" },
+                            { "ref": "sharedassets3.assets:19" },
+                            { "ref": "sharedassets3.assets:20" },
+                            { "ref": "sharedassets3.assets:4" },
+                            { "ref": "sharedassets3.assets:5" },
+                            { "ref": "sharedassets3.assets:6" },
+                            { "ref": "sharedassets3.assets:7" },
+                            { "ref": "sharedassets3.assets:8" },
+                            { "ref": "sharedassets3.assets:9" },
+                            { "ref": "sharedassets3.assets:10" },
+                            { "ref": "sharedassets3.assets:11" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level3:88",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets3.assets:30", "asset": "models/VBSP_Object.model_0__30.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:8"
+        },
+        {
+            "ref": "level3:33",
+            "name": "VBSP_Object.model_65",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:69",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level3:87",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets3.assets:31", "asset": "models/VBSP_Object.model_65.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level3:80",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets3.assets:6" },
+                            { "ref": "sharedassets3.assets:12" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level3:90",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets3.assets:31", "asset": "models/VBSP_Object.model_65.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:8"
+        },
+        {
+            "ref": "level3:20",
+            "name": "VBSP_Object.model_66",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:56",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level3:84",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets3.assets:32", "asset": "models/VBSP_Object.model_66.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level3:77",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets3.assets:6" },
+                            { "ref": "sharedassets3.assets:12" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level3:89",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets3.assets:32", "asset": "models/VBSP_Object.model_66.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:8"
+        },
+        {
+            "ref": "level3:23",
+            "name": "Ladder (3)",
+            "active": true,
+            "layer": 2,
+            "tag": 20006,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:59",
+                    "data": {
+                        "m_LocalRotation": { "x": -5.820766e-08, "y": 2.9802322e-08, "z": 0.99991786, "w": -0.012823561 },
+                        "m_LocalPosition": { "x": -759.4039, "y": 414.09952, "z": -379.93835 },
+                        "m_LocalScale": { "x": 1.2686795, "y": 1.1467544, "z": 0.89190966 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level3:85",
+                    "data": {
+                        "m_Mesh": { "ref": "resources.assets:168", "asset": "models/Cylinder_001.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level3:78",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 0,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "resources.assets:48" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level3:108",
+                    "enabled": true,
+                    "script": "Ladder",
+                    "script_ref": "globalgamemanagers.assets:241",
+                    "fields_complete": true,
+                    "fields": {
+                        "ladderBottom": { "ref": "level3:21" },
+                        "ladderTop": { "ref": "level3:22" }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "level3:95",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": true,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 34.106075, "y": 1.714692, "z": 147.04643 },
+                        "m_Center": { "x": -0.4881096, "y": 6.2234483, "z": 73.08405 }
+                    }
+                }
+            ],
+            "children": ["level3:24", "level3:21", "level3:22"],
+            "parent": "level3:8"
+        },
+        {
+            "ref": "level3:24",
+            "name": "MiddleCollider",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:60",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.4882813, "y": 0.9, "z": 67.45517 },
+                        "m_LocalScale": { "x": 22.954535, "y": 135.80754, "z": 1.9390154 }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "level3:96",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_Center": { "x": 0.0, "y": 0.0, "z": 0.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:23"
+        },
+        {
+            "ref": "level3:21",
+            "name": "LadderBottom",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:57",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.48828113, "y": 1.7815567, "z": 1.9596304 },
+                        "m_LocalScale": { "x": 18.181808, "y": 13.444965, "z": 13.444965 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:23"
+        },
+        {
+            "ref": "level3:22",
+            "name": "LadderTop",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:58",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.48828113, "y": 1.7815408, "z": 135.74767 },
+                        "m_LocalScale": { "x": 18.181808, "y": 13.444965, "z": 13.444965 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:23"
+        },
+        {
+            "ref": "level3:12",
+            "name": "Ladder (2)",
+            "active": true,
+            "layer": 2,
+            "tag": 20006,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:48",
+                    "data": {
+                        "m_LocalRotation": { "x": -8.940697e-08, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -761.0657, "y": -606.0002, "z": -380.5329 },
+                        "m_LocalScale": { "x": 1.2686797, "y": 1.1467545, "z": 0.8919095 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level3:82",
+                    "data": {
+                        "m_Mesh": { "ref": "resources.assets:168", "asset": "models/Cylinder_001.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level3:75",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 0,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "resources.assets:48" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level3:106",
+                    "enabled": true,
+                    "script": "Ladder",
+                    "script_ref": "globalgamemanagers.assets:241",
+                    "fields_complete": true,
+                    "fields": {
+                        "ladderBottom": { "ref": "level3:14" },
+                        "ladderTop": { "ref": "level3:15" }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "level3:94",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": true,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 34.106075, "y": 1.714692, "z": 147.04643 },
+                        "m_Center": { "x": -0.4881096, "y": 6.2234483, "z": 73.08405 }
+                    }
+                }
+            ],
+            "children": ["level3:13", "level3:14", "level3:15"],
+            "parent": "level3:8"
+        },
+        {
+            "ref": "level3:13",
+            "name": "MiddleCollider",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:49",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.4882813, "y": 0.9, "z": 67.45517 },
+                        "m_LocalScale": { "x": 22.954535, "y": 135.80754, "z": 1.9390154 }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "level3:93",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_Center": { "x": 0.0, "y": 0.0, "z": 0.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:12"
+        },
+        {
+            "ref": "level3:14",
+            "name": "LadderBottom",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:50",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.48828113, "y": 1.7815567, "z": 1.9596304 },
+                        "m_LocalScale": { "x": 18.181808, "y": 13.444965, "z": 13.444965 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:12"
+        },
+        {
+            "ref": "level3:15",
+            "name": "LadderTop",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:51",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.48828113, "y": 1.7815408, "z": 135.74767 },
+                        "m_LocalScale": { "x": 18.181808, "y": 13.444965, "z": 13.444965 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:12"
+        },
+        {
+            "ref": "level3:28",
+            "name": "Ladder (1)",
+            "active": true,
+            "layer": 2,
+            "tag": 20006,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:64",
+                    "data": {
+                        "m_LocalRotation": { "x": -8.940697e-08, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 591.73773, "y": -606.0002, "z": -383.694 },
+                        "m_LocalScale": { "x": 1.2686797, "y": 1.1467545, "z": 0.8919095 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level3:86",
+                    "data": {
+                        "m_Mesh": { "ref": "resources.assets:168", "asset": "models/Cylinder_001.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level3:79",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 0,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "resources.assets:48" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level3:109",
+                    "enabled": true,
+                    "script": "Ladder",
+                    "script_ref": "globalgamemanagers.assets:241",
+                    "fields_complete": true,
+                    "fields": {
+                        "ladderBottom": { "ref": "level3:26" },
+                        "ladderTop": { "ref": "level3:25" }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "level3:98",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": true,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 34.106075, "y": 1.714692, "z": 147.04643 },
+                        "m_Center": { "x": -0.4881096, "y": 6.2234483, "z": 73.08405 }
+                    }
+                }
+            ],
+            "children": ["level3:27", "level3:26", "level3:25"],
+            "parent": "level3:8"
+        },
+        {
+            "ref": "level3:27",
+            "name": "MiddleCollider",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:63",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.4882813, "y": 0.9, "z": 67.45517 },
+                        "m_LocalScale": { "x": 22.954535, "y": 135.80754, "z": 1.9390154 }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "level3:97",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_Center": { "x": 0.0, "y": 0.0, "z": 0.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:28"
+        },
+        {
+            "ref": "level3:26",
+            "name": "LadderBottom",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:62",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.48828113, "y": 1.7815567, "z": 1.9596304 },
+                        "m_LocalScale": { "x": 18.181808, "y": 13.444965, "z": 13.444965 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:28"
+        },
+        {
+            "ref": "level3:25",
+            "name": "LadderTop",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:61",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.48828113, "y": 1.7815408, "z": 135.74767 },
+                        "m_LocalScale": { "x": 18.181808, "y": 13.444965, "z": 13.444965 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:28"
+        },
+        {
+            "ref": "level3:6",
+            "name": "Ladder",
+            "active": true,
+            "layer": 2,
+            "tag": 20006,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:42",
+                    "data": {
+                        "m_LocalRotation": { "x": -5.820766e-08, "y": 2.9802322e-08, "z": 0.99991786, "w": -0.012823561 },
+                        "m_LocalPosition": { "x": 591.90295, "y": 414.09952, "z": -379.93835 },
+                        "m_LocalScale": { "x": 1.2686795, "y": 1.1467544, "z": 0.89190966 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level3:81",
+                    "data": {
+                        "m_Mesh": { "ref": "resources.assets:168", "asset": "models/Cylinder_001.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level3:74",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 0,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "resources.assets:48" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level3:105",
+                    "enabled": true,
+                    "script": "Ladder",
+                    "script_ref": "globalgamemanagers.assets:241",
+                    "fields_complete": true,
+                    "fields": {
+                        "ladderBottom": { "ref": "level3:4" },
+                        "ladderTop": { "ref": "level3:3" }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "level3:92",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": true,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 34.106075, "y": 1.714692, "z": 147.04643 },
+                        "m_Center": { "x": -0.4881096, "y": 6.2234483, "z": 73.08405 }
+                    }
+                }
+            ],
+            "children": ["level3:5", "level3:4", "level3:3"],
+            "parent": "level3:8"
+        },
+        {
+            "ref": "level3:5",
+            "name": "MiddleCollider",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:41",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.4882813, "y": 0.9, "z": 67.45517 },
+                        "m_LocalScale": { "x": 22.954535, "y": 135.80754, "z": 1.9390154 }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "level3:91",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_Center": { "x": 0.0, "y": 0.0, "z": 0.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:6"
+        },
+        {
+            "ref": "level3:4",
+            "name": "LadderBottom",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:40",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.48828113, "y": 1.7815567, "z": 1.9596304 },
+                        "m_LocalScale": { "x": 18.181808, "y": 13.444965, "z": 13.444965 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:6"
+        },
+        {
+            "ref": "level3:3",
+            "name": "LadderTop",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:39",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
+                        "m_LocalPosition": { "x": -0.48828113, "y": 1.7815408, "z": 135.74767 },
+                        "m_LocalScale": { "x": 18.181808, "y": 13.444965, "z": 13.444965 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:6"
+        },
+        {
+            "ref": "level3:18",
+            "name": "CF-Bootcamp 1",
+            "active": false,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:54",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.54659986, "y": -2.6458297, "z": 2.2195873 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                { "type": "MonoBehaviour", "ref": "level3:107", "enabled": true, "script": null, "script_ref": null }
+            ],
+            "children": [],
+            "parent": null
+        },
+        {
+            "ref": "level3:29",
+            "name": "__Room",
+            "active": true,
+            "layer": 0,
+            "tag": 20002,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:66",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.07912706, "y": 0.91372836, "z": -0.21523571, "w": 0.33542973 },
+                        "m_LocalPosition": { "x": -109.815025, "y": 28.817581, "z": 40.934937 },
+                        "m_LocalScale": { "x": 1.3913045, "y": 1.391305, "z": 1.391305 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level3:112",
+                    "enabled": true,
+                    "script": "PhotonView",
+                    "script_ref": "globalgamemanagers.assets:409",
+                    "fields_complete": true,
+                    "fields": {
+                        "ownerId": 0,
+                        "group": 0,
+                        "OwnerShipWasTransfered": false,
+                        "prefixBackup": -1,
+                        "synchronization": 3,
+                        "onSerializeTransformOption": 3,
+                        "onSerializeRigidBodyOption": 2,
+                        "ownershipTransfer": 0,
+                        "ObservedComponents": [
+                            { "ref": "level3:66" }
+                        ],
+                        "viewIdField": 1,
+                        "instantiationId": 1,
+                        "currentMasterID": -1,
+                        "isRuntimeInstantiated": false
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level3:111",
+                    "enabled": true,
+                    "script": "MultiplayerChat",
+                    "script_ref": "globalgamemanagers.assets:153",
+                    "fields_complete": true,
+                    "fields": {
+                        "chatInput": "",
+                        "isChatting": false,
+                        "chatStyle": {
+                            "name": "",
+                            "normal": {
+                                "background": null,
+                                "textColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 }
+                            },
+                            "hover": {
+                                "background": null,
+                                "textColor": { "r": 0.48965526, "g": 1.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "active": {
+                                "background": { "ref": "resources.assets:80", "asset": "textures/Window_Background.png" },
+                                "textColor": { "r": 0.0, "g": 1.0, "b": 0.8758621, "a": 1.0 }
+                            },
+                            "focused": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "onNormal": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "onHover": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "onActive": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "onFocused": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "border": { "left": 4, "right": 4, "top": 4, "bottom": 4 },
+                            "margin": { "left": 4, "right": 2, "top": -8, "bottom": -21 },
+                            "padding": { "left": 8, "right": 9, "top": -9, "bottom": -1 },
+                            "overflow": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
+                            "font": { "ref": "sharedassets0.assets:151", "asset": "fonts/A A A A A ebrimabd.ttf" },
+                            "fontSize": 17,
+                            "fontStyle": 1,
+                            "alignment": 0,
+                            "wordWrap": false,
+                            "richText": false,
+                            "textClipping": 0,
+                            "imagePosition": 0,
+                            "contentOffset": { "x": 0.0, "y": 3.48 },
+                            "fixedWidth": 0.0,
+                            "fixedHeight": 0.0,
+                            "stretchWidth": false,
+                            "stretchHeight": false
+                        }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level3:110",
+                    "enabled": true,
+                    "script": "RoomMultiplayerMenu",
+                    "script_ref": "globalgamemanagers.assets:290",
+                    "fields_complete": true,
+                    "fields": {
+                        "guiSkin": { "ref": "resources.assets:40958" },
+                        "playerPrefab": { "ref": "resources.assets:9355" },
+                        "playerPrefabTwo": { "ref": "resources.assets:3464" },
+                        "blackScreen": { "ref": "resources.assets:132", "asset": "textures/BlackScreen.png" },
+                        "roomCamera": { "ref": "level3:31" },
+                        "material1": null,
+                        "material2": null,
+                        "material3": null,
+                        "Playerfind": null,
+                        "servnamefix": "",
+                        "team_1": {
+                            "teamName": "",
+                            "spawnPoints": [
+                                { "ref": "level3:53" },
+                                { "ref": "level3:46" },
+                                { "ref": "level3:72" },
+                                { "ref": "level3:47" }
+                            ]
+                        },
+                        "team_2": {
+                            "teamName": "",
+                            "spawnPoints": [
+                                { "ref": "level3:68" },
+                                { "ref": "level3:43" },
+                                { "ref": "level3:55" },
+                                { "ref": "level3:45" }
+                            ]
+                        },
+                        "team_1_Color": { "r": 0.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                        "team_2_Color": { "r": 1.0, "g": 0.92156863, "b": 0.015686275, "a": 1.0 },
+                        "isPaused": false,
+                        "gameMode": "",
+                        "sensfix": ""
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level3:113",
+                    "enabled": true,
+                    "script": "WhoKilledWho",
+                    "script_ref": "globalgamemanagers.assets:175",
+                    "fields_complete": true,
+                    "fields": {
+                        "guiSkin": { "ref": "resources.assets:40955" }
+                    }
+                }
+            ],
+            "children": ["level3:30", "level3:31"],
+            "parent": null
+        },
+        {
+            "ref": "level3:30",
+            "name": "EnableHelper",
+            "active": true,
+            "layer": 0,
+            "tag": 20004,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:67",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level3:29"
+        },
+        {
+            "ref": "level3:31",
+            "name": "Camera",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:65",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.006474798, "y": 0.29494473, "z": -0.14272119, "w": 0.9447732 },
+                        "m_LocalPosition": { "x": -46.0, "y": 10.6, "z": 62.15 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "Camera",
+                    "ref": "level3:73",
+                    "data": {
+                        "m_Enabled": 1,
+                        "m_ClearFlags": 1,
+                        "m_BackGroundColor": { "r": 0.4419334, "g": 0.46165535, "b": 0.49264705, "a": 0.0 },
+                        "m_projectionMatrixMode": 1,
+                        "m_SensorSize": { "x": 36.0, "y": 24.0 },
+                        "m_LensShift": { "x": 0.0, "y": 0.0 },
+                        "m_GateFitMode": 2,
+                        "m_FocalLength": 50.0,
+                        "m_NormalizedViewPortRect": { "x": 0.0, "y": 0.0, "width": 1.0, "height": 1.0 },
+                        "near clip plane": 0.3,
+                        "far clip plane": 600.0,
+                        "field of view": 60.0,
+                        "orthographic": false,
+                        "orthographic size": 100.0,
+                        "m_Depth": 0.0,
+                        "m_CullingMask": { "m_Bits": 4294967295 },
+                        "m_RenderingPath": -1,
+                        "m_TargetTexture": null,
+                        "m_TargetDisplay": 0,
+                        "m_TargetEye": 3,
+                        "m_HDR": false,
+                        "m_AllowMSAA": true,
+                        "m_AllowDynamicResolution": false,
+                        "m_ForceIntoRT": false,
+                        "m_OcclusionCulling": true,
+                        "m_StereoConvergence": 10.0,
+                        "m_StereoSeparation": 0.022
+                    }
+                },
+                {
+                    "type": "FlareLayer",
+                    "ref": "level3:103",
+                    "data": { "m_Enabled": 1 }
+                },
+                {
+                    "type": "GUILayer",
+                    "ref": "level3:100",
+                    "data": { "m_Enabled": 1 }
+                },
+                {
+                    "type": "AudioListener",
+                    "ref": "level3:99",
+                    "data": { "m_Enabled": 1 }
+                }
+            ],
+            "children": [],
+            "parent": "level3:29"
+        },
+        {
+            "ref": "level3:34",
+            "name": "Directional light",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:70",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.40821794, "y": -0.23456973, "z": 0.109381676, "w": 0.87542605 },
+                        "m_LocalPosition": { "x": -10.98, "y": 37.2, "z": 37.434753 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "Light",
+                    "ref": "level3:102",
+                    "data": {
+                        "m_Enabled": 1,
+                        "m_Type": 1,
+                        "m_Color": { "r": 0.8235294, "g": 0.73875433, "b": 0.73875433, "a": 1.0 },
+                        "m_Intensity": 1.0,
+                        "m_Range": 10.0,
+                        "m_SpotAngle": 30.0,
+                        "m_CookieSize": 10.0,
+                        "m_Shadows": { "m_Type": 2, "m_Resolution": 1, "m_CustomResolution": -1, "m_Strength": 0.62, "m_Bias": 0.05, "m_NormalBias": 0.4, "m_NearPlane": 0.2 },
+                        "m_Cookie": null,
+                        "m_DrawHalo": false,
+                        "m_BakingOutput": {
+                            "probeOcclusionLightIndex": -1,
+                            "occlusionMaskChannel": -1,
+                            "lightmapBakeMode": { "lightmapBakeType": 4, "mixedLightingMode": 2 },
+                            "isBaked": false
+                        },
+                        "m_Flare": null,
+                        "m_RenderMode": 0,
+                        "m_CullingMask": { "m_Bits": 4294967295 },
+                        "m_Lightmapping": 4,
+                        "m_LightShadowCasterMode": 0,
+                        "m_AreaSize": { "x": 1.0, "y": 1.0 },
+                        "m_BounceIntensity": 1.0,
+                        "m_ColorTemperature": 6570.0,
+                        "m_UseColorTemperature": false
+                    }
+                }
+            ],
+            "children": [],
+            "parent": null
+        },
+        {
+            "ref": "level3:35",
+            "name": "MyInterstitial",
+            "active": false,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level3:71",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -30.566029, "y": -24.893719, "z": -36.46289 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                { "type": "MonoBehaviour", "ref": "level3:114", "enabled": true, "script": null, "script_ref": null }
+            ],
+            "children": [],
+            "parent": null
+        }
+    ]
+}

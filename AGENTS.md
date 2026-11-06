@@ -38,6 +38,8 @@ Rules (from REA): separate **observations, inferences, unknowns**; cite evidence
 - Unity 2018.3.14f1, IL2CPP → wasm; 20 scenes (`Main`, 10 maps incl. `Credits`, 9 `ZM_*` zombie variants). See `docs/code-structure.md`.
 - Multiplayer = **PUN Classic 1.91 on Photon Cloud**; AppID, RpcList, GameVersion `"PGA3 v1"` in `docs/protocol.md`.
 - Gameplay code follows the NSdesignGames "FPS Kit 2.0" structure (inferred).
+- All scene/prefab/material/settings data plus **every MonoBehaviour's fields (decoded byte-exact)** are in `assets/data/` (format: `docs/assets.md`). Gameplay values (weapon stats, movement speeds, input axes, physics/timestep) come from there, not from guesses.
+- Maps are converted Source-engine BSP geometry (`VBSP_Object.model_N` + MeshColliders) inside the scene files; players/weapons/effects are Resources prefabs.
 - Platform SDK: GameArter (`Garter`), PacoGames' backend.
 
 ## Repository layout

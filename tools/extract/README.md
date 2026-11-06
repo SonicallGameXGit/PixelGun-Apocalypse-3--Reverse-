@@ -28,7 +28,25 @@ research/tools/venv/bin/python -I tools/extract/extract_assets.py "$PWD/$B/unpac
 # 4. publish curated game-owned assets + manifest into assets/
 python3 -I tools/extract/publish_assets.py research/extracted assets
 
-# 5. (code structure) IL2CPP dump into research/il2cpp-dump
+# 5. IL2CPP dump into research/il2cpp-dump (needed by step 6 for MonoBehaviour layouts)
 dotnet research/tools/Il2CppDumper/Il2CppDumper/bin/Release/net10.0/Il2CppDumper.dll \
     $B/raw/pga3-v18.wasm $B/unpacked/Il2CppData/Metadata/global-metadata.dat research/il2cpp-dump
+
+# 6. scenes, prefabs, materials, decoded script data, settings, animations -> assets/data/
+research/tools/venv/bin/python -I tools/extract/export_world.py "$PWD/$B/unpacked" "$PWD/assets" "$PWD/research/il2cpp-dump"
+
+# 7. shaders -> assets/shaders/
+research/tools/venv/bin/python -I tools/extract/export_shaders.py "$PWD/$B/unpacked" "$PWD/assets"
 ```
+
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `unpack_webdata.py` | `UnityWebData1.0` container → files |
+| `extract_assets.py` | every object → raw/decoded files + `inventory.json` (research/extracted) |
+| `publish_assets.py` | curated game-owned files → `assets/` + `assets/manifest.json` |
+| `export_world.py` | `assets/data/` JSON (see `docs/assets.md` for the format) |
+| `mono_decode.py` | decodes stripped MonoBehaviour data with `dump.cs` layouts (Unity 2018.3 rules) |
+| `dotnet_meta.py` | reads field flags (`NotSerialized`) from Il2CppDumper's DummyDll; `dump.cs` omits them |
+| `export_shaders.py` | game shaders → ShaderLab text with GLSL ES programs |

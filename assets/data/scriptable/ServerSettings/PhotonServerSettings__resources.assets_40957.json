@@ -1,0 +1,27 @@
+{
+    "ref": "resources.assets:40957",
+    "enabled": true,
+    "script": "ServerSettings",
+    "script_ref": "globalgamemanagers.assets:394",
+    "name": "PhotonServerSettings",
+    "fields_complete": true,
+    "fields": {
+        "AppID": "3d66e745-64a9-438a-8e21-8012d7b8fbb4",
+        "VoiceAppID": "",
+        "ChatAppID": "4674a0f8-26de-48d8-9a36-7986f63e8658",
+        "HostType": 1,
+        "PreferredRegion": 0,
+        "EnabledRegions": -1,
+        "Protocol": 0,
+        "ServerAddress": "",
+        "ServerPort": 5055,
+        "VoiceServerPort": 5055,
+        "JoinLobby": true,
+        "EnableLobbyStatistics": false,
+        "PunLogging": 0,
+        "NetworkLogging": 1,
+        "RunInBackground": true,
+        "RpcList": ["Chat", "DestroyRpc", "DoDamage", "DoSwapTeams", "InstantiateRpc", "networkAddMessage", "PickupItemInit", "PunPickup", "PunPickupSimple", "PunRespawn", "RequestForPickupItems", "RequestForPickupTimes", "SendChatMessage", "SetOnVehicle", "SyncWeaponsRPC", "TeleportPosition"],
+        "DisableAutoOpenWizard": true
+    }
+}

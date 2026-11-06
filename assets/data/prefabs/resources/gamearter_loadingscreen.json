@@ -1,0 +1,568 @@
+{
+    "file": "resources.assets",
+    "resources_path": "gamearter_loadingscreen",
+    "root": "resources.assets:16213",
+    "nodes": [
+        {
+            "ref": "resources.assets:16213",
+            "name": "GameArter_LoadingScreen",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40946",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_AnchorMin": { "x": 0.0, "y": 0.0 },
+                        "m_AnchorMax": { "x": 0.0, "y": 0.0 },
+                        "m_AnchoredPosition": { "x": 0.0, "y": 0.0 },
+                        "m_SizeDelta": { "x": 0.0, "y": 0.0 },
+                        "m_Pivot": { "x": 0.0, "y": 0.0 }
+                    }
+                },
+                {
+                    "type": "Canvas",
+                    "ref": "resources.assets:40935",
+                    "data": { "m_Enabled": 1, "m_RenderMode": 0, "m_Camera": null, "m_PlaneDistance": 100.0, "m_PixelPerfect": false, "m_ReceivesEvents": true, "m_OverrideSorting": false, "m_OverridePixelPerfect": false, "m_SortingBucketNormalizedSize": 0.0, "m_AdditionalShaderChannelsFlag": 0, "m_SortingLayerID": 0, "m_SortingOrder": 1001, "m_TargetDisplay": 0 }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42413",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.CanvasScaler",
+                    "script_ref": "globalgamemanagers.assets:621",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_UiScaleMode": 0,
+                        "m_ReferencePixelsPerUnit": 100.0,
+                        "m_ScaleFactor": 1.0,
+                        "m_ReferenceResolution": { "x": 800.0, "y": 600.0 },
+                        "m_ScreenMatchMode": 0,
+                        "m_MatchWidthOrHeight": 0.0,
+                        "m_PhysicalUnit": 3,
+                        "m_FallbackScreenDPI": 96.0,
+                        "m_DefaultSpriteDPI": 96.0,
+                        "m_DynamicPixelsPerUnit": 1.0
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42422",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.GraphicRaycaster",
+                    "script_ref": "globalgamemanagers.assets:588",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_IgnoreReversedGraphics": true,
+                        "m_BlockingObjects": 0,
+                        "m_BlockingMask": { "m_Bits": 4294967295 }
+                    }
+                },
+                {
+                    "type": "CanvasRenderer",
+                    "ref": "resources.assets:40923",
+                    "data": { "m_CullTransparentMesh": false }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42408",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.Image",
+                    "script_ref": "globalgamemanagers.assets:68",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_Material": null,
+                        "m_Color": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 },
+                        "m_RaycastTarget": true,
+                        "m_OnCullStateChanged": {
+                            "m_PersistentCalls": {
+                                "m_Calls": []
+                            },
+                            "m_TypeName": "UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        },
+                        "m_Sprite": null,
+                        "m_Type": 0,
+                        "m_PreserveAspect": false,
+                        "m_FillCenter": true,
+                        "m_FillMethod": 4,
+                        "m_FillAmount": 1.0,
+                        "m_FillClockwise": true,
+                        "m_FillOrigin": 0,
+                        "m_UseSpriteMesh": false
+                    }
+                }
+            ],
+            "children": ["resources.assets:16207", "resources.assets:16208", "resources.assets:16218", "resources.assets:16205"],
+            "parent": null
+        },
+        {
+            "ref": "resources.assets:16207",
+            "name": "AssetImage",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40936",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0, "y": -0.0, "z": -0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 41.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.5, "y": 0.5 },
+                        "m_AnchorMax": { "x": 0.5, "y": 0.5 },
+                        "m_AnchoredPosition": { "x": 0.0, "y": 41.0 },
+                        "m_SizeDelta": { "x": 591.0, "y": 195.5 },
+                        "m_Pivot": { "x": 0.5, "y": 0.5 }
+                    }
+                },
+                {
+                    "type": "CanvasRenderer",
+                    "ref": "resources.assets:40927",
+                    "data": { "m_CullTransparentMesh": false }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42416",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.RawImage",
+                    "script_ref": "globalgamemanagers.assets:88",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_Material": null,
+                        "m_Color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                        "m_RaycastTarget": true,
+                        "m_OnCullStateChanged": {
+                            "m_PersistentCalls": {
+                                "m_Calls": []
+                            },
+                            "m_TypeName": "UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        },
+                        "m_Texture": null,
+                        "m_UVRect": { "x": 0.0, "y": 0.0, "width": 1.0, "height": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:16213"
+        },
+        {
+            "ref": "resources.assets:16208",
+            "name": "ProgressBar",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40945",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": -62.4, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.5, "y": 0.5 },
+                        "m_AnchorMax": { "x": 0.5, "y": 0.5 },
+                        "m_AnchoredPosition": { "x": 0.0, "y": -62.4 },
+                        "m_SizeDelta": { "x": 591.0, "y": 12.0 },
+                        "m_Pivot": { "x": 0.5, "y": 0.5 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42421",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.Slider",
+                    "script_ref": "globalgamemanagers.assets:86",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_Navigation": { "m_Mode": 3, "m_SelectOnUp": null, "m_SelectOnDown": null, "m_SelectOnLeft": null, "m_SelectOnRight": null },
+                        "m_Transition": 1,
+                        "m_Colors": {
+                            "m_NormalColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                            "m_HighlightedColor": { "r": 0.9607843, "g": 0.9607843, "b": 0.9607843, "a": 1.0 },
+                            "m_PressedColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 1.0 },
+                            "m_DisabledColor": { "r": 0.78431374, "g": 0.78431374, "b": 0.78431374, "a": 0.5019608 },
+                            "m_ColorMultiplier": 1.0,
+                            "m_FadeDuration": 0.1
+                        },
+                        "m_SpriteState": { "m_HighlightedSprite": null, "m_PressedSprite": null, "m_DisabledSprite": null },
+                        "m_AnimationTriggers": { "m_NormalTrigger": "Normal", "m_HighlightedTrigger": "Highlighted", "m_PressedTrigger": "Pressed", "m_DisabledTrigger": "Disabled" },
+                        "m_Interactable": true,
+                        "m_TargetGraphic": { "ref": "resources.assets:42418" },
+                        "m_FillRect": { "ref": "resources.assets:40942" },
+                        "m_HandleRect": { "ref": "resources.assets:40944" },
+                        "m_Direction": 0,
+                        "m_MinValue": 0.0,
+                        "m_MaxValue": 1.0,
+                        "m_WholeNumbers": false,
+                        "m_Value": 0.0,
+                        "m_OnValueChanged": {
+                            "m_PersistentCalls": {
+                                "m_Calls": []
+                            },
+                            "m_TypeName": "UnityEngine.UI.Slider+SliderEvent, UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        }
+                    }
+                }
+            ],
+            "children": ["resources.assets:16211", "resources.assets:16203", "resources.assets:16217"],
+            "parent": "resources.assets:16213"
+        },
+        {
+            "ref": "resources.assets:16211",
+            "name": "Background",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40940",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -295.5, "y": -6.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.0, "y": 0.0 },
+                        "m_AnchorMax": { "x": 1.0, "y": 0.0 },
+                        "m_AnchoredPosition": { "x": 0.0, "y": 0.0 },
+                        "m_SizeDelta": { "x": 0.0, "y": 12.4 },
+                        "m_Pivot": { "x": 0.0, "y": 0.0 }
+                    }
+                },
+                {
+                    "type": "CanvasRenderer",
+                    "ref": "resources.assets:40920",
+                    "data": { "m_CullTransparentMesh": false }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42414",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.Image",
+                    "script_ref": "globalgamemanagers.assets:68",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_Material": null,
+                        "m_Color": { "r": 0.2509804, "g": 0.2509804, "b": 0.2509804, "a": 1.0 },
+                        "m_RaycastTarget": true,
+                        "m_OnCullStateChanged": {
+                            "m_PersistentCalls": {
+                                "m_Calls": []
+                            },
+                            "m_TypeName": "UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        },
+                        "m_Sprite": null,
+                        "m_Type": 1,
+                        "m_PreserveAspect": false,
+                        "m_FillCenter": true,
+                        "m_FillMethod": 4,
+                        "m_FillAmount": 1.0,
+                        "m_FillClockwise": true,
+                        "m_FillOrigin": 0,
+                        "m_UseSpriteMesh": false
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:16208"
+        },
+        {
+            "ref": "resources.assets:16203",
+            "name": "Fill Area",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40947",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": -1.21593475e-05, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.0, "y": 0.25 },
+                        "m_AnchorMax": { "x": 1.0, "y": 0.75 },
+                        "m_AnchoredPosition": { "x": 0.0, "y": -1.21593475e-05 },
+                        "m_SizeDelta": { "x": 3.0518e-05, "y": 6.2 },
+                        "m_Pivot": { "x": 0.5, "y": 0.5 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:16219"],
+            "parent": "resources.assets:16208"
+        },
+        {
+            "ref": "resources.assets:16219",
+            "name": "Fill",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40942",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -295.50003, "y": -6.100007, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.0, "y": 0.0 },
+                        "m_AnchorMax": { "x": 0.0, "y": 0.0 },
+                        "m_AnchoredPosition": { "x": 0.0, "y": -7.1525574e-06 },
+                        "m_SizeDelta": { "x": 0.0, "y": 0.0 },
+                        "m_Pivot": { "x": 0.5, "y": 0.5 }
+                    }
+                },
+                {
+                    "type": "CanvasRenderer",
+                    "ref": "resources.assets:40922",
+                    "data": { "m_CullTransparentMesh": false }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42424",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.Image",
+                    "script_ref": "globalgamemanagers.assets:68",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_Material": null,
+                        "m_Color": { "r": 1.0, "g": 0.7176471, "b": 0.0, "a": 1.0 },
+                        "m_RaycastTarget": true,
+                        "m_OnCullStateChanged": {
+                            "m_PersistentCalls": {
+                                "m_Calls": []
+                            },
+                            "m_TypeName": "UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        },
+                        "m_Sprite": null,
+                        "m_Type": 1,
+                        "m_PreserveAspect": false,
+                        "m_FillCenter": true,
+                        "m_FillMethod": 4,
+                        "m_FillAmount": 1.0,
+                        "m_FillClockwise": true,
+                        "m_FillOrigin": 0,
+                        "m_UseSpriteMesh": false
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:16203"
+        },
+        {
+            "ref": "resources.assets:16217",
+            "name": "Handle Slide Area",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40949",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 5.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.0, "y": 0.0 },
+                        "m_AnchorMax": { "x": 1.0, "y": 1.0 },
+                        "m_AnchoredPosition": { "x": 4.999997, "y": 0.0 },
+                        "m_SizeDelta": { "x": -10.0, "y": 0.0 },
+                        "m_Pivot": { "x": 0.5, "y": 0.5 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:16209"],
+            "parent": "resources.assets:16208"
+        },
+        {
+            "ref": "resources.assets:16209",
+            "name": "Handle",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40944",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -300.5, "y": -6.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.0, "y": 0.0 },
+                        "m_AnchorMax": { "x": 0.0, "y": 0.0 },
+                        "m_AnchoredPosition": { "x": -10.0, "y": 0.0 },
+                        "m_SizeDelta": { "x": -0.0, "y": 0.0 },
+                        "m_Pivot": { "x": 0.5, "y": 0.5 }
+                    }
+                },
+                {
+                    "type": "CanvasRenderer",
+                    "ref": "resources.assets:40921",
+                    "data": { "m_CullTransparentMesh": false }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42418",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.Image",
+                    "script_ref": "globalgamemanagers.assets:68",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_Material": null,
+                        "m_Color": { "r": 1.0, "g": 0.7176471, "b": 0.0, "a": 1.0 },
+                        "m_RaycastTarget": true,
+                        "m_OnCullStateChanged": {
+                            "m_PersistentCalls": {
+                                "m_Calls": []
+                            },
+                            "m_TypeName": "UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        },
+                        "m_Sprite": null,
+                        "m_Type": 0,
+                        "m_PreserveAspect": false,
+                        "m_FillCenter": true,
+                        "m_FillMethod": 4,
+                        "m_FillAmount": 1.0,
+                        "m_FillClockwise": true,
+                        "m_FillOrigin": 0,
+                        "m_UseSpriteMesh": false
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:16217"
+        },
+        {
+            "ref": "resources.assets:16218",
+            "name": "AssetName",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40937",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0, "y": -0.0, "z": -0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -90.50003, "y": -90.19997, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.5, "y": 0.5 },
+                        "m_AnchorMax": { "x": 0.5, "y": 0.5 },
+                        "m_AnchoredPosition": { "x": -90.50003, "y": -90.19997 },
+                        "m_SizeDelta": { "x": 410.0, "y": 26.1 },
+                        "m_Pivot": { "x": 0.5, "y": 0.5 }
+                    }
+                },
+                {
+                    "type": "CanvasRenderer",
+                    "ref": "resources.assets:40924",
+                    "data": { "m_CullTransparentMesh": false }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42410",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.Text",
+                    "script_ref": "globalgamemanagers.assets:574",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_Material": null,
+                        "m_Color": { "r": 1.0, "g": 0.7176471, "b": 0.0, "a": 1.0 },
+                        "m_RaycastTarget": true,
+                        "m_OnCullStateChanged": {
+                            "m_PersistentCalls": {
+                                "m_Calls": []
+                            },
+                            "m_TypeName": "UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        },
+                        "m_FontData": {
+                            "m_Font": { "ref": "unity_default_resources:10102" },
+                            "m_FontSize": 20,
+                            "m_FontStyle": 0,
+                            "m_BestFit": false,
+                            "m_MinSize": 2,
+                            "m_MaxSize": 40,
+                            "m_Alignment": 3,
+                            "m_AlignByGeometry": false,
+                            "m_RichText": true,
+                            "m_HorizontalOverflow": 0,
+                            "m_VerticalOverflow": 0,
+                            "m_LineSpacing": 1.0
+                        },
+                        "m_Text": "Loading map Office"
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:16213"
+        },
+        {
+            "ref": "resources.assets:16205",
+            "name": "Progress",
+            "active": true,
+            "layer": 5,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "RectTransform",
+                    "ref": "resources.assets:40941",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0, "y": -0.0, "z": -0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 205.0, "y": -90.19996, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_AnchorMin": { "x": 0.5, "y": 0.5 },
+                        "m_AnchorMax": { "x": 0.5, "y": 0.5 },
+                        "m_AnchoredPosition": { "x": 205.0, "y": -90.19996 },
+                        "m_SizeDelta": { "x": 181.0, "y": 26.1 },
+                        "m_Pivot": { "x": 0.5, "y": 0.5 }
+                    }
+                },
+                {
+                    "type": "CanvasRenderer",
+                    "ref": "resources.assets:40925",
+                    "data": { "m_CullTransparentMesh": false }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42423",
+                    "enabled": true,
+                    "script": "UnityEngine.UI.Text",
+                    "script_ref": "globalgamemanagers.assets:574",
+                    "fields_complete": true,
+                    "fields": {
+                        "m_Material": null,
+                        "m_Color": { "r": 0.9852941, "g": 0.9852941, "b": 0.9852941, "a": 1.0 },
+                        "m_RaycastTarget": true,
+                        "m_OnCullStateChanged": {
+                            "m_PersistentCalls": {
+                                "m_Calls": []
+                            },
+                            "m_TypeName": "UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+                        },
+                        "m_FontData": {
+                            "m_Font": { "ref": "unity_default_resources:10102" },
+                            "m_FontSize": 20,
+                            "m_FontStyle": 0,
+                            "m_BestFit": false,
+                            "m_MinSize": 2,
+                            "m_MaxSize": 40,
+                            "m_Alignment": 5,
+                            "m_AlignByGeometry": false,
+                            "m_RichText": true,
+                            "m_HorizontalOverflow": 0,
+                            "m_VerticalOverflow": 0,
+                            "m_LineSpacing": 1.0
+                        },
+                        "m_Text": "0%"
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:16213"
+        }
+    ]
+}

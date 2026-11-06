@@ -1,0 +1,95 @@
+{
+    "file": "resources.assets",
+    "resources_path": null,
+    "root": "resources.assets:372",
+    "nodes": [
+        {
+            "ref": "resources.assets:372",
+            "name": "Detonator-Heatwave(Pro)",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16257",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -0.007928729, "y": 1.0146024, "z": -0.0032983422 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                { "type": "MonoBehaviour", "ref": "resources.assets:41007", "enabled": true, "script": null, "script_ref": null },
+                {
+                    "type": "AudioSource",
+                    "ref": "resources.assets:39249",
+                    "data": {
+                        "m_Enabled": 1,
+                        "OutputAudioMixerGroup": null,
+                        "m_audioClip": { "ref": "resources.assets:307", "asset": "audio/GrenadeExplode.m4a" },
+                        "m_PlayOnAwake": true,
+                        "m_Volume": 1.0,
+                        "m_Pitch": 1.0,
+                        "Loop": false,
+                        "Mute": false,
+                        "Spatialize": false,
+                        "SpatializePostEffects": false,
+                        "Priority": 128,
+                        "DopplerLevel": 1.0,
+                        "MinDistance": 1.0,
+                        "MaxDistance": 100.0,
+                        "Pan2D": 0.0,
+                        "rolloffMode": 1,
+                        "BypassEffects": false,
+                        "BypassListenerEffects": false,
+                        "BypassReverbZones": false,
+                        "rolloffCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 },
+                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "panLevelCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "spreadCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "reverbZoneMixCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40988",
+                    "enabled": true,
+                    "script": "ExplosionDamage",
+                    "script_ref": "globalgamemanagers.assets:521",
+                    "fields_complete": true,
+                    "fields": { "explosionRadius": 5.0, "explosionPower": 14.0, "explosionDamage": 100.0, "explosionTimeout": 5.0, "isRemote": false }
+                }
+            ],
+            "children": [],
+            "parent": null
+        }
+    ]
+}

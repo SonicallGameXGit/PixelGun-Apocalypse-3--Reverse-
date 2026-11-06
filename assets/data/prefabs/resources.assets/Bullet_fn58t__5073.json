@@ -1,0 +1,95 @@
+{
+    "file": "resources.assets",
+    "resources_path": null,
+    "root": "resources.assets:5073",
+    "nodes": [
+        {
+            "ref": "resources.assets:5073",
+            "name": "Bullet_fn58t",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:29863",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 11.601, "y": 4.762, "z": -14.229 },
+                        "m_LocalScale": { "x": 0.2, "y": 0.2, "z": 0.2 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "resources.assets:37361",
+                    "data": {
+                        "m_Mesh": { "ref": "unity_default_resources:10202" }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "resources.assets:39073",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": false,
+                        "m_Size": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "m_Center": { "x": 0.0, "y": 0.0, "z": 0.0 }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "resources.assets:32891",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "resources.assets:7" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42177",
+                    "enabled": true,
+                    "script": "Bullet",
+                    "script_ref": "globalgamemanagers.assets:523",
+                    "fields_complete": true,
+                    "fields": {
+                        "speed": 35,
+                        "life": 10.0,
+                        "damage": 30,
+                        "impactForce": 17,
+                        "impactHoles": true,
+                        "doDamage": true,
+                        "impactObjects": [
+                            { "ref": "resources.assets:356" },
+                            { "ref": "resources.assets:371" }
+                        ]
+                    }
+                }
+            ],
+            "children": [],
+            "parent": null
+        }
+    ]
+}

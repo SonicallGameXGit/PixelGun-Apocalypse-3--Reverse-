@@ -1,0 +1,7 @@
+{
+    "tags": ["Metal", "Blood", "Network", "Remote", "EnableHelper", "MachineGin", "Ladder", "Pickup", "PhotonNetwork", "MachineGun", "Wood", "UI", "Scene", "Dirt", "FxTemporaire"],
+    "layers": ["Default", "TransparentFX", "Ignore Raycast", "", "Water", "UI", "", "", "Weapon", "Character", "UI", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""],
+    "m_SortingLayers": [
+        { "name": "Default", "uniqueID": 0 }
+    ]
+}

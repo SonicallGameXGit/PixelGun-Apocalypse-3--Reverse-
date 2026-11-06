@@ -1,0 +1,39 @@
+{
+    "file": "resources.assets",
+    "resources_path": "garter_sdk",
+    "root": "resources.assets:16212",
+    "nodes": [
+        {
+            "ref": "resources.assets:16212",
+            "name": "Garter_sdk",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:32087",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:42425",
+                    "enabled": true,
+                    "script": "Garter",
+                    "script_ref": "globalgamemanagers.assets:127",
+                    "fields_complete": true,
+                    "fields": {
+                        "targetPlatform": 1,
+                        "user": { "Nick": "Guest", "Language": "en", "Country": "US", "Picture": null, "networkId": "" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": null
+        }
+    ]
+}

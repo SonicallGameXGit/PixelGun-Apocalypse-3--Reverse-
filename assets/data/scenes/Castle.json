@@ -1,0 +1,1543 @@
+{
+    "scene": "Castle",
+    "build_index": 2,
+    "file": "level2",
+    "settings": {
+        "RenderSettings": {
+            "m_Fog": false,
+            "m_FogColor": { "r": 1.0, "g": 0.69803923, "b": 0.69803923, "a": 1.0 },
+            "m_FogMode": 2,
+            "m_FogDensity": 0.01,
+            "m_LinearFogStart": 0.0,
+            "m_LinearFogEnd": 300.0,
+            "m_AmbientSkyColor": { "r": 0.4852941, "g": 0.4852941, "b": 0.4852941, "a": 1.0 },
+            "m_AmbientEquatorColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+            "m_AmbientGroundColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+            "m_AmbientIntensity": 1.0,
+            "m_AmbientMode": 3,
+            "m_SubtractiveShadowColor": { "r": 0.42, "g": 0.478, "b": 0.627, "a": 1.0 },
+            "m_SkyboxMaterial": { "ref": "sharedassets1.assets:34" },
+            "m_HaloStrength": 0.5,
+            "m_FlareStrength": 1.0,
+            "m_FlareFadeSpeed": 3.0,
+            "m_HaloTexture": null,
+            "m_SpotCookie": { "ref": "unity_default_resources:10001" },
+            "m_DefaultReflectionMode": 0,
+            "m_DefaultReflectionResolution": 128,
+            "m_ReflectionBounces": 1,
+            "m_ReflectionIntensity": 1.0,
+            "m_CustomReflection": null,
+            "m_AmbientProbe": { "sh[ 0]": 0.0, "sh[ 1]": 0.0, "sh[ 2]": 0.0, "sh[ 3]": 0.0, "sh[ 4]": 0.0, "sh[ 5]": 0.0, "sh[ 6]": 0.0, "sh[ 7]": 0.0, "sh[ 8]": 0.0, "sh[ 9]": 0.0, "sh[10]": 0.0, "sh[11]": 0.0, "sh[12]": 0.0, "sh[13]": 0.0, "sh[14]": 0.0, "sh[15]": 0.0, "sh[16]": 0.0, "sh[17]": 0.0, "sh[18]": 0.0, "sh[19]": 0.0, "sh[20]": 0.0, "sh[21]": 0.0, "sh[22]": 0.0, "sh[23]": 0.0, "sh[24]": 0.0, "sh[25]": 0.0, "sh[26]": 0.0 },
+            "m_GeneratedSkyboxReflection": null,
+            "m_Sun": null,
+            "m_IndirectSpecularColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 },
+            "m_UseRadianceAmbientProbe": false
+        },
+        "LightmapSettings": {
+            "m_EnlightenSceneMapping": {
+                "m_Renderers": [],
+                "m_Systems": [],
+                "m_Probesets": [],
+                "m_SystemAtlases": [],
+                "m_TerrainChunks": []
+            },
+            "m_LightProbes": null,
+            "m_Lightmaps": [],
+            "m_LightmapsMode": 1,
+            "m_GISettings": { "m_BounceScale": 1.0, "m_IndirectOutputScale": 1.0, "m_AlbedoBoost": 1.0, "m_EnvironmentLightingMode": 0, "m_EnableBakedLightmaps": false, "m_EnableRealtimeLightmaps": false },
+            "m_UseShadowmask": false
+        }
+    },
+    "game_objects": 30,
+    "roots": ["level2:1", "level2:4", "level2:6", "level2:16", "level2:26", "level2:27", "level2:30"],
+    "nodes": [
+        {
+            "ref": "level2:1",
+            "name": "Pain",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:31",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.7071068, "y": 0.0, "z": 0.0, "w": 0.7071068 },
+                        "m_LocalPosition": { "x": -13.52, "y": -15.1, "z": 13.7 },
+                        "m_LocalScale": { "x": 0.039446156, "y": 0.03944616, "z": 0.03944616 }
+                    }
+                }
+            ],
+            "children": ["level2:2", "level2:25", "level2:20", "level2:19", "level2:13", "level2:12", "level2:8", "level2:3", "level2:24", "level2:23", "level2:5", "level2:22", "level2:28"],
+            "parent": null
+        },
+        {
+            "ref": "level2:2",
+            "name": "VBSP_Object.model_0",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:32",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:75",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:43", "asset": "models/VBSP_Object.model_0__43.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:62",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:2" },
+                            { "ref": "sharedassets2.assets:3" },
+                            { "ref": "sharedassets2.assets:14" },
+                            { "ref": "sharedassets2.assets:19" },
+                            { "ref": "sharedassets2.assets:20" },
+                            { "ref": "sharedassets2.assets:21" },
+                            { "ref": "sharedassets2.assets:22" },
+                            { "ref": "sharedassets2.assets:23" },
+                            { "ref": "sharedassets2.assets:24" },
+                            { "ref": "sharedassets2.assets:25" },
+                            { "ref": "sharedassets2.assets:4" },
+                            { "ref": "sharedassets2.assets:5" },
+                            { "ref": "sharedassets2.assets:6" },
+                            { "ref": "sharedassets2.assets:7" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:88",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:43", "asset": "models/VBSP_Object.model_0__43.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:25",
+            "name": "VBSP_Object.model_1",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:55",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:86",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:44", "asset": "models/VBSP_Object.model_1.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:73",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:8" },
+                            { "ref": "sharedassets2.assets:9" },
+                            { "ref": "sharedassets2.assets:10" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:99",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:44", "asset": "models/VBSP_Object.model_1.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:20",
+            "name": "VBSP_Object.model_2",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:50",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:82",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:53", "asset": "models/VBSP_Object.model_2__53.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:69",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:23" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:95",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:53", "asset": "models/VBSP_Object.model_2__53.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:19",
+            "name": "VBSP_Object.model_3",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:49",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:81",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:54", "asset": "models/VBSP_Object.model_3__54.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:68",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:23" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:94",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:54", "asset": "models/VBSP_Object.model_3__54.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:13",
+            "name": "VBSP_Object.model_4",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:43",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:80",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:55", "asset": "models/VBSP_Object.model_4__55.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:67",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:8" },
+                            { "ref": "sharedassets2.assets:11" },
+                            { "ref": "sharedassets2.assets:10" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:93",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:55", "asset": "models/VBSP_Object.model_4__55.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:12",
+            "name": "VBSP_Object.model_10",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:42",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:79",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:45", "asset": "models/VBSP_Object.model_10__45.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:66",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:12" },
+                            { "ref": "sharedassets2.assets:15" },
+                            { "ref": "sharedassets2.assets:13" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:92",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:45", "asset": "models/VBSP_Object.model_10__45.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:8",
+            "name": "VBSP_Object.model_11",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:38",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:78",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:46", "asset": "models/VBSP_Object.model_11__46.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:65",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:13" },
+                            { "ref": "sharedassets2.assets:12" },
+                            { "ref": "sharedassets2.assets:15" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:91",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:46", "asset": "models/VBSP_Object.model_11__46.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:3",
+            "name": "VBSP_Object.model_12",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:33",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:76",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:47", "asset": "models/VBSP_Object.model_12__47.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:63",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:2" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:89",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:47", "asset": "models/VBSP_Object.model_12__47.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:24",
+            "name": "VBSP_Object.model_13",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:54",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:85",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:48", "asset": "models/VBSP_Object.model_13.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:72",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:16" },
+                            { "ref": "sharedassets2.assets:17" },
+                            { "ref": "sharedassets2.assets:18" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:98",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:48", "asset": "models/VBSP_Object.model_13.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:23",
+            "name": "VBSP_Object.model_14",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:53",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:84",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:49", "asset": "models/VBSP_Object.model_14.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:71",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:13" },
+                            { "ref": "sharedassets2.assets:12" },
+                            { "ref": "sharedassets2.assets:15" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:97",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:49", "asset": "models/VBSP_Object.model_14.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:5",
+            "name": "VBSP_Object.model_15",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:35",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:77",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:50", "asset": "models/VBSP_Object.model_15.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:64",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:13" },
+                            { "ref": "sharedassets2.assets:12" },
+                            { "ref": "sharedassets2.assets:15" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:90",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:50", "asset": "models/VBSP_Object.model_15.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:22",
+            "name": "VBSP_Object.model_16",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:52",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:83",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:51", "asset": "models/VBSP_Object.model_16.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:70",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:22" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:96",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:51", "asset": "models/VBSP_Object.model_16.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:28",
+            "name": "VBSP_Object.model_17",
+            "active": true,
+            "layer": 0,
+            "tag": 20000,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:58",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "level2:87",
+                    "data": {
+                        "m_Mesh": { "ref": "sharedassets2.assets:52", "asset": "models/VBSP_Object.model_17.obj" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "level2:74",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 1,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "sharedassets2.assets:2" }
+                        ],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "MeshCollider",
+                    "ref": "level2:100",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Convex": false,
+                        "m_CookingOptions": 14,
+                        "m_Mesh": { "ref": "sharedassets2.assets:52", "asset": "models/VBSP_Object.model_17.obj" }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:1"
+        },
+        {
+            "ref": "level2:4",
+            "name": "Team B SpawnPoints",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:34",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["level2:21", "level2:7", "level2:15", "level2:9"],
+            "parent": null
+        },
+        {
+            "ref": "level2:21",
+            "name": "SpawnPoint5",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:51",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -8.790128, "y": -13.32, "z": -30.842789 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:4"
+        },
+        {
+            "ref": "level2:7",
+            "name": "SpawnPoint6",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:37",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -18.54005, "y": -4.24, "z": -52.44534 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:4"
+        },
+        {
+            "ref": "level2:15",
+            "name": "SpawnPoint7",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:45",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 8.4450245, "y": -13.36, "z": -36.738113 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:4"
+        },
+        {
+            "ref": "level2:9",
+            "name": "SpawnPoint8",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:39",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 22.170536, "y": -10.44, "z": -47.17127 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:4"
+        },
+        {
+            "ref": "level2:6",
+            "name": "Team A SpawnPoints",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:36",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["level2:14", "level2:10", "level2:29", "level2:11"],
+            "parent": null
+        },
+        {
+            "ref": "level2:14",
+            "name": "SpawnPoint1",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:44",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 29.541023, "y": -13.46, "z": 2.1747904 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:6"
+        },
+        {
+            "ref": "level2:10",
+            "name": "SpawnPoint2",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:40",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -5.086632, "y": -13.02, "z": 5.342124 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:6"
+        },
+        {
+            "ref": "level2:29",
+            "name": "SpawnPoint3",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:59",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 21.62025, "y": -8.21, "z": 21.283455 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:6"
+        },
+        {
+            "ref": "level2:11",
+            "name": "SpawnPoint4",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:41",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 12.307016, "y": -13.42, "z": -1.4009361 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:6"
+        },
+        {
+            "ref": "level2:16",
+            "name": "__Room",
+            "active": true,
+            "layer": 0,
+            "tag": 20002,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:47",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.07912706, "y": 0.91372836, "z": -0.21523571, "w": 0.33542973 },
+                        "m_LocalPosition": { "x": -109.815025, "y": 28.817581, "z": 40.934937 },
+                        "m_LocalScale": { "x": 1.3913045, "y": 1.391305, "z": 1.391305 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level2:109",
+                    "enabled": true,
+                    "script": "PhotonView",
+                    "script_ref": "globalgamemanagers.assets:409",
+                    "fields_complete": true,
+                    "fields": {
+                        "ownerId": 0,
+                        "group": 0,
+                        "OwnerShipWasTransfered": false,
+                        "prefixBackup": -1,
+                        "synchronization": 3,
+                        "onSerializeTransformOption": 3,
+                        "onSerializeRigidBodyOption": 2,
+                        "ownershipTransfer": 0,
+                        "ObservedComponents": [
+                            { "ref": "level2:47" }
+                        ],
+                        "viewIdField": 1,
+                        "instantiationId": 1,
+                        "currentMasterID": -1,
+                        "isRuntimeInstantiated": false
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level2:108",
+                    "enabled": true,
+                    "script": "MultiplayerChat",
+                    "script_ref": "globalgamemanagers.assets:153",
+                    "fields_complete": true,
+                    "fields": {
+                        "chatInput": "",
+                        "isChatting": false,
+                        "chatStyle": {
+                            "name": "",
+                            "normal": {
+                                "background": null,
+                                "textColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 }
+                            },
+                            "hover": {
+                                "background": null,
+                                "textColor": { "r": 0.48965526, "g": 1.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "active": {
+                                "background": { "ref": "resources.assets:80", "asset": "textures/Window_Background.png" },
+                                "textColor": { "r": 0.0, "g": 1.0, "b": 0.8758621, "a": 1.0 }
+                            },
+                            "focused": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "onNormal": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "onHover": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "onActive": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "onFocused": {
+                                "background": null,
+                                "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
+                            },
+                            "border": { "left": 4, "right": 4, "top": 4, "bottom": 4 },
+                            "margin": { "left": 4, "right": 2, "top": -8, "bottom": -21 },
+                            "padding": { "left": 8, "right": 9, "top": -9, "bottom": -1 },
+                            "overflow": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
+                            "font": { "ref": "sharedassets0.assets:151", "asset": "fonts/A A A A A ebrimabd.ttf" },
+                            "fontSize": 17,
+                            "fontStyle": 1,
+                            "alignment": 0,
+                            "wordWrap": false,
+                            "richText": false,
+                            "textClipping": 0,
+                            "imagePosition": 0,
+                            "contentOffset": { "x": 0.0, "y": 3.48 },
+                            "fixedWidth": 0.0,
+                            "fixedHeight": 0.0,
+                            "stretchWidth": false,
+                            "stretchHeight": false
+                        }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level2:107",
+                    "enabled": true,
+                    "script": "RoomMultiplayerMenu",
+                    "script_ref": "globalgamemanagers.assets:290",
+                    "fields_complete": true,
+                    "fields": {
+                        "guiSkin": { "ref": "resources.assets:40958" },
+                        "playerPrefab": { "ref": "resources.assets:9355" },
+                        "playerPrefabTwo": { "ref": "resources.assets:3464" },
+                        "blackScreen": { "ref": "resources.assets:132", "asset": "textures/BlackScreen.png" },
+                        "roomCamera": { "ref": "level2:18" },
+                        "material1": null,
+                        "material2": null,
+                        "material3": null,
+                        "Playerfind": null,
+                        "servnamefix": "",
+                        "team_1": {
+                            "teamName": "",
+                            "spawnPoints": [
+                                { "ref": "level2:44" },
+                                { "ref": "level2:40" },
+                                { "ref": "level2:59" },
+                                { "ref": "level2:41" }
+                            ]
+                        },
+                        "team_2": {
+                            "teamName": "",
+                            "spawnPoints": [
+                                { "ref": "level2:51" },
+                                { "ref": "level2:37" },
+                                { "ref": "level2:45" },
+                                { "ref": "level2:39" }
+                            ]
+                        },
+                        "team_1_Color": { "r": 0.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                        "team_2_Color": { "r": 1.0, "g": 0.92156863, "b": 0.015686275, "a": 1.0 },
+                        "isPaused": false,
+                        "gameMode": "",
+                        "sensfix": ""
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "level2:110",
+                    "enabled": true,
+                    "script": "WhoKilledWho",
+                    "script_ref": "globalgamemanagers.assets:175",
+                    "fields_complete": true,
+                    "fields": {
+                        "guiSkin": { "ref": "resources.assets:40955" }
+                    }
+                }
+            ],
+            "children": ["level2:17", "level2:18"],
+            "parent": null
+        },
+        {
+            "ref": "level2:17",
+            "name": "EnableHelper",
+            "active": true,
+            "layer": 0,
+            "tag": 20004,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:48",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "level2:16"
+        },
+        {
+            "ref": "level2:18",
+            "name": "Camera",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:46",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.006474798, "y": 0.29494473, "z": -0.14272119, "w": 0.9447732 },
+                        "m_LocalPosition": { "x": -46.000195, "y": 8.700105, "z": 63.100388 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "Camera",
+                    "ref": "level2:61",
+                    "data": {
+                        "m_Enabled": 1,
+                        "m_ClearFlags": 1,
+                        "m_BackGroundColor": { "r": 0.4419334, "g": 0.46165535, "b": 0.49264705, "a": 0.0 },
+                        "m_projectionMatrixMode": 1,
+                        "m_SensorSize": { "x": 36.0, "y": 24.0 },
+                        "m_LensShift": { "x": 0.0, "y": 0.0 },
+                        "m_GateFitMode": 2,
+                        "m_FocalLength": 50.0,
+                        "m_NormalizedViewPortRect": { "x": 0.0, "y": 0.0, "width": 1.0, "height": 1.0 },
+                        "near clip plane": 0.3,
+                        "far clip plane": 600.0,
+                        "field of view": 60.0,
+                        "orthographic": false,
+                        "orthographic size": 100.0,
+                        "m_Depth": 0.0,
+                        "m_CullingMask": { "m_Bits": 4294967295 },
+                        "m_RenderingPath": -1,
+                        "m_TargetTexture": null,
+                        "m_TargetDisplay": 0,
+                        "m_TargetEye": 3,
+                        "m_HDR": false,
+                        "m_AllowMSAA": true,
+                        "m_AllowDynamicResolution": false,
+                        "m_ForceIntoRT": false,
+                        "m_OcclusionCulling": true,
+                        "m_StereoConvergence": 10.0,
+                        "m_StereoSeparation": 0.022
+                    }
+                },
+                {
+                    "type": "FlareLayer",
+                    "ref": "level2:105",
+                    "data": { "m_Enabled": 1 }
+                },
+                {
+                    "type": "GUILayer",
+                    "ref": "level2:102",
+                    "data": { "m_Enabled": 1 }
+                },
+                {
+                    "type": "AudioListener",
+                    "ref": "level2:101",
+                    "data": { "m_Enabled": 1 }
+                }
+            ],
+            "children": [],
+            "parent": "level2:16"
+        },
+        {
+            "ref": "level2:26",
+            "name": "Directional light",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:56",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.40821794, "y": -0.23456973, "z": 0.109381676, "w": 0.87542605 },
+                        "m_LocalPosition": { "x": -10.98, "y": 37.2, "z": 37.434753 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "Light",
+                    "ref": "level2:104",
+                    "data": {
+                        "m_Enabled": 1,
+                        "m_Type": 1,
+                        "m_Color": { "r": 0.66176474, "g": 0.66176474, "b": 0.66176474, "a": 1.0 },
+                        "m_Intensity": 1.0,
+                        "m_Range": 10.0,
+                        "m_SpotAngle": 30.0,
+                        "m_CookieSize": 10.0,
+                        "m_Shadows": { "m_Type": 2, "m_Resolution": 1, "m_CustomResolution": -1, "m_Strength": 0.62, "m_Bias": 0.05, "m_NormalBias": 0.4, "m_NearPlane": 0.2 },
+                        "m_Cookie": null,
+                        "m_DrawHalo": false,
+                        "m_BakingOutput": {
+                            "probeOcclusionLightIndex": -1,
+                            "occlusionMaskChannel": -1,
+                            "lightmapBakeMode": { "lightmapBakeType": 4, "mixedLightingMode": 2 },
+                            "isBaked": false
+                        },
+                        "m_Flare": null,
+                        "m_RenderMode": 0,
+                        "m_CullingMask": { "m_Bits": 4294967295 },
+                        "m_Lightmapping": 4,
+                        "m_LightShadowCasterMode": 0,
+                        "m_AreaSize": { "x": 1.0, "y": 1.0 },
+                        "m_BounceIntensity": 1.0,
+                        "m_ColorTemperature": 6570.0,
+                        "m_UseColorTemperature": false
+                    }
+                }
+            ],
+            "children": [],
+            "parent": null
+        },
+        {
+            "ref": "level2:27",
+            "name": "MyInterstitial",
+            "active": false,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:57",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -30.566029, "y": -24.893719, "z": -36.46289 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                { "type": "MonoBehaviour", "ref": "level2:111", "enabled": true, "script": null, "script_ref": null }
+            ],
+            "children": [],
+            "parent": null
+        },
+        {
+            "ref": "level2:30",
+            "name": "CF-Bootcamp 1",
+            "active": false,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "level2:60",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.54659986, "y": -2.6458297, "z": 2.2195873 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                { "type": "MonoBehaviour", "ref": "level2:112", "enabled": true, "script": null, "script_ref": null }
+            ],
+            "children": [],
+            "parent": null
+        }
+    ]
+}

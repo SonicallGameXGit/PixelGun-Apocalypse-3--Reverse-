@@ -1,0 +1,2219 @@
+{
+    "file": "resources.assets",
+    "resources_path": "pro/free/prefabs/multiplayerprefabs/other/soldier(ragdoll)",
+    "root": "resources.assets:598",
+    "nodes": [
+        {
+            "ref": "resources.assets:598",
+            "name": "Soldier(Ragdoll)",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16474",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 0.15002188, "y": 0.15002185, "z": 0.15002188 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40999",
+                    "enabled": true,
+                    "script": "RagdollController",
+                    "script_ref": "globalgamemanagers.assets:186",
+                    "fields_complete": true,
+                    "fields": {
+                        "guiSKin": { "ref": "resources.assets:40955" },
+                        "cam": { "ref": "resources.assets:604" },
+                        "timer": 4
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40970",
+                    "enabled": true,
+                    "script": "WaitForDestroy",
+                    "script_ref": "globalgamemanagers.assets:414",
+                    "fields_complete": true,
+                    "fields": { "lifeTime": 25.0 }
+                }
+            ],
+            "children": ["resources.assets:560", "resources.assets:507", "resources.assets:736"],
+            "parent": null
+        },
+        {
+            "ref": "resources.assets:560",
+            "name": "Armature",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16412",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.7071069, "y": 0.0, "z": -0.0, "w": 0.70710677 },
+                        "m_LocalPosition": { "x": -6.886962e-09, "y": 7.5060883, "z": -0.16829796 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "resources.assets:38613",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 2.850564, "y": 2.186763, "z": 3.1041052 },
+                        "m_Center": { "x": -7.1525574e-07, "y": 0.35036987, "z": 1.3452603 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38593",
+                    "data": { "m_Mass": 12.5, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                }
+            ],
+            "children": ["resources.assets:730", "resources.assets:455", "resources.assets:451", "resources.assets:444", "resources.assets:436", "resources.assets:426"],
+            "parent": "resources.assets:598"
+        },
+        {
+            "ref": "resources.assets:730",
+            "name": "Bone_005",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16605",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.7071069, "w": 0.70710677 },
+                        "m_LocalPosition": { "x": -3.0667053e-08, "y": -1.2406815, "z": 0.46273276 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:564", "resources.assets:644", "resources.assets:640", "resources.assets:636", "resources.assets:632", "resources.assets:628", "resources.assets:609"],
+            "parent": "resources.assets:560"
+        },
+        {
+            "ref": "resources.assets:564",
+            "name": "Bone",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16426",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.57537216, "y": 8.0119534e-08, "z": 0.8178917, "w": -2.4077215e-08 },
+                        "m_LocalPosition": { "x": 1.2406815, "y": -1.2433591e-07, "z": -0.69564104 },
+                        "m_LocalScale": { "x": 0.99999976, "y": 1.0, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:571"],
+            "parent": "resources.assets:730"
+        },
+        {
+            "ref": "resources.assets:571",
+            "name": "Bone_001",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16430",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.9980908, "y": -7.582629e-08, "z": -0.061763547, "w": -7.975971e-08 },
+                        "m_LocalPosition": { "x": -1.6189575, "y": 1.222279e-07, "z": -4.4703484e-08 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 1.0, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:575"],
+            "parent": "resources.assets:564"
+        },
+        {
+            "ref": "resources.assets:575",
+            "name": "Bone_002",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16442",
+                    "data": {
+                        "m_LocalRotation": { "x": -9.176284e-08, "y": -0.2072175, "z": 8.2545537e-10, "w": 0.9782949 },
+                        "m_LocalPosition": { "x": -1.6465573, "y": 1.2431163e-07, "z": -2.9802322e-08 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 1.0, "z": 0.99999994 }
+                    }
+                },
+                {
+                    "type": "BoxCollider",
+                    "ref": "resources.assets:38599",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Size": { "x": 2.867245, "y": 2.850564, "z": 2.0763621 },
+                        "m_Center": { "x": 1.4336237, "y": -1.1920929e-07, "z": -0.72599435 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38588",
+                    "data": { "m_Mass": 12.5, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40822",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38593" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": -1.0, "y": 0.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 0.0, "y": 1.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -20.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 20.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 10.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:552", "resources.assets:579", "resources.assets:475"],
+            "parent": "resources.assets:571"
+        },
+        {
+            "ref": "resources.assets:552",
+            "name": "Bone_002_L",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16438",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.3805841, "y": 0.50267786, "z": 0.63271934, "w": -0.4495966 },
+                        "m_LocalPosition": { "x": -1.7438729, "y": 1.3165874e-07, "z": -4e-15 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 0.99999976, "z": 0.9999998 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:556"],
+            "parent": "resources.assets:575"
+        },
+        {
+            "ref": "resources.assets:556",
+            "name": "Bone_002_L_001",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16388",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0018336796, "y": 0.12150171, "z": 0.03547274, "w": 0.99195546 },
+                        "m_LocalPosition": { "x": -1.497838, "y": 6.7055225e-08, "z": -3.5390258e-08 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 1.0, "z": 0.9999999 }
+                    }
+                },
+                {
+                    "type": "CapsuleCollider",
+                    "ref": "resources.assets:40432",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 0.49449712,
+                        "m_Height": 1.9779885,
+                        "m_Direction": 0,
+                        "m_Center": { "x": -0.98899424, "y": 0.0, "z": 0.0 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38587",
+                    "data": { "m_Mass": 5.0, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40821",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38588" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": 0.0, "y": 1.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": -1.0, "y": 0.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -70.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 10.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 50.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:546"],
+            "parent": "resources.assets:552"
+        },
+        {
+            "ref": "resources.assets:546",
+            "name": "Bone_002_L_002",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16384",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.00047956427, "y": 0.046930287, "z": 0.01618186, "w": 0.99876696 },
+                        "m_LocalPosition": { "x": -1.9779876, "y": 1.7648563e-07, "z": -4.7846697e-08 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 1.0, "z": 0.9999999 }
+                    }
+                },
+                {
+                    "type": "CapsuleCollider",
+                    "ref": "resources.assets:40430",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 0.4787725,
+                        "m_Height": 3.786419,
+                        "m_Direction": 0,
+                        "m_Center": { "x": -1.8932095, "y": 0.0, "z": -0.22 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38585",
+                    "data": { "m_Mass": 5.0, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40819",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38587" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": -1.0, "y": 0.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 0.0, "y": 1.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -90.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:726"],
+            "parent": "resources.assets:556"
+        },
+        {
+            "ref": "resources.assets:726",
+            "name": "Bone_002_L_022",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16553",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00095468655, "y": 0.0054698065, "z": -0.012116646, "w": 0.9999112 },
+                        "m_LocalPosition": { "x": -2.3868098, "y": 1.3117096e-07, "z": -4.5698835e-07 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.9999999, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:542", "resources.assets:538", "resources.assets:534", "resources.assets:530", "resources.assets:526"],
+            "parent": "resources.assets:546"
+        },
+        {
+            "ref": "resources.assets:542",
+            "name": "Bone_002_L_003",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16380",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0023744993, "y": -0.06433394, "z": -0.16327178, "w": 0.9844785 },
+                        "m_LocalPosition": { "x": 0.16912289, "y": 0.0019876705, "z": 0.008384664 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.9999998, "z": 0.99999994 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:522"],
+            "parent": "resources.assets:726"
+        },
+        {
+            "ref": "resources.assets:522",
+            "name": "Bone_002_L_010",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16366",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0011652713, "y": 0.079371735, "z": -0.026777353, "w": 0.9964847 },
+                        "m_LocalPosition": { "x": -0.9457822, "y": 3.632158e-08, "z": -7.0780516e-08 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:418"],
+            "parent": "resources.assets:542"
+        },
+        {
+            "ref": "resources.assets:418",
+            "name": "Bone_002_L_011",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16408",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00010018013, "y": -0.05180202, "z": 0.0039815507, "w": 0.9986494 },
+                        "m_LocalPosition": { "x": -0.19562274, "y": 2.4083704e-07, "z": 1.15484e-07 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 0.99999994, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:405"],
+            "parent": "resources.assets:522"
+        },
+        {
+            "ref": "resources.assets:405",
+            "name": "Bone_002_L_012",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16404",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0006049711, "y": -0.045917757, "z": 0.008318369, "w": 0.9989104 },
+                        "m_LocalPosition": { "x": -0.140235, "y": 5.324161e-08, "z": 3.3155084e-07 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 0.99999994 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:418"
+        },
+        {
+            "ref": "resources.assets:538",
+            "name": "Bone_002_L_004",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16374",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0013346032, "y": -0.051285647, "z": -0.06032905, "w": 0.9968593 },
+                        "m_LocalPosition": { "x": 0.16912289, "y": 0.0019876705, "z": 0.008384664 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0000001 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:722"],
+            "parent": "resources.assets:726"
+        },
+        {
+            "ref": "resources.assets:722",
+            "name": "Bone_002_L_013",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16549",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0012783884, "y": 0.03439004, "z": -0.06982673, "w": 0.99696535 },
+                        "m_LocalPosition": { "x": -0.98403597, "y": 7.968629e-08, "z": -5.206093e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.9999999, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:718"],
+            "parent": "resources.assets:538"
+        },
+        {
+            "ref": "resources.assets:718",
+            "name": "Bone_002_L_014",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16545",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0005143529, "y": -0.031679142, "z": 0.03168552, "w": 0.9989956 },
+                        "m_LocalPosition": { "x": -0.2506868, "y": -2.0213687e-07, "z": 8.1723556e-08 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 0.9999999, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:714"],
+            "parent": "resources.assets:722"
+        },
+        {
+            "ref": "resources.assets:714",
+            "name": "Bone_002_L_015",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16541",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0029155973, "y": -0.026370052, "z": -0.03915539, "w": 0.99888086 },
+                        "m_LocalPosition": { "x": -0.23076761, "y": 1.3578122e-07, "z": 4.9639493e-07 },
+                        "m_LocalScale": { "x": 0.9999998, "y": 1.0, "z": 0.9999998 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:718"
+        },
+        {
+            "ref": "resources.assets:534",
+            "name": "Bone_002_L_005",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16362",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0011811131, "y": -0.036380593, "z": 0.024928948, "w": 0.99902636 },
+                        "m_LocalPosition": { "x": 0.16912289, "y": 0.0019876705, "z": 0.008384664 },
+                        "m_LocalScale": { "x": 1.0000001, "y": 1.0000001, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:710"],
+            "parent": "resources.assets:726"
+        },
+        {
+            "ref": "resources.assets:710",
+            "name": "Bone_002_L_016",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16537",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0018305627, "y": -0.024283433, "z": -0.038436905, "w": 0.99896425 },
+                        "m_LocalPosition": { "x": -1.0045038, "y": 4.3923137e-08, "z": -2.1111919e-07 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:706"],
+            "parent": "resources.assets:534"
+        },
+        {
+            "ref": "resources.assets:706",
+            "name": "Bone_002_L_017",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16532",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00040587166, "y": 0.0146286115, "z": -0.0070880344, "w": 0.9998678 },
+                        "m_LocalPosition": { "x": -0.31600803, "y": 9.403252e-09, "z": -1.9813888e-07 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.9999998, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:702"],
+            "parent": "resources.assets:710"
+        },
+        {
+            "ref": "resources.assets:702",
+            "name": "Bone_002_L_021",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16528",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00018159722, "y": 0.021281656, "z": -0.008530327, "w": 0.99973714 },
+                        "m_LocalPosition": { "x": -0.25426638, "y": 3.594763e-08, "z": 5.8615115e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.9999999, "z": 1.0000001 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:706"
+        },
+        {
+            "ref": "resources.assets:530",
+            "name": "Bone_002_L_006",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16370",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0013058834, "y": -0.045388587, "z": 0.1056333, "w": 0.9933679 },
+                        "m_LocalPosition": { "x": 0.16912289, "y": 0.0019876705, "z": 0.008384664 },
+                        "m_LocalScale": { "x": 1.0000001, "y": 1.0, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:698"],
+            "parent": "resources.assets:726"
+        },
+        {
+            "ref": "resources.assets:698",
+            "name": "Bone_002_L_018",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16524",
+                    "data": {
+                        "m_LocalRotation": { "x": -3.8447484e-05, "y": 0.024301449, "z": 0.011087469, "w": 0.9996432 },
+                        "m_LocalPosition": { "x": -1.0144995, "y": 2.863817e-08, "z": -3.4365803e-07 },
+                        "m_LocalScale": { "x": 1.0000001, "y": 1.0000002, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:694"],
+            "parent": "resources.assets:530"
+        },
+        {
+            "ref": "resources.assets:694",
+            "name": "Bone_002_L_019",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16520",
+                    "data": {
+                        "m_LocalRotation": { "x": 7.6067886e-06, "y": -0.006446075, "z": -0.012342906, "w": 0.9999031 },
+                        "m_LocalPosition": { "x": -0.2726366, "y": -1.6527663e-07, "z": 1.8056016e-07 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 0.9999998 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:689"],
+            "parent": "resources.assets:698"
+        },
+        {
+            "ref": "resources.assets:689",
+            "name": "Bone_002_L_020",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16516",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00036073758, "y": -0.039633956, "z": -0.007927552, "w": 0.99918276 },
+                        "m_LocalPosition": { "x": -0.21246526, "y": 1.5077305e-07, "z": -4.519825e-07 },
+                        "m_LocalScale": { "x": 0.9999998, "y": 0.99999994, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:694"
+        },
+        {
+            "ref": "resources.assets:526",
+            "name": "Bone_002_L_007",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16358",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.32750824, "y": -0.25180128, "z": 0.22710562, "w": 0.8819056 },
+                        "m_LocalPosition": { "x": 0.16912289, "y": 0.0019876705, "z": 0.008384664 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.99999994, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:518"],
+            "parent": "resources.assets:726"
+        },
+        {
+            "ref": "resources.assets:518",
+            "name": "Bone_002_L_008",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16354",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.027207376, "y": 0.016325727, "z": -0.059815373, "w": 0.99770504 },
+                        "m_LocalPosition": { "x": -0.72986466, "y": -4.4703484e-08, "z": -1.6391277e-07 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 1.0, "z": 0.9999998 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:512"],
+            "parent": "resources.assets:526"
+        },
+        {
+            "ref": "resources.assets:512",
+            "name": "Bone_002_L_009",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16350",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0046813386, "y": 0.018506933, "z": -0.001906379, "w": 0.99981594 },
+                        "m_LocalPosition": { "x": -0.24676824, "y": -7.4505806e-08, "z": -4.5448542e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 1.0, "z": 0.99999994 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:518"
+        },
+        {
+            "ref": "resources.assets:579",
+            "name": "Bone_002_R",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16446",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.380584, "y": -0.502678, "z": 0.6327192, "w": 0.44959655 },
+                        "m_LocalPosition": { "x": -1.7438729, "y": 1.320757e-07, "z": -4e-15 },
+                        "m_LocalScale": { "x": 1.0000002, "y": 0.9999999, "z": 1.0000001 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:583"],
+            "parent": "resources.assets:575"
+        },
+        {
+            "ref": "resources.assets:583",
+            "name": "Bone_002_R_001",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16450",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0018336863, "y": 0.12150173, "z": -0.035472743, "w": 0.99195546 },
+                        "m_LocalPosition": { "x": -1.4978383, "y": 1.7508864e-07, "z": 3.0361116e-07 },
+                        "m_LocalScale": { "x": 1.0000001, "y": 1.0, "z": 1.0000001 }
+                    }
+                },
+                {
+                    "type": "CapsuleCollider",
+                    "ref": "resources.assets:40431",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 0.4944972,
+                        "m_Height": 1.9779888,
+                        "m_Direction": 0,
+                        "m_Center": { "x": -0.9889944, "y": 0.0, "z": 0.0 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38586",
+                    "data": { "m_Mass": 5.0, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40820",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38588" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": 0.0, "y": -1.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -70.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 10.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 50.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:587"],
+            "parent": "resources.assets:579"
+        },
+        {
+            "ref": "resources.assets:587",
+            "name": "Bone_002_R_002",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16454",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00047956008, "y": 0.04693028, "z": -0.01618186, "w": 0.99876696 },
+                        "m_LocalPosition": { "x": -1.9780189, "y": -3.4258608e-06, "z": -2.186056e-05 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 0.99999994 }
+                    }
+                },
+                {
+                    "type": "CapsuleCollider",
+                    "ref": "resources.assets:40428",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 0.4787725,
+                        "m_Height": 3.786419,
+                        "m_Direction": 0,
+                        "m_Center": { "x": -1.8932095, "y": 0.0, "z": -0.22 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38584",
+                    "data": { "m_Mass": 5.0, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40818",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38586" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 0.0, "y": -1.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -90.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:685"],
+            "parent": "resources.assets:583"
+        },
+        {
+            "ref": "resources.assets:685",
+            "name": "Bone_002_R_022",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16512",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.00095468794, "y": 0.0054698056, "z": 0.012116645, "w": 0.9999112 },
+                        "m_LocalPosition": { "x": -2.3868108, "y": 1.8604624e-07, "z": -6.315531e-09 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.9999999, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:592", "resources.assets:503", "resources.assets:499", "resources.assets:495", "resources.assets:491"],
+            "parent": "resources.assets:587"
+        },
+        {
+            "ref": "resources.assets:592",
+            "name": "Bone_002_R_003",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16470",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0023745021, "y": -0.06433394, "z": 0.16327177, "w": 0.9844785 },
+                        "m_LocalPosition": { "x": 0.16912268, "y": -0.0019876584, "z": 0.008384847 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.99999994, "z": 0.99999994 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:487"],
+            "parent": "resources.assets:685"
+        },
+        {
+            "ref": "resources.assets:487",
+            "name": "Bone_002_R_010",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16458",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0011652648, "y": 0.07937173, "z": 0.026777353, "w": 0.9964847 },
+                        "m_LocalPosition": { "x": -0.9457825, "y": 4.284084e-08, "z": -1.1175871e-07 },
+                        "m_LocalScale": { "x": 0.9999998, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:387"],
+            "parent": "resources.assets:592"
+        },
+        {
+            "ref": "resources.assets:387",
+            "name": "Bone_002_R_011",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16400",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.00010018057, "y": -0.05180202, "z": -0.003981557, "w": 0.9986494 },
+                        "m_LocalPosition": { "x": -0.19562367, "y": -2.525735e-08, "z": 1.1175871e-08 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 0.99999994, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:347"],
+            "parent": "resources.assets:487"
+        },
+        {
+            "ref": "resources.assets:347",
+            "name": "Bone_002_R_012",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16396",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00060497364, "y": -0.045917753, "z": -0.008318364, "w": 0.9989104 },
+                        "m_LocalPosition": { "x": -0.14023514, "y": 5.0755858e-08, "z": -2.4028122e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.9999999, "z": 0.9999998 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:387"
+        },
+        {
+            "ref": "resources.assets:503",
+            "name": "Bone_002_R_004",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16466",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0013346043, "y": -0.051285647, "z": 0.060329046, "w": 0.9968593 },
+                        "m_LocalPosition": { "x": 0.16912268, "y": -0.0019876584, "z": 0.008384847 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:681"],
+            "parent": "resources.assets:685"
+        },
+        {
+            "ref": "resources.assets:681",
+            "name": "Bone_002_R_013",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16506",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.001278393, "y": 0.034390036, "z": 0.069826715, "w": 0.99696535 },
+                        "m_LocalPosition": { "x": -0.98403543, "y": -7.712515e-09, "z": -5.662441e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.99999994, "z": 0.99999976 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:677"],
+            "parent": "resources.assets:503"
+        },
+        {
+            "ref": "resources.assets:677",
+            "name": "Bone_002_R_014",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16502",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00051435706, "y": -0.03167914, "z": -0.031685494, "w": 0.9989956 },
+                        "m_LocalPosition": { "x": -0.25068647, "y": 7.910849e-08, "z": -1.725275e-07 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 0.9999999, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:673"],
+            "parent": "resources.assets:681"
+        },
+        {
+            "ref": "resources.assets:673",
+            "name": "Bone_002_R_015",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16498",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0029155968, "y": -0.02637005, "z": 0.03915536, "w": 0.99888086 },
+                        "m_LocalPosition": { "x": -0.230767, "y": -9.141183e-08, "z": 6.519258e-09 },
+                        "m_LocalScale": { "x": 0.9999998, "y": 0.9999999, "z": 0.9999998 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:677"
+        },
+        {
+            "ref": "resources.assets:499",
+            "name": "Bone_002_R_005",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16342",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0011811194, "y": -0.036380593, "z": -0.024928948, "w": 0.99902636 },
+                        "m_LocalPosition": { "x": 0.16912268, "y": -0.0019876584, "z": 0.008384847 },
+                        "m_LocalScale": { "x": 1.0000001, "y": 1.0000001, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:669"],
+            "parent": "resources.assets:685"
+        },
+        {
+            "ref": "resources.assets:669",
+            "name": "Bone_002_R_016",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16494",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0018305624, "y": -0.024283433, "z": 0.038436905, "w": 0.99896425 },
+                        "m_LocalPosition": { "x": -1.0045042, "y": 6.377377e-08, "z": 2.6932685e-07 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:665"],
+            "parent": "resources.assets:499"
+        },
+        {
+            "ref": "resources.assets:665",
+            "name": "Bone_002_R_017",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16490",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.00040587434, "y": 0.01462861, "z": 0.007088035, "w": 0.9998678 },
+                        "m_LocalPosition": { "x": -0.31600794, "y": -4.570893e-08, "z": 2.8626528e-07 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.9999998, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:661"],
+            "parent": "resources.assets:669"
+        },
+        {
+            "ref": "resources.assets:661",
+            "name": "Bone_002_R_021",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16486",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.00018160007, "y": 0.021281654, "z": 0.008530329, "w": 0.99973714 },
+                        "m_LocalPosition": { "x": -0.25426674, "y": 6.4203775e-08, "z": 1.481967e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.9999999, "z": 1.0000001 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:665"
+        },
+        {
+            "ref": "resources.assets:495",
+            "name": "Bone_002_R_006",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16462",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0013058964, "y": -0.045388583, "z": -0.10563331, "w": 0.9933679 },
+                        "m_LocalPosition": { "x": 0.16912268, "y": -0.0019876584, "z": 0.008384847 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 1.0, "z": 0.9999998 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:657"],
+            "parent": "resources.assets:685"
+        },
+        {
+            "ref": "resources.assets:657",
+            "name": "Bone_002_R_018",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16482",
+                    "data": {
+                        "m_LocalRotation": { "x": 3.844926e-05, "y": 0.02430145, "z": -0.011087461, "w": 0.9996432 },
+                        "m_LocalPosition": { "x": -1.0144999, "y": 1.06403604e-07, "z": 1.02911144e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 1.0000001, "z": 0.99999994 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:653"],
+            "parent": "resources.assets:495"
+        },
+        {
+            "ref": "resources.assets:653",
+            "name": "Bone_002_R_019",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16422",
+                    "data": {
+                        "m_LocalRotation": { "x": -7.606762e-06, "y": -0.006446075, "z": 0.012342913, "w": 0.9999031 },
+                        "m_LocalPosition": { "x": -0.27263638, "y": 1.6958207e-07, "z": 1.1269003e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 1.0, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:649"],
+            "parent": "resources.assets:657"
+        },
+        {
+            "ref": "resources.assets:649",
+            "name": "Bone_002_R_020",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16416",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.00036073313, "y": -0.03963396, "z": 0.007927544, "w": 0.99918276 },
+                        "m_LocalPosition": { "x": -0.21246506, "y": -1.541207e-07, "z": -5.031761e-07 },
+                        "m_LocalScale": { "x": 0.9999998, "y": 0.99999994, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:653"
+        },
+        {
+            "ref": "resources.assets:491",
+            "name": "Bone_002_R_007",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16338",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.32750818, "y": -0.25180137, "z": -0.22710565, "w": 0.8819056 },
+                        "m_LocalPosition": { "x": 0.16912268, "y": -0.0019876584, "z": 0.008384847 },
+                        "m_LocalScale": { "x": 0.9999998, "y": 1.0, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:483"],
+            "parent": "resources.assets:685"
+        },
+        {
+            "ref": "resources.assets:483",
+            "name": "Bone_002_R_008",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16334",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.027207479, "y": 0.016325695, "z": 0.059815336, "w": 0.99770504 },
+                        "m_LocalPosition": { "x": -0.72986436, "y": -1.3411045e-07, "z": -7.599592e-07 },
+                        "m_LocalScale": { "x": 1.0000001, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:479"],
+            "parent": "resources.assets:491"
+        },
+        {
+            "ref": "resources.assets:479",
+            "name": "Bone_002_R_009",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16327",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0046813167, "y": 0.018506933, "z": 0.0019063605, "w": 0.99981594 },
+                        "m_LocalPosition": { "x": -0.24676898, "y": 2.0861626e-07, "z": -3.6507845e-07 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.9999999, "z": 0.99999994 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:483"
+        },
+        {
+            "ref": "resources.assets:475",
+            "name": "Bone_003",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16434",
+                    "data": {
+                        "m_LocalRotation": { "x": -1.1702916e-08, "y": -0.112278864, "z": -1.7692312e-08, "w": 0.9936767 },
+                        "m_LocalPosition": { "x": -1.7438729, "y": 1.3165874e-07, "z": -4e-15 },
+                        "m_LocalScale": { "x": 0.9999998, "y": 1.0, "z": 0.99999994 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:471"],
+            "parent": "resources.assets:575"
+        },
+        {
+            "ref": "resources.assets:471",
+            "name": "Bone_004",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16346",
+                    "data": {
+                        "m_LocalRotation": { "x": 1.7075786e-09, "y": 0.012111465, "z": 2.1602036e-09, "w": 0.9999267 },
+                        "m_LocalPosition": { "x": -0.66019195, "y": 4.9843102e-08, "z": 2.9802315e-08 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "SphereCollider",
+                    "ref": "resources.assets:40364",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 1.4,
+                        "m_Center": { "x": -0.68, "y": 0.0, "z": 0.33 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38572",
+                    "data": { "m_Mass": 5.0, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40817",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38588" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": -1.0, "y": 0.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 0.0, "y": 1.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -40.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 25.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 25.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:604"],
+            "parent": "resources.assets:475"
+        },
+        {
+            "ref": "resources.assets:604",
+            "name": "Camera",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16478",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.69320804, "y": -0.693208, "z": -0.13950872, "w": 0.13950859 },
+                        "m_LocalPosition": { "x": -0.6584119, "y": 0.04043797, "z": 0.050136037 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "Camera",
+                    "ref": "resources.assets:32091",
+                    "data": {
+                        "m_Enabled": 1,
+                        "m_ClearFlags": 1,
+                        "m_BackGroundColor": { "r": 0.19215687, "g": 0.3019608, "b": 0.4745098, "a": 0.019607844 },
+                        "m_projectionMatrixMode": 1,
+                        "m_SensorSize": { "x": 36.0, "y": 24.0 },
+                        "m_LensShift": { "x": 0.0, "y": 0.0 },
+                        "m_GateFitMode": 2,
+                        "m_FocalLength": 50.0,
+                        "m_NormalizedViewPortRect": { "x": 0.0, "y": 0.0, "width": 1.0, "height": 1.0 },
+                        "near clip plane": 0.1,
+                        "far clip plane": 1000.0,
+                        "field of view": 60.0,
+                        "orthographic": false,
+                        "orthographic size": 100.0,
+                        "m_Depth": -1.0,
+                        "m_CullingMask": { "m_Bits": 4294967295 },
+                        "m_RenderingPath": -1,
+                        "m_TargetTexture": null,
+                        "m_TargetDisplay": 0,
+                        "m_TargetEye": 3,
+                        "m_HDR": false,
+                        "m_AllowMSAA": true,
+                        "m_AllowDynamicResolution": false,
+                        "m_ForceIntoRT": false,
+                        "m_OcclusionCulling": true,
+                        "m_StereoConvergence": 10.0,
+                        "m_StereoSeparation": 0.022
+                    }
+                },
+                {
+                    "type": "FlareLayer",
+                    "ref": "resources.assets:40306",
+                    "data": { "m_Enabled": 1 }
+                },
+                {
+                    "type": "GUILayer",
+                    "ref": "resources.assets:39875",
+                    "data": { "m_Enabled": 1 }
+                },
+                {
+                    "type": "AudioListener",
+                    "ref": "resources.assets:39183",
+                    "data": { "m_Enabled": 1 }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:471"
+        },
+        {
+            "ref": "resources.assets:644",
+            "name": "Bone_002_L_023",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16579",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.00970294, "y": 0.011627753, "z": -0.70956475, "w": 0.7044775 },
+                        "m_LocalPosition": { "x": 1.9512686, "y": 5.7847004, "z": 3.6867514 },
+                        "m_LocalScale": { "x": 1.0000001, "y": 1.0, "z": 1.0000001 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:730"
+        },
+        {
+            "ref": "resources.assets:640",
+            "name": "Bone_002_L_024",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16575",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.015136415, "y": 0.015021426, "z": -0.0038456393, "w": 0.9997652 },
+                        "m_LocalPosition": { "x": 4.055356, "y": 3.4089384, "z": 3.593875 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.9999998, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:730"
+        },
+        {
+            "ref": "resources.assets:636",
+            "name": "Bone_002_R_023",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16571",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.00970294, "y": 0.011627756, "z": 0.70956475, "w": 0.7044775 },
+                        "m_LocalPosition": { "x": 1.9512676, "y": -5.7847004, "z": 3.6867514 },
+                        "m_LocalScale": { "x": 1.0000001, "y": 1.0, "z": 1.0000001 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:730"
+        },
+        {
+            "ref": "resources.assets:632",
+            "name": "Bone_002_R_024",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16565",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.015136413, "y": 0.015021428, "z": 0.0038456393, "w": 0.9997652 },
+                        "m_LocalPosition": { "x": 4.0553555, "y": -3.408939, "z": 3.593875 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.9999998, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:730"
+        },
+        {
+            "ref": "resources.assets:628",
+            "name": "Bone_L",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16561",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.028498365, "y": -0.72467643, "z": -0.043014202, "w": 0.68715477 },
+                        "m_LocalPosition": { "x": 1.2406815, "y": 0.6820103, "z": -0.66952527 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.9999997, "z": 0.9999999 }
+                    }
+                },
+                {
+                    "type": "CapsuleCollider",
+                    "ref": "resources.assets:40436",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 0.69,
+                        "m_Height": 3.7148972,
+                        "m_Direction": 0,
+                        "m_Center": { "x": -1.8574486, "y": 0.12, "z": 0.0 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38592",
+                    "data": { "m_Mass": 7.5, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40826",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38593" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 0.0, "y": 1.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -20.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 70.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 30.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:624"],
+            "parent": "resources.assets:730"
+        },
+        {
+            "ref": "resources.assets:624",
+            "name": "Bone_L_001",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16319",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0005704301, "y": -0.023346506, "z": 0.039291795, "w": 0.99895483 },
+                        "m_LocalPosition": { "x": -3.7148964, "y": 1.4551915e-07, "z": 1.4901161e-08 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 0.9999997, "z": 0.9999998 }
+                    }
+                },
+                {
+                    "type": "CapsuleCollider",
+                    "ref": "resources.assets:40434",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 0.47,
+                        "m_Height": 3.3444257,
+                        "m_Direction": 0,
+                        "m_Center": { "x": -1.6722128, "y": 0.4, "z": 0.0 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38590",
+                    "data": { "m_Mass": 7.5, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40824",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38592" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 0.0, "y": 1.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -80.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:618"],
+            "parent": "resources.assets:628"
+        },
+        {
+            "ref": "resources.assets:618",
+            "name": "Bone_L_002",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16311",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0011179923, "y": 0.45665523, "z": 0.000505819, "w": 0.88964295 },
+                        "m_LocalPosition": { "x": -2.6232681, "y": 6.3329935e-08, "z": -2.2351742e-08 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.9999999, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:614"],
+            "parent": "resources.assets:624"
+        },
+        {
+            "ref": "resources.assets:614",
+            "name": "Bone_L_003",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16303",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.004773468, "y": 0.35281244, "z": 0.017747158, "w": 0.93551356 },
+                        "m_LocalPosition": { "x": -1.2371211, "y": 2.2351742e-07, "z": -2.6243717e-07 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 0.99999994, "z": 0.9999999 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:618"
+        },
+        {
+            "ref": "resources.assets:609",
+            "name": "Bone_R",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16557",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.02849841, "y": -0.72467643, "z": 0.043014247, "w": 0.68715477 },
+                        "m_LocalPosition": { "x": 1.2406815, "y": -0.68201053, "z": -0.66952527 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.99999976, "z": 0.9999999 }
+                    }
+                },
+                {
+                    "type": "CapsuleCollider",
+                    "ref": "resources.assets:40435",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 0.69,
+                        "m_Height": 3.7148972,
+                        "m_Direction": 0,
+                        "m_Center": { "x": -1.8574486, "y": -0.09, "z": 0.0 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38591",
+                    "data": { "m_Mass": 7.5, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40825",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38593" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 0.0, "y": 1.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -20.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 70.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 30.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:467"],
+            "parent": "resources.assets:730"
+        },
+        {
+            "ref": "resources.assets:467",
+            "name": "Bone_R_001",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16290",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0005704324, "y": -0.023346506, "z": -0.039291795, "w": 0.99895483 },
+                        "m_LocalPosition": { "x": -3.7148964, "y": 3.3294782e-07, "z": -1.4901161e-08 },
+                        "m_LocalScale": { "x": 0.99999994, "y": 0.99999976, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "CapsuleCollider",
+                    "ref": "resources.assets:40433",
+                    "data": {
+                        "m_Material": null,
+                        "m_IsTrigger": false,
+                        "m_Enabled": true,
+                        "m_Radius": 0.47,
+                        "m_Height": 3.3444257,
+                        "m_Direction": 0,
+                        "m_Center": { "x": -1.6722128, "y": -0.29, "z": 0.0 }
+                    }
+                },
+                {
+                    "type": "Rigidbody",
+                    "ref": "resources.assets:38589",
+                    "data": { "m_Mass": 7.5, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 0, "m_Constraints": 0, "m_CollisionDetection": 0 }
+                },
+                {
+                    "type": "CharacterJoint",
+                    "ref": "resources.assets:40823",
+                    "data": {
+                        "m_ConnectedBody": { "ref": "resources.assets:38591" },
+                        "m_Anchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_Axis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+                        "m_AutoConfigureConnectedAnchor": true,
+                        "m_ConnectedAnchor": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_SwingAxis": { "x": 0.0, "y": 1.0, "z": 0.0 },
+                        "m_TwistLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_LowTwistLimit": { "limit": -80.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_HighTwistLimit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_SwingLimitSpring": { "spring": 0.0, "damper": 0.0 },
+                        "m_Swing1Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_Swing2Limit": { "limit": 0.0, "bounciness": 0.0, "contactDistance": 0.0 },
+                        "m_EnableProjection": false,
+                        "m_ProjectionDistance": 0.1,
+                        "m_ProjectionAngle": 180.0,
+                        "m_BreakForce": Infinity,
+                        "m_BreakTorque": Infinity,
+                        "m_EnableCollision": false,
+                        "m_EnablePreprocessing": true,
+                        "m_MassScale": 1.0,
+                        "m_ConnectedMassScale": 1.0
+                    }
+                }
+            ],
+            "children": ["resources.assets:463"],
+            "parent": "resources.assets:609"
+        },
+        {
+            "ref": "resources.assets:463",
+            "name": "Bone_R_002",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16272",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0011180525, "y": 0.45665523, "z": -0.0005058129, "w": 0.88964295 },
+                        "m_LocalPosition": { "x": -2.623268, "y": 2.2538006e-07, "z": -2.4214387e-08 },
+                        "m_LocalScale": { "x": 1.0, "y": 0.9999999, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": ["resources.assets:459"],
+            "parent": "resources.assets:467"
+        },
+        {
+            "ref": "resources.assets:459",
+            "name": "Bone_R_003",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16231",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.004773518, "y": 0.35281244, "z": -0.017747158, "w": 0.93551356 },
+                        "m_LocalPosition": { "x": -1.237121, "y": -4.0978193e-08, "z": -2.6243717e-07 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0000001, "z": 1.0000002 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:463"
+        },
+        {
+            "ref": "resources.assets:455",
+            "name": "Bone_006",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16601",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.7071069, "w": 0.70710677 },
+                        "m_LocalPosition": { "x": -3.0667053e-08, "y": 0.7085333, "z": -7.5066957 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:560"
+        },
+        {
+            "ref": "resources.assets:451",
+            "name": "Bone_L_004",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16597",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.26728255, "y": -0.22874326, "z": 0.66100514, "w": 0.6628038 },
+                        "m_LocalPosition": { "x": -1.1097794, "y": 0.46035916, "z": -6.5072665 },
+                        "m_LocalScale": { "x": 1.0000002, "y": 1.0000001, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:560"
+        },
+        {
+            "ref": "resources.assets:444",
+            "name": "Bone_L_005",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16593",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.0033251871, "y": 0.003307306, "z": 0.70901966, "w": 0.70517313 },
+                        "m_LocalPosition": { "x": -0.64554954, "y": -3.5022335, "z": -2.816185 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 1.0000001, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:560"
+        },
+        {
+            "ref": "resources.assets:436",
+            "name": "Bone_R_004",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16587",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.22874324, "y": -0.26728258, "z": 0.6628039, "w": 0.66100496 },
+                        "m_LocalPosition": { "x": 1.1097794, "y": 0.46035916, "z": -6.5072665 },
+                        "m_LocalScale": { "x": 1.0000002, "y": 1.0000001, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:560"
+        },
+        {
+            "ref": "resources.assets:426",
+            "name": "Bone_R_005",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16583",
+                    "data": {
+                        "m_LocalRotation": { "x": -0.003307232, "y": 0.003325113, "z": 0.7051732, "w": 0.7090196 },
+                        "m_LocalPosition": { "x": 0.64554954, "y": -3.5022335, "z": -2.816185 },
+                        "m_LocalScale": { "x": 0.9999999, "y": 1.0000001, "z": 1.0 }
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:560"
+        },
+        {
+            "ref": "resources.assets:507",
+            "name": "Mesh",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16392",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.7071069, "y": -2.0106321e-24, "z": -2.4682684e-17, "w": 0.70710677 },
+                        "m_LocalPosition": { "x": 0.029981714, "y": 0.7186139, "z": -7.5060883 },
+                        "m_LocalScale": { "x": 0.2089063, "y": 0.2089063, "z": 0.2089063 }
+                    }
+                },
+                {
+                    "type": "SkinnedMeshRenderer",
+                    "ref": "resources.assets:40441",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 0,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [null, null],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_Quality": 0,
+                        "m_UpdateWhenOffscreen": false,
+                        "m_SkinnedMotionVectors": true,
+                        "m_Mesh": null,
+                        "m_Bones": [
+                            { "ref": "resources.assets:16426" },
+                            { "ref": "resources.assets:16430" },
+                            { "ref": "resources.assets:16442" },
+                            { "ref": "resources.assets:16434" },
+                            { "ref": "resources.assets:16346" },
+                            { "ref": "resources.assets:16438" },
+                            { "ref": "resources.assets:16388" },
+                            { "ref": "resources.assets:16384" },
+                            { "ref": "resources.assets:16380" },
+                            { "ref": "resources.assets:16366" },
+                            { "ref": "resources.assets:16408" },
+                            { "ref": "resources.assets:16404" },
+                            { "ref": "resources.assets:16374" },
+                            { "ref": "resources.assets:16549" },
+                            { "ref": "resources.assets:16545" },
+                            { "ref": "resources.assets:16541" },
+                            { "ref": "resources.assets:16362" },
+                            { "ref": "resources.assets:16537" },
+                            { "ref": "resources.assets:16532" },
+                            { "ref": "resources.assets:16528" },
+                            { "ref": "resources.assets:16370" },
+                            { "ref": "resources.assets:16524" },
+                            { "ref": "resources.assets:16520" },
+                            { "ref": "resources.assets:16516" },
+                            { "ref": "resources.assets:16358" },
+                            { "ref": "resources.assets:16354" },
+                            { "ref": "resources.assets:16350" },
+                            { "ref": "resources.assets:16446" },
+                            { "ref": "resources.assets:16450" },
+                            { "ref": "resources.assets:16454" },
+                            { "ref": "resources.assets:16512" },
+                            { "ref": "resources.assets:16470" },
+                            { "ref": "resources.assets:16458" },
+                            { "ref": "resources.assets:16400" },
+                            { "ref": "resources.assets:16396" },
+                            { "ref": "resources.assets:16466" },
+                            { "ref": "resources.assets:16506" },
+                            { "ref": "resources.assets:16502" },
+                            { "ref": "resources.assets:16498" },
+                            { "ref": "resources.assets:16342" },
+                            { "ref": "resources.assets:16494" },
+                            { "ref": "resources.assets:16490" },
+                            { "ref": "resources.assets:16486" },
+                            { "ref": "resources.assets:16462" },
+                            { "ref": "resources.assets:16482" },
+                            { "ref": "resources.assets:16422" },
+                            { "ref": "resources.assets:16416" },
+                            { "ref": "resources.assets:16338" },
+                            { "ref": "resources.assets:16334" },
+                            { "ref": "resources.assets:16327" },
+                            { "ref": "resources.assets:16561" },
+                            { "ref": "resources.assets:16319" },
+                            { "ref": "resources.assets:16311" },
+                            { "ref": "resources.assets:16303" },
+                            { "ref": "resources.assets:16557" },
+                            { "ref": "resources.assets:16290" },
+                            { "ref": "resources.assets:16272" },
+                            { "ref": "resources.assets:16231" },
+                            { "ref": "resources.assets:16571" },
+                            { "ref": "resources.assets:16565" }
+                        ],
+                        "m_BlendShapeWeights": [],
+                        "m_RootBone": { "ref": "resources.assets:16426" },
+                        "m_AABB": {
+                            "m_Center": { "x": -0.762213, "y": -0.008215904, "z": 0.14396477 },
+                            "m_Extent": { "x": 8.743069, "y": 7.4791174, "z": 7.300105 }
+                        },
+                        "m_DirtyAABB": false
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:598"
+        },
+        {
+            "ref": "resources.assets:736",
+            "name": "SMG_001",
+            "active": false,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16609",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.6694104, "y": -0.025547693, "z": 0.7231301, "w": 0.16828504 },
+                        "m_LocalPosition": { "x": 6.845147, "y": 0.048514172, "z": 3.926548 },
+                        "m_LocalScale": { "x": 0.07329372, "y": 0.07329376, "z": 0.07329377 }
+                    }
+                },
+                {
+                    "type": "SkinnedMeshRenderer",
+                    "ref": "resources.assets:40445",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": 1,
+                        "m_DynamicOccludee": 1,
+                        "m_MotionVectors": 1,
+                        "m_LightProbeUsage": 0,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_RenderingLayerMask": 4294967295,
+                        "m_RendererPriority": 0,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [null],
+                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_StaticBatchRoot": null,
+                        "m_ProbeAnchor": null,
+                        "m_LightProbeVolumeOverride": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingLayer": 0,
+                        "m_SortingOrder": 0,
+                        "m_Quality": 0,
+                        "m_UpdateWhenOffscreen": false,
+                        "m_SkinnedMotionVectors": true,
+                        "m_Mesh": null,
+                        "m_Bones": [
+                            { "ref": "resources.assets:16426" },
+                            { "ref": "resources.assets:16430" },
+                            { "ref": "resources.assets:16442" },
+                            { "ref": "resources.assets:16434" },
+                            { "ref": "resources.assets:16346" },
+                            { "ref": "resources.assets:16438" },
+                            { "ref": "resources.assets:16388" },
+                            { "ref": "resources.assets:16384" },
+                            { "ref": "resources.assets:16380" },
+                            { "ref": "resources.assets:16366" },
+                            { "ref": "resources.assets:16408" },
+                            { "ref": "resources.assets:16404" },
+                            { "ref": "resources.assets:16374" },
+                            { "ref": "resources.assets:16549" },
+                            { "ref": "resources.assets:16545" },
+                            { "ref": "resources.assets:16541" },
+                            { "ref": "resources.assets:16362" },
+                            { "ref": "resources.assets:16537" },
+                            { "ref": "resources.assets:16532" },
+                            { "ref": "resources.assets:16528" },
+                            { "ref": "resources.assets:16370" },
+                            { "ref": "resources.assets:16524" },
+                            { "ref": "resources.assets:16520" },
+                            { "ref": "resources.assets:16516" },
+                            { "ref": "resources.assets:16358" },
+                            { "ref": "resources.assets:16354" },
+                            { "ref": "resources.assets:16350" },
+                            { "ref": "resources.assets:16446" },
+                            { "ref": "resources.assets:16450" },
+                            { "ref": "resources.assets:16454" },
+                            { "ref": "resources.assets:16512" },
+                            { "ref": "resources.assets:16470" },
+                            { "ref": "resources.assets:16458" },
+                            { "ref": "resources.assets:16400" },
+                            { "ref": "resources.assets:16396" },
+                            { "ref": "resources.assets:16466" },
+                            { "ref": "resources.assets:16506" },
+                            { "ref": "resources.assets:16502" },
+                            { "ref": "resources.assets:16498" },
+                            { "ref": "resources.assets:16342" },
+                            { "ref": "resources.assets:16494" },
+                            { "ref": "resources.assets:16490" },
+                            { "ref": "resources.assets:16486" },
+                            { "ref": "resources.assets:16462" },
+                            { "ref": "resources.assets:16482" },
+                            { "ref": "resources.assets:16422" },
+                            { "ref": "resources.assets:16416" },
+                            { "ref": "resources.assets:16338" },
+                            { "ref": "resources.assets:16334" },
+                            { "ref": "resources.assets:16327" },
+                            { "ref": "resources.assets:16561" },
+                            { "ref": "resources.assets:16319" },
+                            { "ref": "resources.assets:16311" },
+                            { "ref": "resources.assets:16303" },
+                            { "ref": "resources.assets:16557" },
+                            { "ref": "resources.assets:16290" },
+                            { "ref": "resources.assets:16272" },
+                            { "ref": "resources.assets:16231" },
+                            { "ref": "resources.assets:16571" },
+                            { "ref": "resources.assets:16565" }
+                        ],
+                        "m_BlendShapeWeights": [],
+                        "m_RootBone": { "ref": "resources.assets:16426" },
+                        "m_AABB": {
+                            "m_Center": { "x": -4.4205427, "y": 3.4454083, "z": 3.5956645 },
+                            "m_Extent": { "x": 7.9644747, "y": 6.641832, "z": 6.523869 }
+                        },
+                        "m_DirtyAABB": false
+                    }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:598"
+        }
+    ]
+}
