@@ -6,10 +6,10 @@ Client: `gui.rs` (IMGUI subset, font, skins), `hud.rs` (`AmmoDisplay`, `WeaponMa
 
 - `OnGUI` runs once per GUI event, and every frame has at least a Layout and a Repaint event. State that a script changes inside `OnGUI` is therefore changed twice per frame (`hud::EVENTS_PER_FRAME = 2`). This affects the weapon bar's fade and the `shownowepinroom` timers. It is **inferred** from Unity's documented behaviour, assuming no input events in the frame.
 - `GUI.skin` and `GUI.color` reset to the default skin and white at the start of each script's `OnGUI`.
-- `GUISkin` styles are shared objects, so `fontSize` and `alignment` changes made by `WeaponManager.OnGUI` to the default skin persist.
+- `GUISkin` styles are shared objects, so the box `fontSize` changes made by `WeaponManager.OnGUI` to the default skin persist. (Build-7's auto-fire label also left the default `Label` style at `fontSize` 30, `UpperCenter`, which centred the spawn-protection label; the CrazyGames build never changes the `Label` style.)
 - **Skins:**
-  - `resources.assets:40959` is the `AmmoDisplay` / `PlayerDamage` skin;
-  - `resources.assets:40964` is the `RagdollController` skin;
+  - `resources.assets:40923` is the `AmmoDisplay` / `PlayerDamage` skin;
+  - `resources.assets:40929` is the `RagdollController` skin;
   - the default is `unity_default_resources:11000`.
 
   Skins are published as JSON in `assets/data/scriptable/UnityEngine.GUISkin/`.
@@ -53,7 +53,7 @@ Unity's order between scripts with the same depth is not established (`docs/unkn
   - knife: nothing.
 - If `currentWeapon != SelectedWeapon`: `color = Lerp(color, 0.3, dt·20)`, and once `color < 0.32`, `currentWeapon = SelectedWeapon`.
 
-**`OnGUI`** uses skin 40959:
+**`OnGUI`** uses skin 40923:
 - `GUI.color = (1,1,1,0.9)`.
 - Box at `(W-110, H-55, 100, 45)`:
   - knife: `"∞"`;
@@ -67,15 +67,9 @@ Unity's order between scripts with the same depth is not established (`docs/unkn
 
 The knife's `"∞"` (U+221E) is not in the built-in font, so the box is empty. This is **inferred**: Unity's font fallback in WebGL is not established.
 
-## WeaponManager.OnGUI (`f29925`)
+## WeaponManager.OnGUI (CrazyGames `hxg`; Build-7 `f29925`)
 
-All of this uses the default skin.
-
-**Auto-fire text:**
-- If `textDelay > 0`: `GUI.color` yellow `(1, 0.9215686, 0.0156863)`.
-- `Label` style `fontSize = 30` and `alignment = UpperCenter`.
-- Label at `(W/2-150, H/3-25, 300, 50)`: "Auto fire on" or "Auto fire off".
-- `textDelay` starts at 1 (constructor, `f29926`), so "Auto fire on" shows for the first second.
+All of this uses the default skin. Build-7 first drew an "Auto fire on/off" label (yellow, `Label` `fontSize` 30, `UpperCenter`, at `(W/2-150, H/3-25, 300, 50)` while `textDelay > 0`); the CrazyGames build has no auto fire and no label (`docs/crazygames-build.md`, "Scripts against Build-7").
 
 **`shownowepinroom2 > 0`** (only set in the full-game check, unused here):
 - Decrements by 0.1 per call.
@@ -88,8 +82,6 @@ All of this uses the default skin.
 - Yellow colour, box `fontSize = 38`.
 - Box at y 150: "This Weapon Is Disabled In This Room !!!".
 - Then box `fontSize = 12`.
-
-Constructor values: `autoFire = true`. `Awake` therefore sets every weapon's `autoFire = false`. The client earlier had both reversed; this is now fixed.
 
 ## Spawn protection (`PlayerNetworkController.OnGUI`, `f37905`)
 

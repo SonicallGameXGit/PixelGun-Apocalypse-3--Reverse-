@@ -1,10 +1,10 @@
 {
     "file": "resources.assets",
     "resources_path": "pro/free/prefabs/multiplayerprefabs/__lobby1",
-    "root": "resources.assets:401",
+    "root": "resources.assets:373",
     "nodes": [
         {
-            "ref": "resources.assets:401",
+            "ref": "resources.assets:373",
             "name": "__Lobby1",
             "active": false,
             "layer": 0,
@@ -12,7 +12,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16286",
+                    "ref": "resources.assets:16238",
                     "data": {
                         "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
                         "m_LocalPosition": { "x": -0.0, "y": 0.0, "z": 0.0 },
@@ -21,18 +21,18 @@
                 },
                 {
                     "type": "MonoBehaviour",
-                    "ref": "resources.assets:41237",
+                    "ref": "resources.assets:41203",
                     "enabled": true,
                     "script": "ConnectMenu",
-                    "script_ref": "globalgamemanagers.assets:403",
+                    "script_ref": "globalgamemanagers.assets:205",
                     "fields_complete": true,
                     "fields": {
                         "timer": 0.0,
                         "redtimer": 0.0,
-                        "guiSKin": { "ref": "resources.assets:40960" },
-                        "blackScreen": { "ref": "sharedassets0.assets:55", "asset": "textures/loading.png" },
-                        "top": { "ref": "sharedassets0.assets:31", "asset": "textures/Top.png" },
-                        "lockicon": { "ref": "sharedassets0.assets:99", "asset": "textures/Lock.png" },
+                        "guiSKin": { "ref": "sharedassets0.assets:141" },
+                        "blackScreen": { "ref": "resources.assets:105", "asset": "textures/loading aco.png" },
+                        "top": { "ref": "sharedassets0.assets:24", "asset": "textures/Top.png" },
+                        "lockicon": { "ref": "sharedassets0.assets:83", "asset": "textures/Lock.png" },
                         "btnTexture2": null,
                         "btnTexture3": null,
                         "fadeTexture0": null,
@@ -64,15 +64,16 @@
                         "SearchRoom": "",
                         "RankTextures": [],
                         "Level": [],
+                        "GameVersion": "V7.0",
                         "Serverchoose": null
                     }
                 }
             ],
-            "children": ["resources.assets:415"],
+            "children": ["resources.assets:387"],
             "parent": null
         },
         {
-            "ref": "resources.assets:415",
+            "ref": "resources.assets:387",
             "name": "Camera",
             "active": false,
             "layer": 0,
@@ -80,7 +81,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16300",
+                    "ref": "resources.assets:16252",
                     "data": {
                         "m_LocalRotation": { "x": 0.1736482, "y": 0.0, "z": 0.0, "w": 0.9848078 },
                         "m_LocalPosition": { "x": 0.0, "y": 113.0, "z": -247.0 },
@@ -89,16 +90,11 @@
                 },
                 {
                     "type": "Camera",
-                    "ref": "resources.assets:32095",
+                    "ref": "resources.assets:32081",
                     "data": {
                         "m_Enabled": 1,
                         "m_ClearFlags": 1,
                         "m_BackGroundColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 0.019607844 },
-                        "m_projectionMatrixMode": 1,
-                        "m_SensorSize": { "x": 36.0, "y": 24.0 },
-                        "m_LensShift": { "x": 0.0, "y": 0.0 },
-                        "m_GateFitMode": 2,
-                        "m_FocalLength": 50.0,
                         "m_NormalizedViewPortRect": { "x": 0.0, "y": 0.0, "width": 1.0, "height": 1.0 },
                         "near clip plane": 0.3,
                         "far clip plane": 600.0,
@@ -112,32 +108,30 @@
                         "m_TargetDisplay": 0,
                         "m_TargetEye": 3,
                         "m_HDR": false,
-                        "m_AllowMSAA": true,
-                        "m_AllowDynamicResolution": false,
-                        "m_ForceIntoRT": false,
                         "m_OcclusionCulling": true,
                         "m_StereoConvergence": 10.0,
-                        "m_StereoSeparation": 0.022
+                        "m_StereoSeparation": 0.022,
+                        "m_StereoMirrorMode": false
                     }
                 },
                 {
                     "type": "FlareLayer",
-                    "ref": "resources.assets:40310",
+                    "ref": "resources.assets:40314",
                     "data": { "m_Enabled": 1 }
                 },
                 {
                     "type": "GUILayer",
-                    "ref": "resources.assets:39879",
+                    "ref": "resources.assets:39883",
                     "data": { "m_Enabled": 1 }
                 },
                 {
                     "type": "AudioListener",
-                    "ref": "resources.assets:39187",
+                    "ref": "resources.assets:39191",
                     "data": { "m_Enabled": 1 }
                 }
             ],
             "children": [],
-            "parent": "resources.assets:401"
+            "parent": "resources.assets:373"
         }
     ]
 }

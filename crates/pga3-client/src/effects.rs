@@ -12,6 +12,7 @@ use serde_json::Value;
 
 use crate::assets::{f32_of, ref_of};
 use crate::audio::{Audio, SourceSettings};
+use crate::legacy_particles::{LegacyEmitterDef, LegacyParticles};
 use crate::obj::{MeshData, parse_obj};
 use crate::particles::{ParticleSystem, ParticleSystemDef};
 use crate::physics::CollisionWorld;
@@ -97,6 +98,71 @@ pub fn particle_system_def(
     }))
 }
 
+/// A particle emitter on a player-prefab node: a Shuriken `ParticleSystem` (Build-7) or a legacy
+/// `ParticleEmitter` (the CrazyGames build's shotgun smoke).
+#[derive(Clone, Debug)]
+pub enum NodeParticles {
+    Shuriken(ParticleSystem),
+    Legacy(Box<LegacyParticles>),
+}
+
+impl NodeParticles {
+    /// The node's emitter, if any. `seed` seeds its random numbers.
+    pub fn of_node(
+        prefab: &PrefabInstance,
+        node: usize,
+        meshes: &mut MeshCache,
+        seed: u32,
+    ) -> Option<NodeParticles> {
+        if let Some(def) = particle_system_def(prefab, node, meshes) {
+            return Some(NodeParticles::Shuriken(ParticleSystem::new(
+                Arc::new(def),
+                seed,
+            )));
+        }
+        let emitter = prefab.component(node, "EllipsoidParticleEmitter")?;
+        let def = LegacyEmitterDef::from_components(
+            emitter,
+            prefab.component(node, "ParticleAnimator"),
+            prefab.component(node, "ParticleRenderer"),
+        );
+        Some(NodeParticles::Legacy(Box::new(LegacyParticles::new(
+            def, seed,
+        ))))
+    }
+
+    /// `ParticleSystem.isEmitting` / `ParticleEmitter.emit`.
+    pub fn emitting(&self) -> bool {
+        match self {
+            NodeParticles::Shuriken(system) => system.emitting,
+            NodeParticles::Legacy(emitter) => emitter.emit,
+        }
+    }
+
+    /// `ParticleSystem.Play()` / `Stop()`, or setting `ParticleEmitter.emit`.
+    pub fn set_emitting(&mut self, on: bool) {
+        match self {
+            NodeParticles::Shuriken(system) if on => system.play(),
+            NodeParticles::Shuriken(system) => system.stop(),
+            NodeParticles::Legacy(emitter) => emitter.emit = on,
+        }
+    }
+
+    pub fn simulate(&mut self, dt: f32, emitter: Mat4, world: Option<&CollisionWorld>) {
+        match self {
+            NodeParticles::Shuriken(system) => system.simulate(dt, emitter, world),
+            NodeParticles::Legacy(particles) => particles.simulate(dt, emitter),
+        }
+    }
+
+    pub fn geometry(&self, emitter: Mat4, view: &View, weapon_layer: bool) -> Option<DynamicBatch> {
+        match self {
+            NodeParticles::Shuriken(system) => system.geometry(emitter, view, weapon_layer),
+            NodeParticles::Legacy(particles) => particles.geometry(emitter, view, weapon_layer),
+        }
+    }
+}
+
 impl EffectDef {
     /// `None` when the prefab has nothing this module plays.
     pub fn from_prefab(prefab: &PrefabInstance, meshes: &mut MeshCache) -> Option<EffectDef> {
@@ -177,8 +243,6 @@ pub struct Effect {
     destroy_at: f32,
     /// `CFX_AutoDestructShuriken.CheckIfAlive`: next `WaitForSeconds(0.5)` resume.
     cfx_check_at: f32,
-    /// `ExplosionDamage.Start` after its `WaitForSeconds(0.5)`: `Play()`.
-    explosion_play_at: Option<f32>,
     active: bool,
     /// `ExplosionDamage.isRemote` set after `Instantiate` (by a remote player's projectile).
     pub is_remote: bool,
@@ -252,7 +316,6 @@ impl Effects {
                 .wait_for_destroy
                 .map_or(f32::INFINITY, |life| time + life),
             cfx_check_at: time + 0.5,
-            explosion_play_at: None,
             active: true,
             is_remote: false,
         };
@@ -320,19 +383,16 @@ impl Effects {
             if !effect.started {
                 effect.started = true;
                 if let Some(mut fields) = effect.def.explosion {
-                    // ExplosionDamage.Start up to its yield.
+                    // ExplosionDamage.Start (CrazyGames `Fbg`): damage and force, then, as the
+                    // root has no legacy `ParticleEmitter` to switch on for 0.5 s,
+                    // `Destroy(gameObject, explosionTimeout)`. The play-on-awake systems are left
+                    // playing (Build-7 stopped them and played them again 0.5 s later).
                     fields.is_remote |= effect.is_remote;
                     self.events.push(EffectEvent::Explosion {
                         position: effect.position,
                         fields,
                     });
-                    if effect.systems.is_empty() {
-                        effect.destroy_at = effect.destroy_at.min(time + fields.timeout);
-                    } else {
-                        // `Stop()`: with children, `StopEmitting`.
-                        effect.systems.iter_mut().for_each(ParticleSystem::stop);
-                        effect.explosion_play_at = Some(time + 0.5);
-                    }
+                    effect.destroy_at = effect.destroy_at.min(time + fields.timeout);
                 }
             }
             // CheckIfAlive was started in OnEnable, before ExplosionDamage's Start: it resumes
@@ -348,15 +408,6 @@ impl Effects {
                     } else {
                         effect.destroy_at = effect.destroy_at.min(time);
                     }
-                }
-            }
-            if let Some(at) = effect.explosion_play_at
-                && time >= at
-            {
-                effect.explosion_play_at = None;
-                effect.systems.iter_mut().for_each(ParticleSystem::play);
-                if let Some(fields) = effect.def.explosion {
-                    effect.destroy_at = effect.destroy_at.min(time + fields.timeout);
                 }
             }
             if effect.active {
@@ -412,8 +463,8 @@ mod tests {
     use crate::anim::ClipLibrary;
     use crate::assets::{find_assets_dir, load_tags};
 
-    const PISTOL_BULLET: &str = "resources.assets:4166";
-    const ROCKET: &str = "resources.assets:11042";
+    const PISTOL_BULLET: &str = "resources.assets:4141";
+    const ROCKET: &str = "resources.assets:11017";
 
     fn setup() -> (Templates, Audio, MeshCache) {
         let assets = find_assets_dir().unwrap();
@@ -463,7 +514,7 @@ mod tests {
     }
 
     #[test]
-    fn explosion_is_stopped_on_start_and_destroyed_by_cfx_check() {
+    fn explosion_plays_and_is_destroyed_after_its_timeout() {
         let (t, mut audio, mut meshes) = setup();
         let world = CollisionWorld::new();
         let mut effects = Effects::default();
@@ -506,9 +557,11 @@ mod tests {
             }
         );
         assert_eq!(explosion_damage(fields, 3.0), 50.0);
-        // Stopped before its first particle update; CheckIfAlive finds it dead at 0.5 s.
-        assert!(!drawn);
-        assert_eq!(frames, 25);
+        // The systems play from awake; `Destroy(gameObject, explosionTimeout)` removes the
+        // explosion 2 s after its `Start` (first update, 0.02 s), while CheckIfAlive still finds
+        // particles alive (frame 101, or 102 with the summed float time).
+        assert!(drawn);
+        assert!((101..=102).contains(&frames), "{frames}");
     }
 
     #[test]
@@ -549,7 +602,7 @@ mod tests {
         };
         let batches = effects.batches(&view);
         assert_eq!(batches.len(), 1);
-        assert_eq!(batches[0].material, "resources.assets:39");
+        assert_eq!(batches[0].material, "resources.assets:40");
         projectiles.objects.clear();
         effects.sync_projectiles(&t, &projectiles, time, &mut audio, &mut meshes);
         effects.update(0.02, time, &world, &mut audio);

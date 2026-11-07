@@ -1,4 +1,4 @@
-//! Unity `TrailRenderer` (2018.3) for the bullets' and the rocket's trails (spec:
+//! Unity `TrailRenderer` (2018.3; the 5.3 start/end width and five colours are converted) for the bullets' and the rocket's trails (spec:
 //! `docs/gameplay/particles.md`): view-aligned strip, stretched texture, width curve and colour
 //! gradient from the head (0) to the tail (1).
 
@@ -25,15 +25,24 @@ pub struct TrailDef {
 }
 
 impl TrailDef {
-    /// From a `TrailRenderer` component's data.
+    /// From a `TrailRenderer` component's data (Unity 2018.3 or 5.3 layout).
     pub fn from_component(data: &Value) -> TrailDef {
         let p = &data["m_Parameters"];
+        let (width, width_multiplier, color) = if data.get("m_StartWidth").is_some() {
+            unity_5_3_width_and_color(data)
+        } else {
+            (
+                Curve::from_json(&p["widthCurve"]),
+                f32_of(&p["widthMultiplier"]),
+                Gradient::from_json(&p["colorGradient"]),
+            )
+        };
         TrailDef {
             time: f32_of(&data["m_Time"]),
             min_vertex_distance: f32_of(&data["m_MinVertexDistance"]),
-            width: Curve::from_json(&p["widthCurve"]),
-            width_multiplier: f32_of(&p["widthMultiplier"]),
-            color: Gradient::from_json(&p["colorGradient"]),
+            width,
+            width_multiplier,
+            color,
             material: data["m_Materials"][0]
                 .as_object()
                 .and_then(|_| ref_of(&data["m_Materials"][0]))
@@ -42,6 +51,33 @@ impl TrailDef {
             emitting: data["m_Emitting"].as_bool().unwrap_or(true),
         }
     }
+}
+
+/// Unity 5.3 trail (CrazyGames build): `m_StartWidth` / `m_EndWidth` at the head / tail and five
+/// `m_Colors` (`ColorRGBA32`) spread evenly from the head (0) to the tail (1), both interpolated
+/// linearly. As a width curve (multiplier 1) and a gradient with the key times Unity's upgrade
+/// writes (0, 16384, 32768, 49151, 65535 of 65535).
+fn unity_5_3_width_and_color(data: &Value) -> (Curve, f32, Gradient) {
+    let start = f32_of(&data["m_StartWidth"]);
+    let end = f32_of(&data["m_EndWidth"]);
+    let slope = end - start;
+    let width = Curve::from_json(&serde_json::json!({ "m_Curve": [
+        { "time": 0.0, "value": start, "inSlope": slope, "outSlope": slope },
+        { "time": 1.0, "value": end, "inSlope": slope, "outSlope": slope },
+    ] }));
+    let mut gradient = serde_json::json!({ "m_NumColorKeys": 5, "m_NumAlphaKeys": 5, "m_Mode": 0 });
+    for (i, time) in [0, 16384, 32768, 49151, 65535].into_iter().enumerate() {
+        let rgba = data["m_Colors"][format!("m_Color[{i}]")]["rgba"]
+            .as_u64()
+            .unwrap_or(0xFFFF_FFFF);
+        let channel = |c: u32| ((rgba >> (8 * c)) & 0xFF) as f64 / 255.0;
+        gradient[format!("key{i}")] = serde_json::json!({
+            "r": channel(0), "g": channel(1), "b": channel(2), "a": channel(3),
+        });
+        gradient[format!("ctime{i}")] = Value::from(time);
+        gradient[format!("atime{i}")] = Value::from(time);
+    }
+    (width, 1.0, Gradient::from_json(&gradient))
 }
 
 /// Runtime trail of one object.
@@ -163,6 +199,35 @@ mod tests {
                 },
             },
         })))
+    }
+
+    /// The CrazyGames rocket trail (`Roket cube__11017`, Unity 5.3 layout).
+    #[test]
+    fn unity_5_3_trail_widths_and_colors() {
+        let def = TrailDef::from_component(&json!({
+            "m_Enabled": true,
+            "m_Time": 1.0,
+            "m_StartWidth": 0.25,
+            "m_EndWidth": 0.1,
+            "m_Colors": {
+                "m_Color[0]": { "rgba": 4294967295u32 },
+                "m_Color[1]": { "rgba": 4294967295u32 },
+                "m_Color[2]": { "rgba": 4294967295u32 },
+                "m_Color[3]": { "rgba": 4294967295u32 },
+                "m_Color[4]": { "rgba": 16777215 },
+            },
+            "m_MinVertexDistance": 0.1,
+            "m_Autodestruct": true,
+        }));
+        assert!(def.emitting);
+        assert_eq!(def.width_multiplier, 1.0);
+        assert!((def.width.evaluate(0.0) - 0.25).abs() < 1e-6);
+        assert!((def.width.evaluate(0.5) - 0.175).abs() < 1e-6);
+        assert!((def.width.evaluate(1.0) - 0.1).abs() < 1e-6);
+        assert_eq!(def.color.evaluate(0.5), Vec4::ONE);
+        // Alpha fades over the last quarter.
+        assert!((def.color.evaluate(0.875).w - 0.5).abs() < 1e-3);
+        assert_eq!(def.color.evaluate(1.0), Vec4::new(1.0, 1.0, 1.0, 0.0));
     }
 
     #[test]

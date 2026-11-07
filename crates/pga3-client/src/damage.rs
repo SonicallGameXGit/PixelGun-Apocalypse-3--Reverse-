@@ -264,7 +264,7 @@ mod tests {
 
     fn damage() -> PlayerDamage {
         PlayerDamage::awake(
-            &json!({ "hp": 200.0, "disableDamage": false, "ragdoll": { "ref": "resources.assets:14520" } }),
+            &json!({ "hp": 200.0, "disableDamage": false, "ragdoll": { "ref": "resources.assets:14496" } }),
             Quat::IDENTITY,
         )
     }
@@ -286,7 +286,7 @@ mod tests {
         assert_eq!(
             died,
             Some(DamageEvent::Died {
-                ragdoll: Some("resources.assets:14520".to_string())
+                ragdoll: Some("resources.assets:14496".to_string())
             })
         );
         assert!(d.we_killed && d.current_hp == 0.0);

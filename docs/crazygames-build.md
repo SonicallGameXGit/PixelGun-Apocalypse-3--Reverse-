@@ -37,6 +37,38 @@ These are the same 20 scenes as Build-7, from `Assets/A WEB crazy/`:
 - `Bridge`, `Castle`, `Crash`, `Credits`, `Fight`, `Pete`, `Scaz`, `Snow`, `Tunnels`, `Village`;
 - the `ZM_*` variants of the maps.
 
+## Assets
+
+Extracted with the Build-7 pipeline (`tools/extract/README.md`, "CrazyGames build") into `assets/`, which now holds this build. The Unity 5.3 differences the tools handle are in `docs/assets.md`, "Unity 5.3 serialization". `tools/extract/compare_assets.py` compares two published trees by content (pixels for images, bytes otherwise); the report is `research/notes/crazygames/asset-diff.json` (**observed**, 2026-11-07):
+
+| Type | Build-7 | CrazyGames | Same | Notes |
+|------|---------|------------|------|-------|
+| Mesh | 173 | 172 | 172 | Build-7 also has `Icosphere` |
+| Font | 12 | 7 | 7 | Build-7 also has the "fortness", Impact and PacoGames fonts |
+| AudioClip | 48 | 48 | 0 | the same sounds encoded separately (correlation 0.87-1.0 at zero lag); some sample rates differ |
+| Texture2D | 277 | 397 | 111 | 5 of them renamed; see below |
+| Sprite | 41 | 11 | 3 | Build-7's extra sprites are the PacoGames SDK / social UI |
+
+- **Map textures differ completely.** This build textures each map with its own materials (`Bridge_material_N`, ...); Build-7 replaced them with Minecraft-style block textures. Map geometry (meshes, colliders, spawn points) is the same.
+- Other texture changes: touch-control textures (Easy Touch), `gun_4_rocke tinta`, `Heatwave`, `Smoke`, `hitmarker_red`, the rocket texture; skyboxes are 128² (64² in Build-7). `detonator/textures/heatdistort` is a new Resources texture; the PacoGames SDK prefabs are gone.
+- The kill-feed `GUISkin` (`WhoKilledWho.guiSkin`) is a different asset; the client reads it from the scene instead of a fixed ref.
+- **Weapons:** the `WeaponScript` data is identical except the crosshair (`WeaponCrosshair`: texture `Crosshair 16x15`, width 4) and the fields this build does not have (`tagsToShoot`, `autoFire`, `inSight`). Bullet, knife and rocket prefabs have the same values; impacts and the explosion are Shuriken systems in both builds.
+- **Particles:** the same effects, serialized with the 5.3 `ParticleSystem` layout; upgraded to the 2018.3 layout on load, every read field matches Build-7 except real data edits (collision `radiusScale` 1.0 vs Build-7's 0.01 on `Blood`, `Metal`, `WFXMR_Explosion*`; `Metal` max particles 20 vs 100). The shotgun's "Smoke Trail" is a **legacy** particle emitter here (`docs/gameplay/particles.md`).
+
+## Scripts against Build-7
+
+Compared method by method, CrazyGames asm.js (`tools/re/asmjs_func.py`, output in `research/notes/crazygames/`) against the Build-7 decompilation (**observed**):
+
+- **`WeaponManager`:** no auto fire (`autoFire`, `textDelay`, the O key toggle, `Awake` setting the weapons' `autoFire`) and no "Auto fire on/off" label in `OnGUI` (`hxg` draws only the two room messages). Number keys (`Input.GetKeyDown("1")`...), scrolling, switching and `TakeFirstWeapon` are the same.
+- **`WeaponScript`:** no `RaycastForZombies` / `inSight`, so `fire = held && canFire && !singleFire`. The shotgun smoke is a legacy `ParticleEmitter`: `shotGunAwake` sets `emit = false`; `shotGunSmokeEffect` sets `emit = true`, waits 0.3 s, sets `emit = false` (Build-7: `Play()` / `Stop()`). Everything else is the same: `Start`, `Awake`, the fire loops, one-shots, reloads, camera recoil, `RotationRealism`, muzzle flash, knife and launcher.
+- **`WeaponCrosshair`:** no red `GUI.color` while `inSight`.
+- **`Projectile.Kill`:** `GetComponentInChildren<ParticleEmitter>().emit = false` instead of `ParticleSystem.Stop()`; the rocket has only a `TrailRenderer`, so neither does anything.
+- **`ExplosionDamage.Start`** (`Fbg`): damage (`SendMessageUpwards("ApplyDamage")` unless `isRemote`) and `AddExplosionForce(power, position, radius, 3)` as in Build-7; then, if the object has a legacy `ParticleEmitter`, `emit = true` for 0.5 s, and `Destroy(gameObject, explosionTimeout)`. It never stops or plays the Shuriken systems, so **the explosion is visible** in this build (Build-7 stopped them before their first update and `CheckIfAlive` destroyed the object at 0.5 s).
+- **`CFX_AutoDestructShuriken`:** same (`CheckIfAlive` every 0.5 s on `GetComponent<ParticleSystem>().IsAlive(true)`).
+- **`Bullet`, `SniperScope`:** identical.
+
+The client follows this build (`docs/gameplay/weapons.md`, `docs/gameplay/particles.md`, `docs/gameplay/hud.md`).
+
 ## Code
 
 Method names come from Il2CppDumper, run on the static memory wrapped as a wasm data section (`tools/re/asmjs_mem_to_wasm.py`).
@@ -49,7 +81,7 @@ Method names come from Il2CppDumper, run on the static memory wrapped as a wasm 
 - The extra Build-7 classes are PacoGames' SDK (`Garter`, `HGarter*`), ads, `VersionChecker`, `ServerPaco` and PUN 1.91 helpers.
 - This build adds the `InstantGui*` widgets, `Detonator*` effects, Easy Touch demo scripts, `InRoomRoundTimer` and `ServerTime`.
 - The game scripts have the same methods in both builds. The exceptions are `ConnectMenu` (no `DoesRoomContainCode`/`GetRooms`/`GetSetRooms`/`Sort`), `Link`, `ServerChose` (no `ru`), `WeaponScript` (no `RaycastForZombies`) and `RoomMultiplayerMenu` (adds `Resolutions`).
-- Method bodies have not been compared yet.
+- Method bodies: the weapon scripts are compared ("Scripts against Build-7" below); the others not yet.
 
 ## Decompiled so far
 

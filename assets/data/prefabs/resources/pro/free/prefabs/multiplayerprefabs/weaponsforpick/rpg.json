@@ -1,10 +1,10 @@
 {
     "file": "resources.assets",
     "resources_path": "pro/free/prefabs/multiplayerprefabs/weaponsforpick/rpg",
-    "root": "resources.assets:410",
+    "root": "resources.assets:386",
     "nodes": [
         {
-            "ref": "resources.assets:410",
+            "ref": "resources.assets:386",
             "name": "RPG",
             "active": true,
             "layer": 2,
@@ -12,7 +12,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16295",
+                    "ref": "resources.assets:16251",
                     "data": {
                         "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
                         "m_LocalPosition": { "x": -12.997477, "y": 4.940043, "z": -15.647173 },
@@ -21,7 +21,7 @@
                 },
                 {
                     "type": "Animation",
-                    "ref": "resources.assets:40074",
+                    "ref": "resources.assets:40079",
                     "data": {
                         "m_Enabled": 1,
                         "m_Animation": null,
@@ -34,7 +34,7 @@
                 },
                 {
                     "type": "BoxCollider",
-                    "ref": "resources.assets:38606",
+                    "ref": "resources.assets:38613",
                     "data": {
                         "m_Material": null,
                         "m_IsTrigger": false,
@@ -45,7 +45,7 @@
                 },
                 {
                     "type": "SphereCollider",
-                    "ref": "resources.assets:40372",
+                    "ref": "resources.assets:40379",
                     "data": {
                         "m_Material": null,
                         "m_IsTrigger": true,
@@ -56,24 +56,24 @@
                 },
                 {
                     "type": "Rigidbody",
-                    "ref": "resources.assets:38580",
+                    "ref": "resources.assets:38588",
                     "data": { "m_Mass": 1.0, "m_Drag": 0.0, "m_AngularDrag": 0.05, "m_UseGravity": true, "m_IsKinematic": false, "m_Interpolate": 1, "m_Constraints": 0, "m_CollisionDetection": 0 }
                 },
                 {
                     "type": "MonoBehaviour",
-                    "ref": "resources.assets:40983",
+                    "ref": "resources.assets:40954",
                     "enabled": true,
                     "script": "WeaponItem",
-                    "script_ref": "globalgamemanagers.assets:375",
+                    "script_ref": "globalgamemanagers.assets:188",
                     "fields_complete": true,
                     "fields": {}
                 }
             ],
-            "children": ["resources.assets:364", "resources.assets:395"],
+            "children": ["resources.assets:350", "resources.assets:372"],
             "parent": null
         },
         {
-            "ref": "resources.assets:364",
+            "ref": "resources.assets:350",
             "name": "Cube",
             "active": true,
             "layer": 2,
@@ -81,7 +81,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16280",
+                    "ref": "resources.assets:16237",
                     "data": {
                         "m_LocalRotation": { "x": -0.7071069, "y": 0.0, "z": -0.0, "w": 0.70710677 },
                         "m_LocalPosition": { "x": -6.9074545e-08, "y": 0.16822088, "z": 2.9948938 },
@@ -90,43 +90,37 @@
                 },
                 {
                     "type": "MeshFilter",
-                    "ref": "resources.assets:35390",
+                    "ref": "resources.assets:35395",
                     "data": { "m_Mesh": null }
                 },
                 {
                     "type": "MeshRenderer",
-                    "ref": "resources.assets:32189",
+                    "ref": "resources.assets:32176",
                     "data": {
                         "m_Enabled": true,
                         "m_CastShadows": 1,
-                        "m_ReceiveShadows": 1,
-                        "m_DynamicOccludee": 1,
-                        "m_MotionVectors": 1,
-                        "m_LightProbeUsage": 0,
-                        "m_ReflectionProbeUsage": 1,
-                        "m_RenderingLayerMask": 4294967295,
-                        "m_RendererPriority": 0,
+                        "m_ReceiveShadows": true,
                         "m_LightmapIndex": 65535,
                         "m_LightmapIndexDynamic": 65535,
                         "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
                         "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
                         "m_Materials": [null],
-                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_SubsetIndices": [],
                         "m_StaticBatchRoot": null,
+                        "m_UseLightProbes": false,
+                        "m_ReflectionProbeUsage": 1,
                         "m_ProbeAnchor": null,
-                        "m_LightProbeVolumeOverride": null,
                         "m_SortingLayerID": 0,
-                        "m_SortingLayer": 0,
                         "m_SortingOrder": 0,
                         "m_AdditionalVertexStreams": null
                     }
                 }
             ],
             "children": [],
-            "parent": "resources.assets:410"
+            "parent": "resources.assets:386"
         },
         {
-            "ref": "resources.assets:395",
+            "ref": "resources.assets:372",
             "name": "Cube_001",
             "active": true,
             "layer": 2,
@@ -134,7 +128,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16249",
+                    "ref": "resources.assets:16214",
                     "data": {
                         "m_LocalRotation": { "x": -0.7071069, "y": 0.0, "z": -0.0, "w": 0.70710677 },
                         "m_LocalPosition": { "x": -6.9074545e-08, "y": 0.16822088, "z": 2.9948938 },
@@ -143,40 +137,34 @@
                 },
                 {
                     "type": "MeshFilter",
-                    "ref": "resources.assets:35379",
+                    "ref": "resources.assets:35388",
                     "data": { "m_Mesh": null }
                 },
                 {
                     "type": "MeshRenderer",
-                    "ref": "resources.assets:32178",
+                    "ref": "resources.assets:32169",
                     "data": {
                         "m_Enabled": true,
                         "m_CastShadows": 1,
-                        "m_ReceiveShadows": 1,
-                        "m_DynamicOccludee": 1,
-                        "m_MotionVectors": 1,
-                        "m_LightProbeUsage": 0,
-                        "m_ReflectionProbeUsage": 1,
-                        "m_RenderingLayerMask": 4294967295,
-                        "m_RendererPriority": 0,
+                        "m_ReceiveShadows": true,
                         "m_LightmapIndex": 65535,
                         "m_LightmapIndexDynamic": 65535,
                         "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
                         "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
                         "m_Materials": [null],
-                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_SubsetIndices": [],
                         "m_StaticBatchRoot": null,
+                        "m_UseLightProbes": false,
+                        "m_ReflectionProbeUsage": 1,
                         "m_ProbeAnchor": null,
-                        "m_LightProbeVolumeOverride": null,
                         "m_SortingLayerID": 0,
-                        "m_SortingLayer": 0,
                         "m_SortingOrder": 0,
                         "m_AdditionalVertexStreams": null
                     }
                 }
             ],
             "children": [],
-            "parent": "resources.assets:410"
+            "parent": "resources.assets:386"
         }
     ]
 }

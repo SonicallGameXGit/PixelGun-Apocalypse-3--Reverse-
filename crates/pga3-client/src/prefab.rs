@@ -469,18 +469,39 @@ impl PrefabInstance {
         }
     }
 
+    /// `GameObject.SetActive`. A node that becomes active in the hierarchy enables the
+    /// `Animation`s below it, and each one with `playAutomatically` plays its default clip
+    /// again (inferred Unity behaviour; the Mercenary sniper's muzzle flash relies on it:
+    /// `docs/gameplay/animation.md`).
+    pub fn set_active(&mut self, node: usize, active: bool) {
+        let was_active = self.active_in_hierarchy(node);
+        self.nodes[node].active_self = active;
+        if !was_active && self.active_in_hierarchy(node) {
+            let subtree = self.subtree(node);
+            self.play_automatically_in(&subtree);
+        }
+    }
+
     /// Plays the default clip of every `Animation` with `playAutomatically` on an active
     /// GameObject (Unity does this when the component is enabled).
     pub fn play_automatically(&mut self) {
+        let all: Vec<usize> = (0..self.nodes.len()).collect();
+        self.play_automatically_in(&all);
+    }
+
+    fn play_automatically_in(&mut self, nodes: &[usize]) {
         for index in 0..self.animations.len() {
             let node = self.animations[index].node;
-            if !self.active_in_hierarchy(node) {
+            if !nodes.contains(&node) || !self.active_in_hierarchy(node) {
                 continue;
             }
             let animation = &mut self.animations[index];
             if animation.play_automatically
                 && let Some(clip) = animation.default_clip.clone()
             {
+                // Starts from the clip's beginning, even when the GameObject was deactivated
+                // mid-clip (inferred).
+                animation.stop(&clip);
                 animation.play(&clip);
             }
         }

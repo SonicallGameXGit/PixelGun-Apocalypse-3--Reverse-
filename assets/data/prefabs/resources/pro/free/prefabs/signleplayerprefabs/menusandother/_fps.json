@@ -1,10 +1,10 @@
 {
     "file": "resources.assets",
     "resources_path": "pro/free/prefabs/signleplayerprefabs/menusandother/_fps",
-    "root": "resources.assets:343",
+    "root": "resources.assets:355",
     "nodes": [
         {
-            "ref": "resources.assets:343",
+            "ref": "resources.assets:355",
             "name": "_FPS",
             "active": true,
             "layer": 0,
@@ -12,7 +12,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16227",
+                    "ref": "resources.assets:16219",
                     "data": {
                         "m_LocalRotation": { "x": 0.7071069, "y": 0.0, "z": 0.0, "w": 0.70710677 },
                         "m_LocalPosition": { "x": 392.74136, "y": 7.343886, "z": -1275.6005 },
@@ -21,13 +21,13 @@
                 },
                 {
                     "type": "MonoBehaviour",
-                    "ref": "resources.assets:40967",
+                    "ref": "resources.assets:40958",
                     "enabled": true,
                     "script": "FramesPerSecond",
-                    "script_ref": "globalgamemanagers.assets:233",
+                    "script_ref": "globalgamemanagers.assets:106",
                     "fields_complete": true,
                     "fields": {
-                        "guiStyle": { "ref": "resources.assets:40962" },
+                        "guiStyle": { "ref": "resources.assets:40927" },
                         "updateInterval": 0.5,
                         "fps": ""
                     }

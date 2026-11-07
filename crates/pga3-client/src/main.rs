@@ -22,7 +22,7 @@
 //! Controls: click = capture mouse, Esc = release / quit, F = walk/fly toggle, Tab = next spawn.
 //! Walking (original keys): WASD/arrows, Space jump, Left Shift run, C crouch, Left Ctrl prone.
 //! Weapons (original keys): left mouse fire, right mouse aim, R reload, 1-6 / mouse wheel /
-//! M, N select, O auto-fire toggle.
+//! M, N select.
 //! Flying: WASD, Space/C up/down, Shift fast.
 
 mod anim;
@@ -35,6 +35,7 @@ mod footsteps;
 mod gfx;
 mod gui;
 mod hud;
+mod legacy_particles;
 mod net;
 mod obj;
 mod online;
@@ -88,7 +89,6 @@ use footsteps::FpsSoundController;
 use gui::{Gui, GuiFont, GuiSkin};
 use hud::{AmmoDisplay, DefaultSkin};
 use online::{NetIn, Online, OnlineOptions};
-use particles::ParticleSystem;
 use physics::CollisionWorld;
 use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
 use prefab::PrefabInstance;
@@ -102,9 +102,6 @@ use weapons::{SoundSource, SyncFire, WeaponContext, WeaponEvent, WeaponInput, We
 /// The player prefabs `RoomMultiplayerMenu.SpawnPlayer` instantiates: `playerPrefab`
 /// ("Mercenarys", for team 1) and `playerPrefabTwo` ("German", any other team).
 const PLAYER_KINDS: [&str; 2] = ["mercenarys", "german"];
-
-/// `WhoKilledWho.guiSkin` (on every scene's `__Room` object).
-const KILL_FEED_SKIN: &str = "resources.assets:40955";
 
 /// This client's Photon actor number (the dummies take the next ones).
 const LOCAL_ACTOR: ActorId = 1;
@@ -293,7 +290,6 @@ struct Input {
     fire_pressed: bool,
     aim_pressed: bool,
     reload_pressed: bool,
-    auto_fire_pressed: bool,
     number_pressed: [bool; 10],
     /// `Input.GetAxis("Mouse ScrollWheel")` of this frame.
     scroll: f32,
@@ -343,8 +339,8 @@ struct AvatarScripts {
     root_source: Option<u64>,
     manager_source: Option<(u64, usize)>,
     weapon_sources: Vec<Option<(u64, usize)>>,
-    /// Particle systems in the prefab (the shotgun's smoke): (node, system).
-    systems: Vec<(usize, ParticleSystem)>,
+    /// Particle emitters in the prefab (the shotgun's smoke): (node, emitter).
+    systems: Vec<(usize, effects::NodeParticles)>,
     /// `PhotonNetwork.Destroy` ran (after death): the player object is gone.
     destroyed: bool,
 }
@@ -573,7 +569,7 @@ fn create(
             .next()?;
         skin(ref_of(&c["fields"]["guiSKin"]).map(|(r, _)| r))
     });
-    let feed_skin = skin(Some(KILL_FEED_SKIN));
+    let feed_skin = skin(scene.kill_feed_skin.as_deref());
     let default_skin = skin(Some(gui::DEFAULT_SKIN)).map(|skin| DefaultSkin { skin });
     println!(
         "collision: {} colliders, {} triangles",
@@ -778,7 +774,7 @@ fn instantiate_local(
         .unwrap_or(Value::Null);
     prefab.set_active_refs(&controller["localObjectsToDeactivate"], false);
     prefab.play_automatically();
-    let weapons = weapons::weapon_manager_awake(&mut prefab, &templates.custom_tags);
+    let weapons = weapons::weapon_manager_awake(&mut prefab);
     let mut scripts = AvatarScripts::start(&prefab, weapons.as_ref(), player, audio, meshes);
     scripts.character = CharacterAnimation::start(&mut prefab, clips);
     LocalAvatar {
@@ -836,10 +832,11 @@ impl AvatarScripts {
             .unwrap_or_default();
         let mut systems = Vec::new();
         for node in 0..prefab.nodes.len() {
-            if let Some(def) = effects::particle_system_def(prefab, node, meshes) {
-                let mut system = ParticleSystem::new(std::sync::Arc::new(def), node as u32 + 1);
-                // `WeaponScript.Start`: `smoke.Stop()`.
-                system.stop();
+            if let Some(mut system) =
+                effects::NodeParticles::of_node(prefab, node, meshes, node as u32 + 1)
+            {
+                // `WeaponScript.Start` / `shotGunAwake`: `smoke.Stop()` / `smoke.emit = false`.
+                system.set_emitting(false);
                 systems.push((node, system));
             }
         }
@@ -1060,7 +1057,6 @@ impl Running {
         i.fire_pressed = false;
         i.aim_pressed = false;
         i.reload_pressed = false;
-        i.auto_fire_pressed = false;
         i.number_pressed = [false; 10];
         i.scroll = 0.0;
     }
@@ -1091,7 +1087,6 @@ impl Running {
             fire_down: i.fire_pressed,
             aim_down: i.aim_pressed,
             reload_down: i.reload_pressed,
-            auto_fire_toggle_down: i.auto_fire_pressed,
             number_down: i.number_pressed,
             scroll: i.scroll,
             next_held: i.key_m,
@@ -1237,12 +1232,8 @@ impl Running {
                     continue;
                 };
                 for (n, system) in &mut local.scripts.systems {
-                    if *n == node {
-                        if script.shot_gun.smoke_playing && !system.emitting {
-                            system.play();
-                        } else if !script.shot_gun.smoke_playing && system.emitting {
-                            system.stop();
-                        }
+                    if *n == node && script.shot_gun.smoke_playing != system.emitting() {
+                        system.set_emitting(script.shot_gun.smoke_playing);
                     }
                 }
             }
@@ -1707,7 +1698,7 @@ impl Running {
         }
         let children = self.local.prefab.nodes[0].children.clone();
         for child in children {
-            self.local.prefab.nodes[child].active_self = false;
+            self.local.prefab.set_active(child, false);
         }
         if let Some(ragdoll) = spawn_ragdoll(
             &self.kinds,
@@ -2165,7 +2156,7 @@ impl Running {
                     ammo.on_gui(gui, font, skin, weapons, dt, w, h);
                 }
                 if let Some(default) = &mut self.default_skin {
-                    default.weapon_manager_gui(gui, font, weapons, w, h);
+                    default.weapon_manager_gui(gui, font, weapons, w);
                 }
             }
             if local.scripts.protection.protected
@@ -2267,7 +2258,6 @@ impl ApplicationHandler for App {
                         i.key_r = pressed;
                         i.reload_pressed |= down;
                     }
-                    KeyCode::KeyO => i.auto_fire_pressed |= down,
                     KeyCode::KeyM => i.key_m = pressed,
                     KeyCode::KeyN => i.key_n = pressed,
                     KeyCode::Digit0 => i.number_pressed[0] |= down,

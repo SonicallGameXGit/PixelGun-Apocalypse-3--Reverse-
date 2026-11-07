@@ -1,6 +1,6 @@
 """Decode stripped MonoBehaviour / ScriptableObject data using class layouts from Il2CppDumper's dump.cs.
 
-Unity 2018.3 serialization rules implemented here:
+Unity 2018.3 serialization rules implemented here (Unity 5.3 differences are noted where they apply):
 - serialized fields: (public or [SerializeField]) and not static/const/readonly/[NonSerialized]
 - inherited fields first (base classes up to MonoBehaviour/ScriptableObject)
 - primitives, string, enums (by underlying type), UnityEngine.Object refs (PPtr: i32 fileID + i64 pathID)
@@ -126,7 +126,9 @@ def load_not_serialized(dummy_dll_dir):
 
 
 class Decoder:
-    def __init__(self, dump_path, dummy_dll_dir):
+    def __init__(self, dump_path, dummy_dll_dir, unity_version=(2018, 3)):
+        # Keyframe weights (weightedMode, inWeight, outWeight) were added in Unity 2018.1.
+        self.weighted_keyframes = unity_version >= (2018, 1)
         self.types = parse_dump(dump_path)
         not_serialized = load_not_serialized(dummy_dll_dir)
         for t in self.types:
@@ -371,12 +373,14 @@ class Decoder:
         n = self.unpack('<i', 4)
         keys = []
         for _ in range(n):
-            keys.append({
+            key = {
                 'time': self.unpack('<f', 4), 'value': self.unpack('<f', 4),
                 'inSlope': self.unpack('<f', 4), 'outSlope': self.unpack('<f', 4),
-                'weightedMode': self.unpack('<i', 4),
-                'inWeight': self.unpack('<f', 4), 'outWeight': self.unpack('<f', 4),
-            })
+            }
+            if self.weighted_keyframes:
+                key.update(weightedMode=self.unpack('<i', 4), inWeight=self.unpack('<f', 4),
+                           outWeight=self.unpack('<f', 4))
+            keys.append(key)
         return {'keys': keys, 'preInfinity': self.unpack('<i', 4), 'postInfinity': self.unpack('<i', 4),
                 'rotationOrder': self.unpack('<i', 4)}
 

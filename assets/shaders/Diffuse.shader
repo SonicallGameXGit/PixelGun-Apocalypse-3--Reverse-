@@ -5,6216 +5,2459 @@
 ///////////////////////////////////////////
 Shader "Diffuse" {
 Properties {
-
-_Color ("Main Color", Color) = (1,1,1,1)
-
-_MainTex ("Base (RGB)", 2D) = "white" { }
-
+ _Color ("Main Color", Color) = (1,1,1,1)
+ _MainTex ("Base (RGB)", 2D) = "white" { }
 }
-SubShader {
+SubShader { 
  LOD 200
- Tags { "RenderType" = "Opaque" }
+ Tags { "RenderType"="Opaque" }
  Pass {
- Name "FORWARD"
-  LOD 200
-  Tags { "LIGHTMODE" = "FORWARDBASE" "RenderType" = "Opaque" "SHADOWSUPPORT" = "true" }
-  GpuProgramID 33037
+  Name "FORWARD"
+  Tags { "LIGHTMODE"="ForwardBase" "SHADOWSUPPORT"="true" "RenderType"="Opaque" }
+  GpuProgramID 6689
 Program "vp" {
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" }
-"#ifdef VERTEX
-#version 300 es
+SubProgram "gles " {
+Keywords { "DIRECTIONAL" "SHADOWS_OFF" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" }
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying mediump vec3 xlv_TEXCOORD3;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 v_3;
+  v_3.x = _World2Object[0].x;
+  v_3.y = _World2Object[1].x;
+  v_3.z = _World2Object[2].x;
+  v_3.w = _World2Object[3].x;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].y;
+  v_4.y = _World2Object[1].y;
+  v_4.z = _World2Object[2].y;
+  v_4.w = _World2Object[3].y;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].z;
+  v_5.y = _World2Object[1].z;
+  v_5.z = _World2Object[2].z;
+  v_5.w = _World2Object[3].z;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize(((
+    (v_3.xyz * _glesNormal.x)
+   + 
+    (v_4.xyz * _glesNormal.y)
+  ) + (v_5.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_6;
+  tmpvar_2 = worldNormal_1;
+  mediump vec3 normal_7;
+  normal_7 = worldNormal_1;
+  mediump vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = normal_7;
+  mediump vec3 res_9;
+  mediump vec3 x_10;
+  x_10.x = dot (unity_SHAr, tmpvar_8);
+  x_10.y = dot (unity_SHAg, tmpvar_8);
+  x_10.z = dot (unity_SHAb, tmpvar_8);
+  mediump vec3 x1_11;
+  mediump vec4 tmpvar_12;
+  tmpvar_12 = (normal_7.xyzz * normal_7.yzzx);
+  x1_11.x = dot (unity_SHBr, tmpvar_12);
+  x1_11.y = dot (unity_SHBg, tmpvar_12);
+  x1_11.z = dot (unity_SHBb, tmpvar_12);
+  res_9 = (x_10 + (x1_11 + (unity_SHC.xyz * 
+    ((normal_7.x * normal_7.x) - (normal_7.y * normal_7.y))
+  )));
+  res_9 = max (((1.055 * 
+    pow (max (res_9, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD3 = max (vec3(0.0, 0.0, 0.0), res_9);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD3;
+void main ()
 {
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  mediump vec3 tmpvar_6;
+  tmpvar_6 = _WorldSpaceLightPos0.xyz;
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  lowp vec4 c_8;
+  lowp vec4 c_9;
+  lowp float diff_10;
+  mediump float tmpvar_11;
+  tmpvar_11 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_10 = tmpvar_11;
+  c_9.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_10);
+  c_9.w = tmpvar_7.w;
+  c_8.w = c_9.w;
+  c_8.xyz = (c_9.xyz + (tmpvar_7.xyz * xlv_TEXCOORD3));
+  c_3.xyz = c_8.xyz;
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
+
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" }
-"#ifdef VERTEX
-#version 100
+Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" }
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 _ProjectionParams;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying mediump vec3 xlv_TEXCOORD3;
+varying mediump vec4 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  mediump vec4 tmpvar_4;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].x;
+  v_5.y = _World2Object[1].x;
+  v_5.z = _World2Object[2].x;
+  v_5.w = _World2Object[3].x;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].y;
+  v_6.y = _World2Object[1].y;
+  v_6.z = _World2Object[2].y;
+  v_6.w = _World2Object[3].y;
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].z;
+  v_7.y = _World2Object[1].z;
+  v_7.z = _World2Object[2].z;
+  v_7.w = _World2Object[3].z;
+  highp vec3 tmpvar_8;
+  tmpvar_8 = normalize(((
+    (v_5.xyz * _glesNormal.x)
+   + 
+    (v_6.xyz * _glesNormal.y)
+  ) + (v_7.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_8;
+  tmpvar_3 = worldNormal_1;
+  mediump vec3 normal_9;
+  normal_9 = worldNormal_1;
+  mediump vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = normal_9;
+  mediump vec3 res_11;
+  mediump vec3 x_12;
+  x_12.x = dot (unity_SHAr, tmpvar_10);
+  x_12.y = dot (unity_SHAg, tmpvar_10);
+  x_12.z = dot (unity_SHAb, tmpvar_10);
+  mediump vec3 x1_13;
+  mediump vec4 tmpvar_14;
+  tmpvar_14 = (normal_9.xyzz * normal_9.yzzx);
+  x1_13.x = dot (unity_SHBr, tmpvar_14);
+  x1_13.y = dot (unity_SHBg, tmpvar_14);
+  x1_13.z = dot (unity_SHBb, tmpvar_14);
+  res_11 = (x_12 + (x1_13 + (unity_SHC.xyz * 
+    ((normal_9.x * normal_9.x) - (normal_9.y * normal_9.y))
+  )));
+  res_11 = max (((1.055 * 
+    pow (max (res_11, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  highp vec4 o_15;
+  highp vec4 tmpvar_16;
+  tmpvar_16 = (tmpvar_2 * 0.5);
+  highp vec2 tmpvar_17;
+  tmpvar_17.x = tmpvar_16.x;
+  tmpvar_17.y = (tmpvar_16.y * _ProjectionParams.x);
+  o_15.xy = (tmpvar_17 + tmpvar_16.w);
+  o_15.zw = tmpvar_2.zw;
+  tmpvar_4 = o_15;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD3 = max (vec3(0.0, 0.0, 0.0), res_11);
+  xlv_TEXCOORD4 = tmpvar_4;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-#define SV_Target0 gl_FragData[0]
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _ShadowMapTexture;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD3;
+varying mediump vec4 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump float tmpvar_1;
+  mediump vec3 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  lowp vec4 c_4;
+  lowp vec3 tmpvar_5;
+  lowp vec3 lightDir_6;
+  mediump vec3 tmpvar_7;
+  tmpvar_7 = _WorldSpaceLightPos0.xyz;
+  lightDir_6 = tmpvar_7;
+  tmpvar_5 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_8;
+  tmpvar_8 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  lowp float tmpvar_9;
+  tmpvar_9 = texture2DProj (_ShadowMapTexture, xlv_TEXCOORD4).x;
+  tmpvar_2 = _LightColor0.xyz;
+  tmpvar_3 = lightDir_6;
+  tmpvar_1 = tmpvar_9;
+  mediump vec3 tmpvar_10;
+  tmpvar_10 = (tmpvar_2 * tmpvar_1);
+  tmpvar_2 = tmpvar_10;
+  lowp vec4 c_11;
+  lowp vec4 c_12;
+  lowp float diff_13;
+  mediump float tmpvar_14;
+  tmpvar_14 = max (0.0, dot (tmpvar_5, tmpvar_3));
+  diff_13 = tmpvar_14;
+  c_12.xyz = ((tmpvar_8.xyz * tmpvar_10) * diff_13);
+  c_12.w = tmpvar_8.w;
+  c_11.w = c_12.w;
+  c_11.xyz = (c_12.xyz + (tmpvar_8.xyz * xlv_TEXCOORD3));
+  c_4.xyz = c_11.xyz;
+  c_4.w = 1.0;
+  gl_FragData[0] = c_4;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out mediump vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    vs_TEXCOORD1.xyz = u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat0.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD3.xyz = u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in mediump vec3 vs_TEXCOORD3;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump float u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-void main()
-{
-    u_xlat16_0 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_0 = max(u_xlat16_0, 0.0);
-    u_xlat16_1.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * _Color.xyz;
-    u_xlat16_3.xyz = u_xlat16_1.xyz * _LightColor0.xyz;
-    u_xlat16_2.xyz = u_xlat16_1.xyz * vs_TEXCOORD3.xyz;
-    SV_Target0.xyz = u_xlat16_3.xyz * vec3(u_xlat16_0) + u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" }
-"#ifdef VERTEX
-#version 100
+Keywords { "DIRECTIONAL" "SHADOWS_OFF" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "VERTEXLIGHT_ON" }
+"#version 100
 
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 unity_4LightPosX0;
+uniform highp vec4 unity_4LightPosY0;
+uniform highp vec4 unity_4LightPosZ0;
+uniform mediump vec4 unity_4LightAtten0;
+uniform mediump vec4 unity_LightColor[8];
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying mediump vec3 xlv_TEXCOORD3;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    vs_TEXCOORD1.xyz = u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat0.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD3.xyz = u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  highp vec3 tmpvar_4;
+  tmpvar_4 = (_Object2World * _glesVertex).xyz;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].x;
+  v_5.y = _World2Object[1].x;
+  v_5.z = _World2Object[2].x;
+  v_5.w = _World2Object[3].x;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].y;
+  v_6.y = _World2Object[1].y;
+  v_6.z = _World2Object[2].y;
+  v_6.w = _World2Object[3].y;
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].z;
+  v_7.y = _World2Object[1].z;
+  v_7.z = _World2Object[2].z;
+  v_7.w = _World2Object[3].z;
+  highp vec3 tmpvar_8;
+  tmpvar_8 = normalize(((
+    (v_5.xyz * _glesNormal.x)
+   + 
+    (v_6.xyz * _glesNormal.y)
+  ) + (v_7.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_8;
+  tmpvar_2 = worldNormal_1;
+  highp vec3 lightColor0_9;
+  lightColor0_9 = unity_LightColor[0].xyz;
+  highp vec3 lightColor1_10;
+  lightColor1_10 = unity_LightColor[1].xyz;
+  highp vec3 lightColor2_11;
+  lightColor2_11 = unity_LightColor[2].xyz;
+  highp vec3 lightColor3_12;
+  lightColor3_12 = unity_LightColor[3].xyz;
+  highp vec4 lightAttenSq_13;
+  lightAttenSq_13 = unity_4LightAtten0;
+  highp vec3 normal_14;
+  normal_14 = worldNormal_1;
+  highp vec3 col_15;
+  highp vec4 ndotl_16;
+  highp vec4 lengthSq_17;
+  highp vec4 tmpvar_18;
+  tmpvar_18 = (unity_4LightPosX0 - tmpvar_4.x);
+  highp vec4 tmpvar_19;
+  tmpvar_19 = (unity_4LightPosY0 - tmpvar_4.y);
+  highp vec4 tmpvar_20;
+  tmpvar_20 = (unity_4LightPosZ0 - tmpvar_4.z);
+  lengthSq_17 = (tmpvar_18 * tmpvar_18);
+  lengthSq_17 = (lengthSq_17 + (tmpvar_19 * tmpvar_19));
+  lengthSq_17 = (lengthSq_17 + (tmpvar_20 * tmpvar_20));
+  ndotl_16 = (tmpvar_18 * normal_14.x);
+  ndotl_16 = (ndotl_16 + (tmpvar_19 * normal_14.y));
+  ndotl_16 = (ndotl_16 + (tmpvar_20 * normal_14.z));
+  highp vec4 tmpvar_21;
+  tmpvar_21 = max (vec4(0.0, 0.0, 0.0, 0.0), (ndotl_16 * inversesqrt(lengthSq_17)));
+  ndotl_16 = tmpvar_21;
+  highp vec4 tmpvar_22;
+  tmpvar_22 = (tmpvar_21 * (1.0/((1.0 + 
+    (lengthSq_17 * lightAttenSq_13)
+  ))));
+  col_15 = (lightColor0_9 * tmpvar_22.x);
+  col_15 = (col_15 + (lightColor1_10 * tmpvar_22.y));
+  col_15 = (col_15 + (lightColor2_11 * tmpvar_22.z));
+  col_15 = (col_15 + (lightColor3_12 * tmpvar_22.w));
+  tmpvar_3 = col_15;
+  mediump vec3 normal_23;
+  normal_23 = worldNormal_1;
+  mediump vec3 ambient_24;
+  mediump vec4 tmpvar_25;
+  tmpvar_25.w = 1.0;
+  tmpvar_25.xyz = normal_23;
+  mediump vec3 res_26;
+  mediump vec3 x_27;
+  x_27.x = dot (unity_SHAr, tmpvar_25);
+  x_27.y = dot (unity_SHAg, tmpvar_25);
+  x_27.z = dot (unity_SHAb, tmpvar_25);
+  mediump vec3 x1_28;
+  mediump vec4 tmpvar_29;
+  tmpvar_29 = (normal_23.xyzz * normal_23.yzzx);
+  x1_28.x = dot (unity_SHBr, tmpvar_29);
+  x1_28.y = dot (unity_SHBg, tmpvar_29);
+  x1_28.z = dot (unity_SHBb, tmpvar_29);
+  res_26 = (x_27 + (x1_28 + (unity_SHC.xyz * 
+    ((normal_23.x * normal_23.x) - (normal_23.y * normal_23.y))
+  )));
+  res_26 = max (((1.055 * 
+    pow (max (res_26, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  ambient_24 = (tmpvar_3 + max (vec3(0.0, 0.0, 0.0), res_26));
+  tmpvar_3 = ambient_24;
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = tmpvar_4;
+  xlv_TEXCOORD3 = ambient_24;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying mediump vec3 vs_TEXCOORD3;
-#define SV_Target0 gl_FragData[0]
-mediump float u_xlat16_0;
-mediump vec3 u_xlat16_1;
-lowp vec3 u_xlat10_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD3;
+void main ()
 {
-    u_xlat16_0 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_0 = max(u_xlat16_0, 0.0);
-    u_xlat10_1.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat10_1.xyz * _Color.xyz;
-    u_xlat16_3.xyz = u_xlat16_1.xyz * _LightColor0.xyz;
-    u_xlat16_2.xyz = u_xlat16_1.xyz * vs_TEXCOORD3.xyz;
-    SV_Target0.xyz = u_xlat16_3.xyz * vec3(u_xlat16_0) + u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  mediump vec3 tmpvar_6;
+  tmpvar_6 = _WorldSpaceLightPos0.xyz;
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  lowp vec4 c_8;
+  lowp vec4 c_9;
+  lowp float diff_10;
+  mediump float tmpvar_11;
+  tmpvar_11 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_10 = tmpvar_11;
+  c_9.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_10);
+  c_9.w = tmpvar_7.w;
+  c_8.w = c_9.w;
+  c_8.xyz = (c_9.xyz + (tmpvar_7.xyz * xlv_TEXCOORD3));
+  c_3.xyz = c_8.xyz;
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD5;
-out highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat7;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat7 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat7 = inversesqrt(u_xlat7);
-    vs_TEXCOORD1.xyz = vec3(u_xlat7) * u_xlat1.xyz;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD5.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _ShadowMapTexture;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-in highp vec4 vs_TEXCOORD5;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_2;
-vec3 u_xlat3;
-mediump float u_xlat16_3;
-mediump float u_xlat16_11;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat3.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat3.x = dot(u_xlat3.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat3.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat3.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat3.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat16_3 = texture(_ShadowMapTexture, u_xlat3.xy).x;
-    u_xlat16_2.x = (-u_xlat16_3) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat16_3;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_11) * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" }
-"#ifdef VERTEX
-#version 100
+Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "VERTEXLIGHT_ON" }
+"#version 100
 
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat7;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 _ProjectionParams;
+uniform highp vec4 unity_4LightPosX0;
+uniform highp vec4 unity_4LightPosY0;
+uniform highp vec4 unity_4LightPosZ0;
+uniform mediump vec4 unity_4LightAtten0;
+uniform mediump vec4 unity_LightColor[8];
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying mediump vec3 xlv_TEXCOORD3;
+varying mediump vec4 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat7 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat7 = inversesqrt(u_xlat7);
-    vs_TEXCOORD1.xyz = vec3(u_xlat7) * u_xlat1.xyz;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD5.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  mediump vec3 tmpvar_4;
+  mediump vec4 tmpvar_5;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec3 tmpvar_6;
+  tmpvar_6 = (_Object2World * _glesVertex).xyz;
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].x;
+  v_7.y = _World2Object[1].x;
+  v_7.z = _World2Object[2].x;
+  v_7.w = _World2Object[3].x;
+  highp vec4 v_8;
+  v_8.x = _World2Object[0].y;
+  v_8.y = _World2Object[1].y;
+  v_8.z = _World2Object[2].y;
+  v_8.w = _World2Object[3].y;
+  highp vec4 v_9;
+  v_9.x = _World2Object[0].z;
+  v_9.y = _World2Object[1].z;
+  v_9.z = _World2Object[2].z;
+  v_9.w = _World2Object[3].z;
+  highp vec3 tmpvar_10;
+  tmpvar_10 = normalize(((
+    (v_7.xyz * _glesNormal.x)
+   + 
+    (v_8.xyz * _glesNormal.y)
+  ) + (v_9.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_10;
+  tmpvar_3 = worldNormal_1;
+  highp vec3 lightColor0_11;
+  lightColor0_11 = unity_LightColor[0].xyz;
+  highp vec3 lightColor1_12;
+  lightColor1_12 = unity_LightColor[1].xyz;
+  highp vec3 lightColor2_13;
+  lightColor2_13 = unity_LightColor[2].xyz;
+  highp vec3 lightColor3_14;
+  lightColor3_14 = unity_LightColor[3].xyz;
+  highp vec4 lightAttenSq_15;
+  lightAttenSq_15 = unity_4LightAtten0;
+  highp vec3 normal_16;
+  normal_16 = worldNormal_1;
+  highp vec3 col_17;
+  highp vec4 ndotl_18;
+  highp vec4 lengthSq_19;
+  highp vec4 tmpvar_20;
+  tmpvar_20 = (unity_4LightPosX0 - tmpvar_6.x);
+  highp vec4 tmpvar_21;
+  tmpvar_21 = (unity_4LightPosY0 - tmpvar_6.y);
+  highp vec4 tmpvar_22;
+  tmpvar_22 = (unity_4LightPosZ0 - tmpvar_6.z);
+  lengthSq_19 = (tmpvar_20 * tmpvar_20);
+  lengthSq_19 = (lengthSq_19 + (tmpvar_21 * tmpvar_21));
+  lengthSq_19 = (lengthSq_19 + (tmpvar_22 * tmpvar_22));
+  ndotl_18 = (tmpvar_20 * normal_16.x);
+  ndotl_18 = (ndotl_18 + (tmpvar_21 * normal_16.y));
+  ndotl_18 = (ndotl_18 + (tmpvar_22 * normal_16.z));
+  highp vec4 tmpvar_23;
+  tmpvar_23 = max (vec4(0.0, 0.0, 0.0, 0.0), (ndotl_18 * inversesqrt(lengthSq_19)));
+  ndotl_18 = tmpvar_23;
+  highp vec4 tmpvar_24;
+  tmpvar_24 = (tmpvar_23 * (1.0/((1.0 + 
+    (lengthSq_19 * lightAttenSq_15)
+  ))));
+  col_17 = (lightColor0_11 * tmpvar_24.x);
+  col_17 = (col_17 + (lightColor1_12 * tmpvar_24.y));
+  col_17 = (col_17 + (lightColor2_13 * tmpvar_24.z));
+  col_17 = (col_17 + (lightColor3_14 * tmpvar_24.w));
+  tmpvar_4 = col_17;
+  mediump vec3 normal_25;
+  normal_25 = worldNormal_1;
+  mediump vec3 ambient_26;
+  mediump vec4 tmpvar_27;
+  tmpvar_27.w = 1.0;
+  tmpvar_27.xyz = normal_25;
+  mediump vec3 res_28;
+  mediump vec3 x_29;
+  x_29.x = dot (unity_SHAr, tmpvar_27);
+  x_29.y = dot (unity_SHAg, tmpvar_27);
+  x_29.z = dot (unity_SHAb, tmpvar_27);
+  mediump vec3 x1_30;
+  mediump vec4 tmpvar_31;
+  tmpvar_31 = (normal_25.xyzz * normal_25.yzzx);
+  x1_30.x = dot (unity_SHBr, tmpvar_31);
+  x1_30.y = dot (unity_SHBg, tmpvar_31);
+  x1_30.z = dot (unity_SHBb, tmpvar_31);
+  res_28 = (x_29 + (x1_30 + (unity_SHC.xyz * 
+    ((normal_25.x * normal_25.x) - (normal_25.y * normal_25.y))
+  )));
+  res_28 = max (((1.055 * 
+    pow (max (res_28, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  ambient_26 = (tmpvar_4 + max (vec3(0.0, 0.0, 0.0), res_28));
+  tmpvar_4 = ambient_26;
+  highp vec4 o_32;
+  highp vec4 tmpvar_33;
+  tmpvar_33 = (tmpvar_2 * 0.5);
+  highp vec2 tmpvar_34;
+  tmpvar_34.x = tmpvar_33.x;
+  tmpvar_34.y = (tmpvar_33.y * _ProjectionParams.x);
+  o_32.xy = (tmpvar_34 + tmpvar_33.w);
+  o_32.zw = tmpvar_2.zw;
+  tmpvar_5 = o_32;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = tmpvar_6;
+  xlv_TEXCOORD3 = ambient_26;
+  xlv_TEXCOORD4 = tmpvar_5;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _ShadowMapTexture;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_2;
-vec3 u_xlat3;
-lowp float u_xlat10_3;
-mediump float u_xlat16_11;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _ShadowMapTexture;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD3;
+varying mediump vec4 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat3.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat3.x = dot(u_xlat3.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat3.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat3.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat3.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat10_3 = texture2D(_ShadowMapTexture, u_xlat3.xy).x;
-    u_xlat16_2.x = (-u_xlat10_3) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat10_3;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_11) * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump float tmpvar_1;
+  mediump vec3 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  lowp vec4 c_4;
+  lowp vec3 tmpvar_5;
+  lowp vec3 lightDir_6;
+  mediump vec3 tmpvar_7;
+  tmpvar_7 = _WorldSpaceLightPos0.xyz;
+  lightDir_6 = tmpvar_7;
+  tmpvar_5 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_8;
+  tmpvar_8 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  lowp float tmpvar_9;
+  tmpvar_9 = texture2DProj (_ShadowMapTexture, xlv_TEXCOORD4).x;
+  tmpvar_2 = _LightColor0.xyz;
+  tmpvar_3 = lightDir_6;
+  tmpvar_1 = tmpvar_9;
+  mediump vec3 tmpvar_10;
+  tmpvar_10 = (tmpvar_2 * tmpvar_1);
+  tmpvar_2 = tmpvar_10;
+  lowp vec4 c_11;
+  lowp vec4 c_12;
+  lowp float diff_13;
+  mediump float tmpvar_14;
+  tmpvar_14 = max (0.0, dot (tmpvar_5, tmpvar_3));
+  diff_13 = tmpvar_14;
+  c_12.xyz = ((tmpvar_8.xyz * tmpvar_10) * diff_13);
+  c_12.w = tmpvar_8.w;
+  c_11.w = c_12.w;
+  c_11.xyz = (c_12.xyz + (tmpvar_8.xyz * xlv_TEXCOORD3));
+  c_4.xyz = c_11.xyz;
+  c_4.w = 1.0;
+  gl_FragData[0] = c_4;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out mediump vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD5;
-out highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump float u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec4 u_xlat4;
-float u_xlat16;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat16 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat16 = inversesqrt(u_xlat16);
-    u_xlat1.xyz = vec3(u_xlat16) * u_xlat1.xyz;
-    vs_TEXCOORD1.xyz = u_xlat1.xyz;
-    u_xlat16_2 = u_xlat1.y * u_xlat1.y;
-    u_xlat16_2 = u_xlat1.x * u_xlat1.x + (-u_xlat16_2);
-    u_xlat16_1 = u_xlat1.yzzx * u_xlat1.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    vs_TEXCOORD3.xyz = unity_SHC.xyz * vec3(u_xlat16_2) + u_xlat16_3.xyz;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat4.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD5.xy = u_xlat4.zz + u_xlat4.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _ShadowMapTexture;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-in mediump vec3 vs_TEXCOORD3;
-in highp vec4 vs_TEXCOORD5;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec3 u_xlat4;
-mediump float u_xlat16_4;
-mediump float u_xlat16_14;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat4.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat4.x = dot(u_xlat4.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat4.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat4.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat4.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat16_4 = texture(_ShadowMapTexture, u_xlat4.xy).x;
-    u_xlat16_2.x = (-u_xlat16_4) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat16_4;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat1.xyz = vs_TEXCOORD1.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_3.xyz = u_xlat16_3.xyz + vs_TEXCOORD3.xyz;
-    u_xlat16_3.xyz = max(u_xlat16_3.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_1.xyz = log2(u_xlat16_3.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat16_1.xyz = exp2(u_xlat16_1.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat16_1.xyz = max(u_xlat16_1.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_3.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz;
-    u_xlat16_14 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_14 = max(u_xlat16_14, 0.0);
-    SV_Target0.xyz = u_xlat16_2.xyz * vec3(u_xlat16_14) + u_xlat16_3.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" }
-"#ifdef VERTEX
-#version 100
+Keywords { "DIRECTIONAL" "SHADOWS_OFF" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" }
+"#version 100
 
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump float u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec4 u_xlat4;
-float u_xlat16;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying mediump vec3 xlv_TEXCOORD3;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat16 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat16 = inversesqrt(u_xlat16);
-    u_xlat1.xyz = vec3(u_xlat16) * u_xlat1.xyz;
-    vs_TEXCOORD1.xyz = u_xlat1.xyz;
-    u_xlat16_2 = u_xlat1.y * u_xlat1.y;
-    u_xlat16_2 = u_xlat1.x * u_xlat1.x + (-u_xlat16_2);
-    u_xlat16_1 = u_xlat1.yzzx * u_xlat1.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    vs_TEXCOORD3.xyz = unity_SHC.xyz * vec3(u_xlat16_2) + u_xlat16_3.xyz;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat4.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD5.xy = u_xlat4.zz + u_xlat4.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].x;
+  v_4.y = _World2Object[1].x;
+  v_4.z = _World2Object[2].x;
+  v_4.w = _World2Object[3].x;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].y;
+  v_5.y = _World2Object[1].y;
+  v_5.z = _World2Object[2].y;
+  v_5.w = _World2Object[3].y;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].z;
+  v_6.y = _World2Object[1].z;
+  v_6.z = _World2Object[2].z;
+  v_6.w = _World2Object[3].z;
+  highp vec3 tmpvar_7;
+  tmpvar_7 = normalize(((
+    (v_4.xyz * _glesNormal.x)
+   + 
+    (v_5.xyz * _glesNormal.y)
+  ) + (v_6.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_7;
+  tmpvar_3 = worldNormal_1;
+  mediump vec3 normal_8;
+  normal_8 = worldNormal_1;
+  mediump vec4 tmpvar_9;
+  tmpvar_9.w = 1.0;
+  tmpvar_9.xyz = normal_8;
+  mediump vec3 res_10;
+  mediump vec3 x_11;
+  x_11.x = dot (unity_SHAr, tmpvar_9);
+  x_11.y = dot (unity_SHAg, tmpvar_9);
+  x_11.z = dot (unity_SHAb, tmpvar_9);
+  mediump vec3 x1_12;
+  mediump vec4 tmpvar_13;
+  tmpvar_13 = (normal_8.xyzz * normal_8.yzzx);
+  x1_12.x = dot (unity_SHBr, tmpvar_13);
+  x1_12.y = dot (unity_SHBg, tmpvar_13);
+  x1_12.z = dot (unity_SHBb, tmpvar_13);
+  res_10 = (x_11 + (x1_12 + (unity_SHC.xyz * 
+    ((normal_8.x * normal_8.x) - (normal_8.y * normal_8.y))
+  )));
+  res_10 = max (((1.055 * 
+    pow (max (res_10, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD3 = max (vec3(0.0, 0.0, 0.0), res_10);
+  xlv_TEXCOORD5 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _ShadowMapTexture;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec3 u_xlat4;
-lowp float u_xlat10_4;
-mediump float u_xlat16_14;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 unity_FogColor;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD3;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat4.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat4.x = dot(u_xlat4.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat4.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat4.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat4.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat10_4 = texture2D(_ShadowMapTexture, u_xlat4.xy).x;
-    u_xlat16_2.x = (-u_xlat10_4) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat10_4;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat1.xyz = vs_TEXCOORD1.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_3.xyz = u_xlat16_3.xyz + vs_TEXCOORD3.xyz;
-    u_xlat16_3.xyz = max(u_xlat16_3.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_1.xyz = log2(u_xlat16_3.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat16_1.xyz = exp2(u_xlat16_1.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat16_1.xyz = max(u_xlat16_1.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_3.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz;
-    u_xlat16_14 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_14 = max(u_xlat16_14, 0.0);
-    SV_Target0.xyz = u_xlat16_2.xyz * vec3(u_xlat16_14) + u_xlat16_3.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  mediump vec3 tmpvar_6;
+  tmpvar_6 = _WorldSpaceLightPos0.xyz;
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  lowp vec4 c_8;
+  lowp vec4 c_9;
+  lowp float diff_10;
+  mediump float tmpvar_11;
+  tmpvar_11 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_10 = tmpvar_11;
+  c_9.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_10);
+  c_9.w = tmpvar_7.w;
+  c_8.w = c_9.w;
+  c_8.xyz = (c_9.xyz + (tmpvar_7.xyz * xlv_TEXCOORD3));
+  highp float tmpvar_12;
+  tmpvar_12 = clamp (xlv_TEXCOORD5, 0.0, 1.0);
+  c_3.xyz = mix (unity_FogColor.xyz, c_8.xyz, vec3(tmpvar_12));
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 100
+Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" }
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 _ProjectionParams;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying mediump vec3 xlv_TEXCOORD3;
+varying mediump vec4 xlv_TEXCOORD4;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  mediump vec4 tmpvar_4;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].x;
+  v_5.y = _World2Object[1].x;
+  v_5.z = _World2Object[2].x;
+  v_5.w = _World2Object[3].x;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].y;
+  v_6.y = _World2Object[1].y;
+  v_6.z = _World2Object[2].y;
+  v_6.w = _World2Object[3].y;
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].z;
+  v_7.y = _World2Object[1].z;
+  v_7.z = _World2Object[2].z;
+  v_7.w = _World2Object[3].z;
+  highp vec3 tmpvar_8;
+  tmpvar_8 = normalize(((
+    (v_5.xyz * _glesNormal.x)
+   + 
+    (v_6.xyz * _glesNormal.y)
+  ) + (v_7.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_8;
+  tmpvar_3 = worldNormal_1;
+  mediump vec3 normal_9;
+  normal_9 = worldNormal_1;
+  mediump vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = normal_9;
+  mediump vec3 res_11;
+  mediump vec3 x_12;
+  x_12.x = dot (unity_SHAr, tmpvar_10);
+  x_12.y = dot (unity_SHAg, tmpvar_10);
+  x_12.z = dot (unity_SHAb, tmpvar_10);
+  mediump vec3 x1_13;
+  mediump vec4 tmpvar_14;
+  tmpvar_14 = (normal_9.xyzz * normal_9.yzzx);
+  x1_13.x = dot (unity_SHBr, tmpvar_14);
+  x1_13.y = dot (unity_SHBg, tmpvar_14);
+  x1_13.z = dot (unity_SHBb, tmpvar_14);
+  res_11 = (x_12 + (x1_13 + (unity_SHC.xyz * 
+    ((normal_9.x * normal_9.x) - (normal_9.y * normal_9.y))
+  )));
+  res_11 = max (((1.055 * 
+    pow (max (res_11, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  highp vec4 o_15;
+  highp vec4 tmpvar_16;
+  tmpvar_16 = (tmpvar_2 * 0.5);
+  highp vec2 tmpvar_17;
+  tmpvar_17.x = tmpvar_16.x;
+  tmpvar_17.y = (tmpvar_16.y * _ProjectionParams.x);
+  o_15.xy = (tmpvar_17 + tmpvar_16.w);
+  o_15.zw = tmpvar_2.zw;
+  tmpvar_4 = o_15;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD3 = max (vec3(0.0, 0.0, 0.0), res_11);
+  xlv_TEXCOORD4 = tmpvar_4;
+  xlv_TEXCOORD5 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-#define SV_Target0 gl_FragData[0]
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 unity_FogColor;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _ShadowMapTexture;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD3;
+varying mediump vec4 xlv_TEXCOORD4;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump float tmpvar_1;
+  mediump vec3 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  lowp vec4 c_4;
+  lowp vec3 tmpvar_5;
+  lowp vec3 lightDir_6;
+  mediump vec3 tmpvar_7;
+  tmpvar_7 = _WorldSpaceLightPos0.xyz;
+  lightDir_6 = tmpvar_7;
+  tmpvar_5 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_8;
+  tmpvar_8 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  lowp float tmpvar_9;
+  tmpvar_9 = texture2DProj (_ShadowMapTexture, xlv_TEXCOORD4).x;
+  tmpvar_2 = _LightColor0.xyz;
+  tmpvar_3 = lightDir_6;
+  tmpvar_1 = tmpvar_9;
+  mediump vec3 tmpvar_10;
+  tmpvar_10 = (tmpvar_2 * tmpvar_1);
+  tmpvar_2 = tmpvar_10;
+  lowp vec4 c_11;
+  lowp vec4 c_12;
+  lowp float diff_13;
+  mediump float tmpvar_14;
+  tmpvar_14 = max (0.0, dot (tmpvar_5, tmpvar_3));
+  diff_13 = tmpvar_14;
+  c_12.xyz = ((tmpvar_8.xyz * tmpvar_10) * diff_13);
+  c_12.w = tmpvar_8.w;
+  c_11.w = c_12.w;
+  c_11.xyz = (c_12.xyz + (tmpvar_8.xyz * xlv_TEXCOORD3));
+  highp float tmpvar_15;
+  tmpvar_15 = clamp (xlv_TEXCOORD5, 0.0, 1.0);
+  c_4.xyz = mix (unity_FogColor.xyz, c_11.xyz, vec3(tmpvar_15));
+  c_4.w = 1.0;
+  gl_FragData[0] = c_4;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 unity_4LightPosX0;
-uniform 	vec4 unity_4LightPosY0;
-uniform 	vec4 unity_4LightPosZ0;
-uniform 	mediump vec4 unity_4LightAtten0;
-uniform 	mediump vec4 unity_LightColor[8];
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out mediump vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-mediump vec4 u_xlat16_2;
-vec4 u_xlat3;
-vec4 u_xlat4;
-mediump vec3 u_xlat16_5;
-mediump vec3 u_xlat16_6;
-float u_xlat21;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat0.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat21 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat21 = inversesqrt(u_xlat21);
-    u_xlat1.xyz = vec3(u_xlat21) * u_xlat1.xyz;
-    vs_TEXCOORD1.xyz = u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = u_xlat0.xyz;
-    u_xlat2 = (-u_xlat0.xxxx) + unity_4LightPosX0;
-    u_xlat3 = (-u_xlat0.yyyy) + unity_4LightPosY0;
-    u_xlat0 = (-u_xlat0.zzzz) + unity_4LightPosZ0;
-    u_xlat4 = u_xlat1.yyyy * u_xlat3;
-    u_xlat3 = u_xlat3 * u_xlat3;
-    u_xlat3 = u_xlat2 * u_xlat2 + u_xlat3;
-    u_xlat2 = u_xlat2 * u_xlat1.xxxx + u_xlat4;
-    u_xlat2 = u_xlat0 * u_xlat1.zzzz + u_xlat2;
-    u_xlat0 = u_xlat0 * u_xlat0 + u_xlat3;
-    u_xlat0 = max(u_xlat0, vec4(9.99999997e-07, 9.99999997e-07, 9.99999997e-07, 9.99999997e-07));
-    u_xlat3 = inversesqrt(u_xlat0);
-    u_xlat0 = u_xlat0 * unity_4LightAtten0 + vec4(1.0, 1.0, 1.0, 1.0);
-    u_xlat0 = vec4(1.0, 1.0, 1.0, 1.0) / u_xlat0;
-    u_xlat2 = u_xlat2 * u_xlat3;
-    u_xlat2 = max(u_xlat2, vec4(0.0, 0.0, 0.0, 0.0));
-    u_xlat0 = u_xlat0 * u_xlat2;
-    u_xlat2.xyz = u_xlat0.yyy * unity_LightColor[1].xyz;
-    u_xlat2.xyz = unity_LightColor[0].xyz * u_xlat0.xxx + u_xlat2.xyz;
-    u_xlat0.xyz = unity_LightColor[2].xyz * u_xlat0.zzz + u_xlat2.xyz;
-    u_xlat0.xyz = unity_LightColor[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    u_xlat16_5.x = u_xlat1.y * u_xlat1.y;
-    u_xlat16_5.x = u_xlat1.x * u_xlat1.x + (-u_xlat16_5.x);
-    u_xlat16_2 = u_xlat1.yzzx * u_xlat1.xyzz;
-    u_xlat16_6.x = dot(unity_SHBr, u_xlat16_2);
-    u_xlat16_6.y = dot(unity_SHBg, u_xlat16_2);
-    u_xlat16_6.z = dot(unity_SHBb, u_xlat16_2);
-    u_xlat16_5.xyz = unity_SHC.xyz * u_xlat16_5.xxx + u_xlat16_6.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_6.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_6.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_6.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_5.xyz = u_xlat16_5.xyz + u_xlat16_6.xyz;
-    u_xlat16_5.xyz = max(u_xlat16_5.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat1.xyz = log2(u_xlat16_5.xyz);
-    u_xlat1.xyz = u_xlat1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat1.xyz = exp2(u_xlat1.xyz);
-    u_xlat1.xyz = u_xlat1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat1.xyz = max(u_xlat1.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD3.xyz = u_xlat0.xyz + u_xlat1.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in mediump vec3 vs_TEXCOORD3;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump float u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-void main()
-{
-    u_xlat16_0 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_0 = max(u_xlat16_0, 0.0);
-    u_xlat16_1.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * _Color.xyz;
-    u_xlat16_3.xyz = u_xlat16_1.xyz * _LightColor0.xyz;
-    u_xlat16_2.xyz = u_xlat16_1.xyz * vs_TEXCOORD3.xyz;
-    SV_Target0.xyz = u_xlat16_3.xyz * vec3(u_xlat16_0) + u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 100
+Keywords { "DIRECTIONAL" "SHADOWS_OFF" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" "VERTEXLIGHT_ON" }
+"#version 100
 
-uniform 	vec4 unity_4LightPosX0;
-uniform 	vec4 unity_4LightPosY0;
-uniform 	vec4 unity_4LightPosZ0;
-uniform 	mediump vec4 unity_4LightAtten0;
-uniform 	mediump vec4 unity_LightColor[8];
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-mediump vec4 u_xlat16_2;
-vec4 u_xlat3;
-vec4 u_xlat4;
-mediump vec3 u_xlat16_5;
-mediump vec3 u_xlat16_6;
-float u_xlat21;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 unity_4LightPosX0;
+uniform highp vec4 unity_4LightPosY0;
+uniform highp vec4 unity_4LightPosZ0;
+uniform mediump vec4 unity_4LightAtten0;
+uniform mediump vec4 unity_LightColor[8];
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying mediump vec3 xlv_TEXCOORD3;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat0.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat21 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat21 = inversesqrt(u_xlat21);
-    u_xlat1.xyz = vec3(u_xlat21) * u_xlat1.xyz;
-    vs_TEXCOORD1.xyz = u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = u_xlat0.xyz;
-    u_xlat2 = (-u_xlat0.xxxx) + unity_4LightPosX0;
-    u_xlat3 = (-u_xlat0.yyyy) + unity_4LightPosY0;
-    u_xlat0 = (-u_xlat0.zzzz) + unity_4LightPosZ0;
-    u_xlat4 = u_xlat1.yyyy * u_xlat3;
-    u_xlat3 = u_xlat3 * u_xlat3;
-    u_xlat3 = u_xlat2 * u_xlat2 + u_xlat3;
-    u_xlat2 = u_xlat2 * u_xlat1.xxxx + u_xlat4;
-    u_xlat2 = u_xlat0 * u_xlat1.zzzz + u_xlat2;
-    u_xlat0 = u_xlat0 * u_xlat0 + u_xlat3;
-    u_xlat0 = max(u_xlat0, vec4(9.99999997e-07, 9.99999997e-07, 9.99999997e-07, 9.99999997e-07));
-    u_xlat3 = inversesqrt(u_xlat0);
-    u_xlat0 = u_xlat0 * unity_4LightAtten0 + vec4(1.0, 1.0, 1.0, 1.0);
-    u_xlat0 = vec4(1.0, 1.0, 1.0, 1.0) / u_xlat0;
-    u_xlat2 = u_xlat2 * u_xlat3;
-    u_xlat2 = max(u_xlat2, vec4(0.0, 0.0, 0.0, 0.0));
-    u_xlat0 = u_xlat0 * u_xlat2;
-    u_xlat2.xyz = u_xlat0.yyy * unity_LightColor[1].xyz;
-    u_xlat2.xyz = unity_LightColor[0].xyz * u_xlat0.xxx + u_xlat2.xyz;
-    u_xlat0.xyz = unity_LightColor[2].xyz * u_xlat0.zzz + u_xlat2.xyz;
-    u_xlat0.xyz = unity_LightColor[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    u_xlat16_5.x = u_xlat1.y * u_xlat1.y;
-    u_xlat16_5.x = u_xlat1.x * u_xlat1.x + (-u_xlat16_5.x);
-    u_xlat16_2 = u_xlat1.yzzx * u_xlat1.xyzz;
-    u_xlat16_6.x = dot(unity_SHBr, u_xlat16_2);
-    u_xlat16_6.y = dot(unity_SHBg, u_xlat16_2);
-    u_xlat16_6.z = dot(unity_SHBb, u_xlat16_2);
-    u_xlat16_5.xyz = unity_SHC.xyz * u_xlat16_5.xxx + u_xlat16_6.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_6.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_6.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_6.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_5.xyz = u_xlat16_5.xyz + u_xlat16_6.xyz;
-    u_xlat16_5.xyz = max(u_xlat16_5.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat1.xyz = log2(u_xlat16_5.xyz);
-    u_xlat1.xyz = u_xlat1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat1.xyz = exp2(u_xlat1.xyz);
-    u_xlat1.xyz = u_xlat1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat1.xyz = max(u_xlat1.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD3.xyz = u_xlat0.xyz + u_xlat1.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  mediump vec3 tmpvar_4;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec3 tmpvar_5;
+  tmpvar_5 = (_Object2World * _glesVertex).xyz;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].x;
+  v_6.y = _World2Object[1].x;
+  v_6.z = _World2Object[2].x;
+  v_6.w = _World2Object[3].x;
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].y;
+  v_7.y = _World2Object[1].y;
+  v_7.z = _World2Object[2].y;
+  v_7.w = _World2Object[3].y;
+  highp vec4 v_8;
+  v_8.x = _World2Object[0].z;
+  v_8.y = _World2Object[1].z;
+  v_8.z = _World2Object[2].z;
+  v_8.w = _World2Object[3].z;
+  highp vec3 tmpvar_9;
+  tmpvar_9 = normalize(((
+    (v_6.xyz * _glesNormal.x)
+   + 
+    (v_7.xyz * _glesNormal.y)
+  ) + (v_8.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_9;
+  tmpvar_3 = worldNormal_1;
+  highp vec3 lightColor0_10;
+  lightColor0_10 = unity_LightColor[0].xyz;
+  highp vec3 lightColor1_11;
+  lightColor1_11 = unity_LightColor[1].xyz;
+  highp vec3 lightColor2_12;
+  lightColor2_12 = unity_LightColor[2].xyz;
+  highp vec3 lightColor3_13;
+  lightColor3_13 = unity_LightColor[3].xyz;
+  highp vec4 lightAttenSq_14;
+  lightAttenSq_14 = unity_4LightAtten0;
+  highp vec3 normal_15;
+  normal_15 = worldNormal_1;
+  highp vec3 col_16;
+  highp vec4 ndotl_17;
+  highp vec4 lengthSq_18;
+  highp vec4 tmpvar_19;
+  tmpvar_19 = (unity_4LightPosX0 - tmpvar_5.x);
+  highp vec4 tmpvar_20;
+  tmpvar_20 = (unity_4LightPosY0 - tmpvar_5.y);
+  highp vec4 tmpvar_21;
+  tmpvar_21 = (unity_4LightPosZ0 - tmpvar_5.z);
+  lengthSq_18 = (tmpvar_19 * tmpvar_19);
+  lengthSq_18 = (lengthSq_18 + (tmpvar_20 * tmpvar_20));
+  lengthSq_18 = (lengthSq_18 + (tmpvar_21 * tmpvar_21));
+  ndotl_17 = (tmpvar_19 * normal_15.x);
+  ndotl_17 = (ndotl_17 + (tmpvar_20 * normal_15.y));
+  ndotl_17 = (ndotl_17 + (tmpvar_21 * normal_15.z));
+  highp vec4 tmpvar_22;
+  tmpvar_22 = max (vec4(0.0, 0.0, 0.0, 0.0), (ndotl_17 * inversesqrt(lengthSq_18)));
+  ndotl_17 = tmpvar_22;
+  highp vec4 tmpvar_23;
+  tmpvar_23 = (tmpvar_22 * (1.0/((1.0 + 
+    (lengthSq_18 * lightAttenSq_14)
+  ))));
+  col_16 = (lightColor0_10 * tmpvar_23.x);
+  col_16 = (col_16 + (lightColor1_11 * tmpvar_23.y));
+  col_16 = (col_16 + (lightColor2_12 * tmpvar_23.z));
+  col_16 = (col_16 + (lightColor3_13 * tmpvar_23.w));
+  tmpvar_4 = col_16;
+  mediump vec3 normal_24;
+  normal_24 = worldNormal_1;
+  mediump vec3 ambient_25;
+  mediump vec4 tmpvar_26;
+  tmpvar_26.w = 1.0;
+  tmpvar_26.xyz = normal_24;
+  mediump vec3 res_27;
+  mediump vec3 x_28;
+  x_28.x = dot (unity_SHAr, tmpvar_26);
+  x_28.y = dot (unity_SHAg, tmpvar_26);
+  x_28.z = dot (unity_SHAb, tmpvar_26);
+  mediump vec3 x1_29;
+  mediump vec4 tmpvar_30;
+  tmpvar_30 = (normal_24.xyzz * normal_24.yzzx);
+  x1_29.x = dot (unity_SHBr, tmpvar_30);
+  x1_29.y = dot (unity_SHBg, tmpvar_30);
+  x1_29.z = dot (unity_SHBb, tmpvar_30);
+  res_27 = (x_28 + (x1_29 + (unity_SHC.xyz * 
+    ((normal_24.x * normal_24.x) - (normal_24.y * normal_24.y))
+  )));
+  res_27 = max (((1.055 * 
+    pow (max (res_27, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  ambient_25 = (tmpvar_4 + max (vec3(0.0, 0.0, 0.0), res_27));
+  tmpvar_4 = ambient_25;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = tmpvar_5;
+  xlv_TEXCOORD3 = ambient_25;
+  xlv_TEXCOORD5 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying mediump vec3 vs_TEXCOORD3;
-#define SV_Target0 gl_FragData[0]
-mediump float u_xlat16_0;
-mediump vec3 u_xlat16_1;
-lowp vec3 u_xlat10_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 unity_FogColor;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD3;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat16_0 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_0 = max(u_xlat16_0, 0.0);
-    u_xlat10_1.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat10_1.xyz * _Color.xyz;
-    u_xlat16_3.xyz = u_xlat16_1.xyz * _LightColor0.xyz;
-    u_xlat16_2.xyz = u_xlat16_1.xyz * vs_TEXCOORD3.xyz;
-    SV_Target0.xyz = u_xlat16_3.xyz * vec3(u_xlat16_0) + u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  mediump vec3 tmpvar_6;
+  tmpvar_6 = _WorldSpaceLightPos0.xyz;
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  lowp vec4 c_8;
+  lowp vec4 c_9;
+  lowp float diff_10;
+  mediump float tmpvar_11;
+  tmpvar_11 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_10 = tmpvar_11;
+  c_9.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_10);
+  c_9.w = tmpvar_7.w;
+  c_8.w = c_9.w;
+  c_8.xyz = (c_9.xyz + (tmpvar_7.xyz * xlv_TEXCOORD3));
+  highp float tmpvar_12;
+  tmpvar_12 = clamp (xlv_TEXCOORD5, 0.0, 1.0);
+  c_3.xyz = mix (unity_FogColor.xyz, c_8.xyz, vec3(tmpvar_12));
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD5;
-out highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat7;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat7 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat7 = inversesqrt(u_xlat7);
-    vs_TEXCOORD1.xyz = vec3(u_xlat7) * u_xlat1.xyz;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD5.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _ShadowMapTexture;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-in highp vec4 vs_TEXCOORD5;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_2;
-vec3 u_xlat3;
-mediump float u_xlat16_3;
-mediump float u_xlat16_11;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat3.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat3.x = dot(u_xlat3.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat3.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat3.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat3.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat16_3 = texture(_ShadowMapTexture, u_xlat3.xy).x;
-    u_xlat16_2.x = (-u_xlat16_3) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat16_3;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_11) * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 100
+Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" "VERTEXLIGHT_ON" }
+"#version 100
 
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat7;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 _ProjectionParams;
+uniform highp vec4 unity_4LightPosX0;
+uniform highp vec4 unity_4LightPosY0;
+uniform highp vec4 unity_4LightPosZ0;
+uniform mediump vec4 unity_4LightAtten0;
+uniform mediump vec4 unity_LightColor[8];
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying mediump vec3 xlv_TEXCOORD3;
+varying mediump vec4 xlv_TEXCOORD4;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat7 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat7 = inversesqrt(u_xlat7);
-    vs_TEXCOORD1.xyz = vec3(u_xlat7) * u_xlat1.xyz;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD5.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  mediump vec3 tmpvar_4;
+  mediump vec4 tmpvar_5;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec3 tmpvar_6;
+  tmpvar_6 = (_Object2World * _glesVertex).xyz;
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].x;
+  v_7.y = _World2Object[1].x;
+  v_7.z = _World2Object[2].x;
+  v_7.w = _World2Object[3].x;
+  highp vec4 v_8;
+  v_8.x = _World2Object[0].y;
+  v_8.y = _World2Object[1].y;
+  v_8.z = _World2Object[2].y;
+  v_8.w = _World2Object[3].y;
+  highp vec4 v_9;
+  v_9.x = _World2Object[0].z;
+  v_9.y = _World2Object[1].z;
+  v_9.z = _World2Object[2].z;
+  v_9.w = _World2Object[3].z;
+  highp vec3 tmpvar_10;
+  tmpvar_10 = normalize(((
+    (v_7.xyz * _glesNormal.x)
+   + 
+    (v_8.xyz * _glesNormal.y)
+  ) + (v_9.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_10;
+  tmpvar_3 = worldNormal_1;
+  highp vec3 lightColor0_11;
+  lightColor0_11 = unity_LightColor[0].xyz;
+  highp vec3 lightColor1_12;
+  lightColor1_12 = unity_LightColor[1].xyz;
+  highp vec3 lightColor2_13;
+  lightColor2_13 = unity_LightColor[2].xyz;
+  highp vec3 lightColor3_14;
+  lightColor3_14 = unity_LightColor[3].xyz;
+  highp vec4 lightAttenSq_15;
+  lightAttenSq_15 = unity_4LightAtten0;
+  highp vec3 normal_16;
+  normal_16 = worldNormal_1;
+  highp vec3 col_17;
+  highp vec4 ndotl_18;
+  highp vec4 lengthSq_19;
+  highp vec4 tmpvar_20;
+  tmpvar_20 = (unity_4LightPosX0 - tmpvar_6.x);
+  highp vec4 tmpvar_21;
+  tmpvar_21 = (unity_4LightPosY0 - tmpvar_6.y);
+  highp vec4 tmpvar_22;
+  tmpvar_22 = (unity_4LightPosZ0 - tmpvar_6.z);
+  lengthSq_19 = (tmpvar_20 * tmpvar_20);
+  lengthSq_19 = (lengthSq_19 + (tmpvar_21 * tmpvar_21));
+  lengthSq_19 = (lengthSq_19 + (tmpvar_22 * tmpvar_22));
+  ndotl_18 = (tmpvar_20 * normal_16.x);
+  ndotl_18 = (ndotl_18 + (tmpvar_21 * normal_16.y));
+  ndotl_18 = (ndotl_18 + (tmpvar_22 * normal_16.z));
+  highp vec4 tmpvar_23;
+  tmpvar_23 = max (vec4(0.0, 0.0, 0.0, 0.0), (ndotl_18 * inversesqrt(lengthSq_19)));
+  ndotl_18 = tmpvar_23;
+  highp vec4 tmpvar_24;
+  tmpvar_24 = (tmpvar_23 * (1.0/((1.0 + 
+    (lengthSq_19 * lightAttenSq_15)
+  ))));
+  col_17 = (lightColor0_11 * tmpvar_24.x);
+  col_17 = (col_17 + (lightColor1_12 * tmpvar_24.y));
+  col_17 = (col_17 + (lightColor2_13 * tmpvar_24.z));
+  col_17 = (col_17 + (lightColor3_14 * tmpvar_24.w));
+  tmpvar_4 = col_17;
+  mediump vec3 normal_25;
+  normal_25 = worldNormal_1;
+  mediump vec3 ambient_26;
+  mediump vec4 tmpvar_27;
+  tmpvar_27.w = 1.0;
+  tmpvar_27.xyz = normal_25;
+  mediump vec3 res_28;
+  mediump vec3 x_29;
+  x_29.x = dot (unity_SHAr, tmpvar_27);
+  x_29.y = dot (unity_SHAg, tmpvar_27);
+  x_29.z = dot (unity_SHAb, tmpvar_27);
+  mediump vec3 x1_30;
+  mediump vec4 tmpvar_31;
+  tmpvar_31 = (normal_25.xyzz * normal_25.yzzx);
+  x1_30.x = dot (unity_SHBr, tmpvar_31);
+  x1_30.y = dot (unity_SHBg, tmpvar_31);
+  x1_30.z = dot (unity_SHBb, tmpvar_31);
+  res_28 = (x_29 + (x1_30 + (unity_SHC.xyz * 
+    ((normal_25.x * normal_25.x) - (normal_25.y * normal_25.y))
+  )));
+  res_28 = max (((1.055 * 
+    pow (max (res_28, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  ambient_26 = (tmpvar_4 + max (vec3(0.0, 0.0, 0.0), res_28));
+  tmpvar_4 = ambient_26;
+  highp vec4 o_32;
+  highp vec4 tmpvar_33;
+  tmpvar_33 = (tmpvar_2 * 0.5);
+  highp vec2 tmpvar_34;
+  tmpvar_34.x = tmpvar_33.x;
+  tmpvar_34.y = (tmpvar_33.y * _ProjectionParams.x);
+  o_32.xy = (tmpvar_34 + tmpvar_33.w);
+  o_32.zw = tmpvar_2.zw;
+  tmpvar_5 = o_32;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = tmpvar_6;
+  xlv_TEXCOORD3 = ambient_26;
+  xlv_TEXCOORD4 = tmpvar_5;
+  xlv_TEXCOORD5 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _ShadowMapTexture;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_2;
-vec3 u_xlat3;
-lowp float u_xlat10_3;
-mediump float u_xlat16_11;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 unity_FogColor;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _ShadowMapTexture;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD3;
+varying mediump vec4 xlv_TEXCOORD4;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat3.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat3.x = dot(u_xlat3.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat3.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat3.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat3.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat10_3 = texture2D(_ShadowMapTexture, u_xlat3.xy).x;
-    u_xlat16_2.x = (-u_xlat10_3) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat10_3;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_11) * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump float tmpvar_1;
+  mediump vec3 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  lowp vec4 c_4;
+  lowp vec3 tmpvar_5;
+  lowp vec3 lightDir_6;
+  mediump vec3 tmpvar_7;
+  tmpvar_7 = _WorldSpaceLightPos0.xyz;
+  lightDir_6 = tmpvar_7;
+  tmpvar_5 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_8;
+  tmpvar_8 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  lowp float tmpvar_9;
+  tmpvar_9 = texture2DProj (_ShadowMapTexture, xlv_TEXCOORD4).x;
+  tmpvar_2 = _LightColor0.xyz;
+  tmpvar_3 = lightDir_6;
+  tmpvar_1 = tmpvar_9;
+  mediump vec3 tmpvar_10;
+  tmpvar_10 = (tmpvar_2 * tmpvar_1);
+  tmpvar_2 = tmpvar_10;
+  lowp vec4 c_11;
+  lowp vec4 c_12;
+  lowp float diff_13;
+  mediump float tmpvar_14;
+  tmpvar_14 = max (0.0, dot (tmpvar_5, tmpvar_3));
+  diff_13 = tmpvar_14;
+  c_12.xyz = ((tmpvar_8.xyz * tmpvar_10) * diff_13);
+  c_12.w = tmpvar_8.w;
+  c_11.w = c_12.w;
+  c_11.xyz = (c_12.xyz + (tmpvar_8.xyz * xlv_TEXCOORD3));
+  highp float tmpvar_15;
+  tmpvar_15 = clamp (xlv_TEXCOORD5, 0.0, 1.0);
+  c_4.xyz = mix (unity_FogColor.xyz, c_11.xyz, vec3(tmpvar_15));
+  c_4.w = 1.0;
+  gl_FragData[0] = c_4;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 unity_4LightPosX0;
-uniform 	vec4 unity_4LightPosY0;
-uniform 	vec4 unity_4LightPosZ0;
-uniform 	mediump vec4 unity_4LightAtten0;
-uniform 	mediump vec4 unity_LightColor[8];
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out mediump vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD5;
-out highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-mediump vec4 u_xlat16_2;
-vec4 u_xlat3;
-vec4 u_xlat4;
-vec4 u_xlat5;
-mediump vec3 u_xlat16_6;
-mediump vec3 u_xlat16_7;
-float u_xlat24;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat0.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat2.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat2.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat2.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat24 = dot(u_xlat2.xyz, u_xlat2.xyz);
-    u_xlat24 = inversesqrt(u_xlat24);
-    u_xlat2.xyz = vec3(u_xlat24) * u_xlat2.xyz;
-    vs_TEXCOORD1.xyz = u_xlat2.xyz;
-    vs_TEXCOORD2.xyz = u_xlat0.xyz;
-    u_xlat3 = (-u_xlat0.xxxx) + unity_4LightPosX0;
-    u_xlat4 = (-u_xlat0.yyyy) + unity_4LightPosY0;
-    u_xlat0 = (-u_xlat0.zzzz) + unity_4LightPosZ0;
-    u_xlat5 = u_xlat2.yyyy * u_xlat4;
-    u_xlat4 = u_xlat4 * u_xlat4;
-    u_xlat4 = u_xlat3 * u_xlat3 + u_xlat4;
-    u_xlat3 = u_xlat3 * u_xlat2.xxxx + u_xlat5;
-    u_xlat3 = u_xlat0 * u_xlat2.zzzz + u_xlat3;
-    u_xlat0 = u_xlat0 * u_xlat0 + u_xlat4;
-    u_xlat0 = max(u_xlat0, vec4(9.99999997e-07, 9.99999997e-07, 9.99999997e-07, 9.99999997e-07));
-    u_xlat4 = inversesqrt(u_xlat0);
-    u_xlat0 = u_xlat0 * unity_4LightAtten0 + vec4(1.0, 1.0, 1.0, 1.0);
-    u_xlat0 = vec4(1.0, 1.0, 1.0, 1.0) / u_xlat0;
-    u_xlat3 = u_xlat3 * u_xlat4;
-    u_xlat3 = max(u_xlat3, vec4(0.0, 0.0, 0.0, 0.0));
-    u_xlat0 = u_xlat0 * u_xlat3;
-    u_xlat3.xyz = u_xlat0.yyy * unity_LightColor[1].xyz;
-    u_xlat3.xyz = unity_LightColor[0].xyz * u_xlat0.xxx + u_xlat3.xyz;
-    u_xlat0.xyz = unity_LightColor[2].xyz * u_xlat0.zzz + u_xlat3.xyz;
-    u_xlat0.xyz = unity_LightColor[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    u_xlat3.xyz = u_xlat0.xyz * vec3(0.305306017, 0.305306017, 0.305306017) + vec3(0.682171106, 0.682171106, 0.682171106);
-    u_xlat3.xyz = u_xlat0.xyz * u_xlat3.xyz + vec3(0.0125228781, 0.0125228781, 0.0125228781);
-    u_xlat16_6.x = u_xlat2.y * u_xlat2.y;
-    u_xlat16_6.x = u_xlat2.x * u_xlat2.x + (-u_xlat16_6.x);
-    u_xlat16_2 = u_xlat2.yzzx * u_xlat2.xyzz;
-    u_xlat16_7.x = dot(unity_SHBr, u_xlat16_2);
-    u_xlat16_7.y = dot(unity_SHBg, u_xlat16_2);
-    u_xlat16_7.z = dot(unity_SHBb, u_xlat16_2);
-    u_xlat16_6.xyz = unity_SHC.xyz * u_xlat16_6.xxx + u_xlat16_7.xyz;
-    vs_TEXCOORD3.xyz = u_xlat0.xyz * u_xlat3.xyz + u_xlat16_6.xyz;
-    u_xlat0.x = u_xlat1.y * _ProjectionParams.x;
-    u_xlat0.w = u_xlat0.x * 0.5;
-    u_xlat0.xz = u_xlat1.xw * vec2(0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat1.zw;
-    vs_TEXCOORD5.xy = u_xlat0.zz + u_xlat0.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _ShadowMapTexture;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-in mediump vec3 vs_TEXCOORD3;
-in highp vec4 vs_TEXCOORD5;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec3 u_xlat4;
-mediump float u_xlat16_4;
-mediump float u_xlat16_14;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat4.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat4.x = dot(u_xlat4.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat4.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat4.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat4.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat16_4 = texture(_ShadowMapTexture, u_xlat4.xy).x;
-    u_xlat16_2.x = (-u_xlat16_4) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat16_4;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat1.xyz = vs_TEXCOORD1.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_3.xyz = u_xlat16_3.xyz + vs_TEXCOORD3.xyz;
-    u_xlat16_3.xyz = max(u_xlat16_3.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_1.xyz = log2(u_xlat16_3.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat16_1.xyz = exp2(u_xlat16_1.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat16_1.xyz = max(u_xlat16_1.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_3.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz;
-    u_xlat16_14 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_14 = max(u_xlat16_14, 0.0);
-    SV_Target0.xyz = u_xlat16_2.xyz * vec3(u_xlat16_14) + u_xlat16_3.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 unity_4LightPosX0;
-uniform 	vec4 unity_4LightPosY0;
-uniform 	vec4 unity_4LightPosZ0;
-uniform 	mediump vec4 unity_4LightAtten0;
-uniform 	mediump vec4 unity_LightColor[8];
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-mediump vec4 u_xlat16_2;
-vec4 u_xlat3;
-vec4 u_xlat4;
-vec4 u_xlat5;
-mediump vec3 u_xlat16_6;
-mediump vec3 u_xlat16_7;
-float u_xlat24;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat0.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat2.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat2.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat2.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat24 = dot(u_xlat2.xyz, u_xlat2.xyz);
-    u_xlat24 = inversesqrt(u_xlat24);
-    u_xlat2.xyz = vec3(u_xlat24) * u_xlat2.xyz;
-    vs_TEXCOORD1.xyz = u_xlat2.xyz;
-    vs_TEXCOORD2.xyz = u_xlat0.xyz;
-    u_xlat3 = (-u_xlat0.xxxx) + unity_4LightPosX0;
-    u_xlat4 = (-u_xlat0.yyyy) + unity_4LightPosY0;
-    u_xlat0 = (-u_xlat0.zzzz) + unity_4LightPosZ0;
-    u_xlat5 = u_xlat2.yyyy * u_xlat4;
-    u_xlat4 = u_xlat4 * u_xlat4;
-    u_xlat4 = u_xlat3 * u_xlat3 + u_xlat4;
-    u_xlat3 = u_xlat3 * u_xlat2.xxxx + u_xlat5;
-    u_xlat3 = u_xlat0 * u_xlat2.zzzz + u_xlat3;
-    u_xlat0 = u_xlat0 * u_xlat0 + u_xlat4;
-    u_xlat0 = max(u_xlat0, vec4(9.99999997e-07, 9.99999997e-07, 9.99999997e-07, 9.99999997e-07));
-    u_xlat4 = inversesqrt(u_xlat0);
-    u_xlat0 = u_xlat0 * unity_4LightAtten0 + vec4(1.0, 1.0, 1.0, 1.0);
-    u_xlat0 = vec4(1.0, 1.0, 1.0, 1.0) / u_xlat0;
-    u_xlat3 = u_xlat3 * u_xlat4;
-    u_xlat3 = max(u_xlat3, vec4(0.0, 0.0, 0.0, 0.0));
-    u_xlat0 = u_xlat0 * u_xlat3;
-    u_xlat3.xyz = u_xlat0.yyy * unity_LightColor[1].xyz;
-    u_xlat3.xyz = unity_LightColor[0].xyz * u_xlat0.xxx + u_xlat3.xyz;
-    u_xlat0.xyz = unity_LightColor[2].xyz * u_xlat0.zzz + u_xlat3.xyz;
-    u_xlat0.xyz = unity_LightColor[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    u_xlat3.xyz = u_xlat0.xyz * vec3(0.305306017, 0.305306017, 0.305306017) + vec3(0.682171106, 0.682171106, 0.682171106);
-    u_xlat3.xyz = u_xlat0.xyz * u_xlat3.xyz + vec3(0.0125228781, 0.0125228781, 0.0125228781);
-    u_xlat16_6.x = u_xlat2.y * u_xlat2.y;
-    u_xlat16_6.x = u_xlat2.x * u_xlat2.x + (-u_xlat16_6.x);
-    u_xlat16_2 = u_xlat2.yzzx * u_xlat2.xyzz;
-    u_xlat16_7.x = dot(unity_SHBr, u_xlat16_2);
-    u_xlat16_7.y = dot(unity_SHBg, u_xlat16_2);
-    u_xlat16_7.z = dot(unity_SHBb, u_xlat16_2);
-    u_xlat16_6.xyz = unity_SHC.xyz * u_xlat16_6.xxx + u_xlat16_7.xyz;
-    vs_TEXCOORD3.xyz = u_xlat0.xyz * u_xlat3.xyz + u_xlat16_6.xyz;
-    u_xlat0.x = u_xlat1.y * _ProjectionParams.x;
-    u_xlat0.w = u_xlat0.x * 0.5;
-    u_xlat0.xz = u_xlat1.xw * vec2(0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat1.zw;
-    vs_TEXCOORD5.xy = u_xlat0.zz + u_xlat0.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _ShadowMapTexture;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec3 u_xlat4;
-lowp float u_xlat10_4;
-mediump float u_xlat16_14;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat4.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat4.x = dot(u_xlat4.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat4.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat4.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat4.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat10_4 = texture2D(_ShadowMapTexture, u_xlat4.xy).x;
-    u_xlat16_2.x = (-u_xlat10_4) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat10_4;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat1.xyz = vs_TEXCOORD1.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_3.xyz = u_xlat16_3.xyz + vs_TEXCOORD3.xyz;
-    u_xlat16_3.xyz = max(u_xlat16_3.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_1.xyz = log2(u_xlat16_3.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat16_1.xyz = exp2(u_xlat16_1.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat16_1.xyz = max(u_xlat16_1.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_3.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz;
-    u_xlat16_14 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_14 = max(u_xlat16_14, 0.0);
-    SV_Target0.xyz = u_xlat16_2.xyz * vec3(u_xlat16_14) + u_xlat16_3.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD4;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat0.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD4 = exp2((-u_xlat0.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD4;
-in highp vec3 vs_TEXCOORD1;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_0.xyz = u_xlat16_1.xyz * vec3(u_xlat16_7) + (-unity_FogColor.xyz);
-    u_xlat6 = vs_TEXCOORD4;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat6 = min(max(u_xlat6, 0.0), 1.0);
-#else
-    u_xlat6 = clamp(u_xlat6, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat0.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD4 = exp2((-u_xlat0.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_0.xyz = u_xlat16_1.xyz * vec3(u_xlat16_7) + (-unity_FogColor.xyz);
-    u_xlat6 = vs_TEXCOORD4;
-    u_xlat6 = clamp(u_xlat6, 0.0, 1.0);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD4;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out mediump vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat0.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD4 = exp2((-u_xlat0.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    vs_TEXCOORD1.xyz = u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat0.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD3.xyz = u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD4;
-in highp vec3 vs_TEXCOORD1;
-in mediump vec3 vs_TEXCOORD3;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec3 u_xlat16_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat10;
-void main()
-{
-    u_xlat16_0.x = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_0.x = max(u_xlat16_0.x, 0.0);
-    u_xlat16_1.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * _Color.xyz;
-    u_xlat16_3.xyz = u_xlat16_1.xyz * _LightColor0.xyz;
-    u_xlat16_2.xyz = u_xlat16_1.xyz * vs_TEXCOORD3.xyz;
-    u_xlat16_0.xyz = u_xlat16_3.xyz * u_xlat16_0.xxx + u_xlat16_2.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz + (-unity_FogColor.xyz);
-    u_xlat10 = vs_TEXCOORD4;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat10 = min(max(u_xlat10, 0.0), 1.0);
-#else
-    u_xlat10 = clamp(u_xlat10, 0.0, 1.0);
-#endif
-    u_xlat1.xyz = vec3(u_xlat10) * u_xlat16_1.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat0.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD4 = exp2((-u_xlat0.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    vs_TEXCOORD1.xyz = u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat0.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD3.xyz = u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying mediump vec3 vs_TEXCOORD3;
-#define SV_Target0 gl_FragData[0]
-mediump vec3 u_xlat16_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_1;
-lowp vec3 u_xlat10_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat10;
-void main()
-{
-    u_xlat16_0.x = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_0.x = max(u_xlat16_0.x, 0.0);
-    u_xlat10_1.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat10_1.xyz * _Color.xyz;
-    u_xlat16_3.xyz = u_xlat16_1.xyz * _LightColor0.xyz;
-    u_xlat16_2.xyz = u_xlat16_1.xyz * vs_TEXCOORD3.xyz;
-    u_xlat16_0.xyz = u_xlat16_3.xyz * u_xlat16_0.xxx + u_xlat16_2.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz + (-unity_FogColor.xyz);
-    u_xlat10 = vs_TEXCOORD4;
-    u_xlat10 = clamp(u_xlat10, 0.0, 1.0);
-    u_xlat1.xyz = vec3(u_xlat10) * u_xlat16_1.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD4;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD5;
-out highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat2;
-float u_xlat4;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD4 = u_xlat0.z;
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat4 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat4 = inversesqrt(u_xlat4);
-    vs_TEXCOORD1.xyz = vec3(u_xlat4) * u_xlat1.xyz;
-    u_xlat2 = u_xlat0.y * _ProjectionParams.x;
-    u_xlat0.xz = u_xlat0.xw * vec2(0.5, 0.5);
-    u_xlat0.w = u_xlat2 * 0.5;
-    vs_TEXCOORD5.xy = u_xlat0.zz + u_xlat0.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 unity_FogColor;
-uniform 	vec4 unity_FogParams;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _ShadowMapTexture;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD4;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-in highp vec4 vs_TEXCOORD5;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_2;
-vec3 u_xlat3;
-mediump float u_xlat16_3;
-float u_xlat9;
-mediump float u_xlat16_11;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat3.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat3.x = dot(u_xlat3.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat3.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat3.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat3.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat16_3 = texture(_ShadowMapTexture, u_xlat3.xy).x;
-    u_xlat16_2.x = (-u_xlat16_3) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat16_3;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    u_xlat16_0.xyz = u_xlat16_2.xyz * vec3(u_xlat16_11) + (-unity_FogColor.xyz);
-    u_xlat9 = vs_TEXCOORD4 * unity_FogParams.y;
-    u_xlat9 = exp2((-u_xlat9));
-    u_xlat9 = min(u_xlat9, 1.0);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat2;
-float u_xlat4;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD4 = u_xlat0.z;
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat4 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat4 = inversesqrt(u_xlat4);
-    vs_TEXCOORD1.xyz = vec3(u_xlat4) * u_xlat1.xyz;
-    u_xlat2 = u_xlat0.y * _ProjectionParams.x;
-    u_xlat0.xz = u_xlat0.xw * vec2(0.5, 0.5);
-    u_xlat0.w = u_xlat2 * 0.5;
-    vs_TEXCOORD5.xy = u_xlat0.zz + u_xlat0.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 unity_FogColor;
-uniform 	vec4 unity_FogParams;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _ShadowMapTexture;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_2;
-vec3 u_xlat3;
-lowp float u_xlat10_3;
-float u_xlat9;
-mediump float u_xlat16_11;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat3.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat3.x = dot(u_xlat3.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat3.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat3.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat3.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat10_3 = texture2D(_ShadowMapTexture, u_xlat3.xy).x;
-    u_xlat16_2.x = (-u_xlat10_3) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat10_3;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    u_xlat16_0.xyz = u_xlat16_2.xyz * vec3(u_xlat16_11) + (-unity_FogColor.xyz);
-    u_xlat9 = vs_TEXCOORD4 * unity_FogParams.y;
-    u_xlat9 = exp2((-u_xlat9));
-    u_xlat9 = min(u_xlat9, 1.0);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD4;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out mediump vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD5;
-out highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump float u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec4 u_xlat4;
-float u_xlat16;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD4 = u_xlat0.z;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat16 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat16 = inversesqrt(u_xlat16);
-    u_xlat1.xyz = vec3(u_xlat16) * u_xlat1.xyz;
-    vs_TEXCOORD1.xyz = u_xlat1.xyz;
-    u_xlat16_2 = u_xlat1.y * u_xlat1.y;
-    u_xlat16_2 = u_xlat1.x * u_xlat1.x + (-u_xlat16_2);
-    u_xlat16_1 = u_xlat1.yzzx * u_xlat1.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    vs_TEXCOORD3.xyz = unity_SHC.xyz * vec3(u_xlat16_2) + u_xlat16_3.xyz;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat4.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD5.xy = u_xlat4.zz + u_xlat4.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 unity_FogColor;
-uniform 	vec4 unity_FogParams;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _ShadowMapTexture;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD4;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-in mediump vec3 vs_TEXCOORD3;
-in highp vec4 vs_TEXCOORD5;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec3 u_xlat4;
-mediump float u_xlat16_4;
-float u_xlat12;
-mediump float u_xlat16_14;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat4.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat4.x = dot(u_xlat4.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat4.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat4.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat4.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat16_4 = texture(_ShadowMapTexture, u_xlat4.xy).x;
-    u_xlat16_2.x = (-u_xlat16_4) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat16_4;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat1.xyz = vs_TEXCOORD1.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_3.xyz = u_xlat16_3.xyz + vs_TEXCOORD3.xyz;
-    u_xlat16_3.xyz = max(u_xlat16_3.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_1.xyz = log2(u_xlat16_3.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat16_1.xyz = exp2(u_xlat16_1.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat16_1.xyz = max(u_xlat16_1.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_3.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz;
-    u_xlat16_14 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_14 = max(u_xlat16_14, 0.0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz * vec3(u_xlat16_14) + u_xlat16_3.xyz;
-    u_xlat16_0.xyz = u_xlat16_2.xyz + (-unity_FogColor.xyz);
-    u_xlat12 = vs_TEXCOORD4 * unity_FogParams.y;
-    u_xlat12 = exp2((-u_xlat12));
-    u_xlat12 = min(u_xlat12, 1.0);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump float u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec4 u_xlat4;
-float u_xlat16;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD4 = u_xlat0.z;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat16 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat16 = inversesqrt(u_xlat16);
-    u_xlat1.xyz = vec3(u_xlat16) * u_xlat1.xyz;
-    vs_TEXCOORD1.xyz = u_xlat1.xyz;
-    u_xlat16_2 = u_xlat1.y * u_xlat1.y;
-    u_xlat16_2 = u_xlat1.x * u_xlat1.x + (-u_xlat16_2);
-    u_xlat16_1 = u_xlat1.yzzx * u_xlat1.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    vs_TEXCOORD3.xyz = unity_SHC.xyz * vec3(u_xlat16_2) + u_xlat16_3.xyz;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat4.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD5.xy = u_xlat4.zz + u_xlat4.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 unity_FogColor;
-uniform 	vec4 unity_FogParams;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _ShadowMapTexture;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec3 u_xlat4;
-lowp float u_xlat10_4;
-float u_xlat12;
-mediump float u_xlat16_14;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat4.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat4.x = dot(u_xlat4.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat4.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat4.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat4.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat10_4 = texture2D(_ShadowMapTexture, u_xlat4.xy).x;
-    u_xlat16_2.x = (-u_xlat10_4) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat10_4;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat1.xyz = vs_TEXCOORD1.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_3.xyz = u_xlat16_3.xyz + vs_TEXCOORD3.xyz;
-    u_xlat16_3.xyz = max(u_xlat16_3.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_1.xyz = log2(u_xlat16_3.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat16_1.xyz = exp2(u_xlat16_1.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat16_1.xyz = max(u_xlat16_1.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_3.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz;
-    u_xlat16_14 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_14 = max(u_xlat16_14, 0.0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz * vec3(u_xlat16_14) + u_xlat16_3.xyz;
-    u_xlat16_0.xyz = u_xlat16_2.xyz + (-unity_FogColor.xyz);
-    u_xlat12 = vs_TEXCOORD4 * unity_FogParams.y;
-    u_xlat12 = exp2((-u_xlat12));
-    u_xlat12 = min(u_xlat12, 1.0);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "FOG_EXP" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD4;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat0.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD4 = exp2((-u_xlat0.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD4;
-in highp vec3 vs_TEXCOORD1;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_0.xyz = u_xlat16_1.xyz * vec3(u_xlat16_7) + (-unity_FogColor.xyz);
-    u_xlat6 = vs_TEXCOORD4;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat6 = min(max(u_xlat6, 0.0), 1.0);
-#else
-    u_xlat6 = clamp(u_xlat6, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "FOG_EXP" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat0.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD4 = exp2((-u_xlat0.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_0.xyz = u_xlat16_1.xyz * vec3(u_xlat16_7) + (-unity_FogColor.xyz);
-    u_xlat6 = vs_TEXCOORD4;
-    u_xlat6 = clamp(u_xlat6, 0.0, 1.0);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" "FOG_EXP" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 unity_4LightPosX0;
-uniform 	vec4 unity_4LightPosY0;
-uniform 	vec4 unity_4LightPosZ0;
-uniform 	mediump vec4 unity_4LightAtten0;
-uniform 	mediump vec4 unity_LightColor[8];
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD4;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out mediump vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-mediump vec4 u_xlat16_2;
-vec4 u_xlat3;
-vec4 u_xlat4;
-mediump vec3 u_xlat16_5;
-mediump vec3 u_xlat16_6;
-float u_xlat21;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat0.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat21 = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD4 = exp2((-u_xlat21));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat21 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat21 = inversesqrt(u_xlat21);
-    u_xlat1.xyz = vec3(u_xlat21) * u_xlat1.xyz;
-    vs_TEXCOORD1.xyz = u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = u_xlat0.xyz;
-    u_xlat2 = (-u_xlat0.xxxx) + unity_4LightPosX0;
-    u_xlat3 = (-u_xlat0.yyyy) + unity_4LightPosY0;
-    u_xlat0 = (-u_xlat0.zzzz) + unity_4LightPosZ0;
-    u_xlat4 = u_xlat1.yyyy * u_xlat3;
-    u_xlat3 = u_xlat3 * u_xlat3;
-    u_xlat3 = u_xlat2 * u_xlat2 + u_xlat3;
-    u_xlat2 = u_xlat2 * u_xlat1.xxxx + u_xlat4;
-    u_xlat2 = u_xlat0 * u_xlat1.zzzz + u_xlat2;
-    u_xlat0 = u_xlat0 * u_xlat0 + u_xlat3;
-    u_xlat0 = max(u_xlat0, vec4(9.99999997e-07, 9.99999997e-07, 9.99999997e-07, 9.99999997e-07));
-    u_xlat3 = inversesqrt(u_xlat0);
-    u_xlat0 = u_xlat0 * unity_4LightAtten0 + vec4(1.0, 1.0, 1.0, 1.0);
-    u_xlat0 = vec4(1.0, 1.0, 1.0, 1.0) / u_xlat0;
-    u_xlat2 = u_xlat2 * u_xlat3;
-    u_xlat2 = max(u_xlat2, vec4(0.0, 0.0, 0.0, 0.0));
-    u_xlat0 = u_xlat0 * u_xlat2;
-    u_xlat2.xyz = u_xlat0.yyy * unity_LightColor[1].xyz;
-    u_xlat2.xyz = unity_LightColor[0].xyz * u_xlat0.xxx + u_xlat2.xyz;
-    u_xlat0.xyz = unity_LightColor[2].xyz * u_xlat0.zzz + u_xlat2.xyz;
-    u_xlat0.xyz = unity_LightColor[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    u_xlat16_5.x = u_xlat1.y * u_xlat1.y;
-    u_xlat16_5.x = u_xlat1.x * u_xlat1.x + (-u_xlat16_5.x);
-    u_xlat16_2 = u_xlat1.yzzx * u_xlat1.xyzz;
-    u_xlat16_6.x = dot(unity_SHBr, u_xlat16_2);
-    u_xlat16_6.y = dot(unity_SHBg, u_xlat16_2);
-    u_xlat16_6.z = dot(unity_SHBb, u_xlat16_2);
-    u_xlat16_5.xyz = unity_SHC.xyz * u_xlat16_5.xxx + u_xlat16_6.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_6.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_6.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_6.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_5.xyz = u_xlat16_5.xyz + u_xlat16_6.xyz;
-    u_xlat16_5.xyz = max(u_xlat16_5.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat1.xyz = log2(u_xlat16_5.xyz);
-    u_xlat1.xyz = u_xlat1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat1.xyz = exp2(u_xlat1.xyz);
-    u_xlat1.xyz = u_xlat1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat1.xyz = max(u_xlat1.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD3.xyz = u_xlat0.xyz + u_xlat1.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD4;
-in highp vec3 vs_TEXCOORD1;
-in mediump vec3 vs_TEXCOORD3;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec3 u_xlat16_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat10;
-void main()
-{
-    u_xlat16_0.x = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_0.x = max(u_xlat16_0.x, 0.0);
-    u_xlat16_1.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * _Color.xyz;
-    u_xlat16_3.xyz = u_xlat16_1.xyz * _LightColor0.xyz;
-    u_xlat16_2.xyz = u_xlat16_1.xyz * vs_TEXCOORD3.xyz;
-    u_xlat16_0.xyz = u_xlat16_3.xyz * u_xlat16_0.xxx + u_xlat16_2.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz + (-unity_FogColor.xyz);
-    u_xlat10 = vs_TEXCOORD4;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat10 = min(max(u_xlat10, 0.0), 1.0);
-#else
-    u_xlat10 = clamp(u_xlat10, 0.0, 1.0);
-#endif
-    u_xlat1.xyz = vec3(u_xlat10) * u_xlat16_1.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" "FOG_EXP" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 unity_4LightPosX0;
-uniform 	vec4 unity_4LightPosY0;
-uniform 	vec4 unity_4LightPosZ0;
-uniform 	mediump vec4 unity_4LightAtten0;
-uniform 	mediump vec4 unity_LightColor[8];
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-mediump vec4 u_xlat16_2;
-vec4 u_xlat3;
-vec4 u_xlat4;
-mediump vec3 u_xlat16_5;
-mediump vec3 u_xlat16_6;
-float u_xlat21;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat0.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat21 = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD4 = exp2((-u_xlat21));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat21 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat21 = inversesqrt(u_xlat21);
-    u_xlat1.xyz = vec3(u_xlat21) * u_xlat1.xyz;
-    vs_TEXCOORD1.xyz = u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = u_xlat0.xyz;
-    u_xlat2 = (-u_xlat0.xxxx) + unity_4LightPosX0;
-    u_xlat3 = (-u_xlat0.yyyy) + unity_4LightPosY0;
-    u_xlat0 = (-u_xlat0.zzzz) + unity_4LightPosZ0;
-    u_xlat4 = u_xlat1.yyyy * u_xlat3;
-    u_xlat3 = u_xlat3 * u_xlat3;
-    u_xlat3 = u_xlat2 * u_xlat2 + u_xlat3;
-    u_xlat2 = u_xlat2 * u_xlat1.xxxx + u_xlat4;
-    u_xlat2 = u_xlat0 * u_xlat1.zzzz + u_xlat2;
-    u_xlat0 = u_xlat0 * u_xlat0 + u_xlat3;
-    u_xlat0 = max(u_xlat0, vec4(9.99999997e-07, 9.99999997e-07, 9.99999997e-07, 9.99999997e-07));
-    u_xlat3 = inversesqrt(u_xlat0);
-    u_xlat0 = u_xlat0 * unity_4LightAtten0 + vec4(1.0, 1.0, 1.0, 1.0);
-    u_xlat0 = vec4(1.0, 1.0, 1.0, 1.0) / u_xlat0;
-    u_xlat2 = u_xlat2 * u_xlat3;
-    u_xlat2 = max(u_xlat2, vec4(0.0, 0.0, 0.0, 0.0));
-    u_xlat0 = u_xlat0 * u_xlat2;
-    u_xlat2.xyz = u_xlat0.yyy * unity_LightColor[1].xyz;
-    u_xlat2.xyz = unity_LightColor[0].xyz * u_xlat0.xxx + u_xlat2.xyz;
-    u_xlat0.xyz = unity_LightColor[2].xyz * u_xlat0.zzz + u_xlat2.xyz;
-    u_xlat0.xyz = unity_LightColor[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    u_xlat16_5.x = u_xlat1.y * u_xlat1.y;
-    u_xlat16_5.x = u_xlat1.x * u_xlat1.x + (-u_xlat16_5.x);
-    u_xlat16_2 = u_xlat1.yzzx * u_xlat1.xyzz;
-    u_xlat16_6.x = dot(unity_SHBr, u_xlat16_2);
-    u_xlat16_6.y = dot(unity_SHBg, u_xlat16_2);
-    u_xlat16_6.z = dot(unity_SHBb, u_xlat16_2);
-    u_xlat16_5.xyz = unity_SHC.xyz * u_xlat16_5.xxx + u_xlat16_6.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_6.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_6.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_6.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_5.xyz = u_xlat16_5.xyz + u_xlat16_6.xyz;
-    u_xlat16_5.xyz = max(u_xlat16_5.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat1.xyz = log2(u_xlat16_5.xyz);
-    u_xlat1.xyz = u_xlat1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat1.xyz = exp2(u_xlat1.xyz);
-    u_xlat1.xyz = u_xlat1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat1.xyz = max(u_xlat1.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD3.xyz = u_xlat0.xyz + u_xlat1.xyz;
-    vs_TEXCOORD5 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying mediump vec3 vs_TEXCOORD3;
-#define SV_Target0 gl_FragData[0]
-mediump vec3 u_xlat16_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_1;
-lowp vec3 u_xlat10_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat10;
-void main()
-{
-    u_xlat16_0.x = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_0.x = max(u_xlat16_0.x, 0.0);
-    u_xlat10_1.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat10_1.xyz * _Color.xyz;
-    u_xlat16_3.xyz = u_xlat16_1.xyz * _LightColor0.xyz;
-    u_xlat16_2.xyz = u_xlat16_1.xyz * vs_TEXCOORD3.xyz;
-    u_xlat16_0.xyz = u_xlat16_3.xyz * u_xlat16_0.xxx + u_xlat16_2.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz + (-unity_FogColor.xyz);
-    u_xlat10 = vs_TEXCOORD4;
-    u_xlat10 = clamp(u_xlat10, 0.0, 1.0);
-    u_xlat1.xyz = vec3(u_xlat10) * u_xlat16_1.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "FOG_EXP" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD4;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD5;
-out highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat2;
-float u_xlat4;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD4 = u_xlat0.z;
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat4 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat4 = inversesqrt(u_xlat4);
-    vs_TEXCOORD1.xyz = vec3(u_xlat4) * u_xlat1.xyz;
-    u_xlat2 = u_xlat0.y * _ProjectionParams.x;
-    u_xlat0.xz = u_xlat0.xw * vec2(0.5, 0.5);
-    u_xlat0.w = u_xlat2 * 0.5;
-    vs_TEXCOORD5.xy = u_xlat0.zz + u_xlat0.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 unity_FogColor;
-uniform 	vec4 unity_FogParams;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _ShadowMapTexture;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD4;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-in highp vec4 vs_TEXCOORD5;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_2;
-vec3 u_xlat3;
-mediump float u_xlat16_3;
-float u_xlat9;
-mediump float u_xlat16_11;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat3.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat3.x = dot(u_xlat3.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat3.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat3.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat3.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat16_3 = texture(_ShadowMapTexture, u_xlat3.xy).x;
-    u_xlat16_2.x = (-u_xlat16_3) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat16_3;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    u_xlat16_0.xyz = u_xlat16_2.xyz * vec3(u_xlat16_11) + (-unity_FogColor.xyz);
-    u_xlat9 = vs_TEXCOORD4 * unity_FogParams.y;
-    u_xlat9 = exp2((-u_xlat9));
-    u_xlat9 = min(u_xlat9, 1.0);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "FOG_EXP" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat2;
-float u_xlat4;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD4 = u_xlat0.z;
-    vs_TEXCOORD5.zw = u_xlat0.zw;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat4 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat4 = inversesqrt(u_xlat4);
-    vs_TEXCOORD1.xyz = vec3(u_xlat4) * u_xlat1.xyz;
-    u_xlat2 = u_xlat0.y * _ProjectionParams.x;
-    u_xlat0.xz = u_xlat0.xw * vec2(0.5, 0.5);
-    u_xlat0.w = u_xlat2 * 0.5;
-    vs_TEXCOORD5.xy = u_xlat0.zz + u_xlat0.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 unity_FogColor;
-uniform 	vec4 unity_FogParams;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _ShadowMapTexture;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD5;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec3 u_xlat1;
-mediump vec3 u_xlat16_2;
-vec3 u_xlat3;
-lowp float u_xlat10_3;
-float u_xlat9;
-mediump float u_xlat16_11;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat3.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat3.x = dot(u_xlat3.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat3.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat3.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat3.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat10_3 = texture2D(_ShadowMapTexture, u_xlat3.xy).x;
-    u_xlat16_2.x = (-u_xlat10_3) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat10_3;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    u_xlat16_0.xyz = u_xlat16_2.xyz * vec3(u_xlat16_11) + (-unity_FogColor.xyz);
-    u_xlat9 = vs_TEXCOORD4 * unity_FogParams.y;
-    u_xlat9 = exp2((-u_xlat9));
-    u_xlat9 = min(u_xlat9, 1.0);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" "FOG_EXP" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 unity_4LightPosX0;
-uniform 	vec4 unity_4LightPosY0;
-uniform 	vec4 unity_4LightPosZ0;
-uniform 	mediump vec4 unity_4LightAtten0;
-uniform 	mediump vec4 unity_LightColor[8];
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD4;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out mediump vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD5;
-out highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-mediump vec4 u_xlat16_2;
-vec4 u_xlat3;
-vec4 u_xlat4;
-vec4 u_xlat5;
-mediump vec3 u_xlat16_6;
-mediump vec3 u_xlat16_7;
-float u_xlat24;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat0.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    vs_TEXCOORD4 = u_xlat1.z;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat2.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat2.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat2.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat24 = dot(u_xlat2.xyz, u_xlat2.xyz);
-    u_xlat24 = inversesqrt(u_xlat24);
-    u_xlat2.xyz = vec3(u_xlat24) * u_xlat2.xyz;
-    vs_TEXCOORD1.xyz = u_xlat2.xyz;
-    vs_TEXCOORD2.xyz = u_xlat0.xyz;
-    u_xlat3 = (-u_xlat0.xxxx) + unity_4LightPosX0;
-    u_xlat4 = (-u_xlat0.yyyy) + unity_4LightPosY0;
-    u_xlat0 = (-u_xlat0.zzzz) + unity_4LightPosZ0;
-    u_xlat5 = u_xlat2.yyyy * u_xlat4;
-    u_xlat4 = u_xlat4 * u_xlat4;
-    u_xlat4 = u_xlat3 * u_xlat3 + u_xlat4;
-    u_xlat3 = u_xlat3 * u_xlat2.xxxx + u_xlat5;
-    u_xlat3 = u_xlat0 * u_xlat2.zzzz + u_xlat3;
-    u_xlat0 = u_xlat0 * u_xlat0 + u_xlat4;
-    u_xlat0 = max(u_xlat0, vec4(9.99999997e-07, 9.99999997e-07, 9.99999997e-07, 9.99999997e-07));
-    u_xlat4 = inversesqrt(u_xlat0);
-    u_xlat0 = u_xlat0 * unity_4LightAtten0 + vec4(1.0, 1.0, 1.0, 1.0);
-    u_xlat0 = vec4(1.0, 1.0, 1.0, 1.0) / u_xlat0;
-    u_xlat3 = u_xlat3 * u_xlat4;
-    u_xlat3 = max(u_xlat3, vec4(0.0, 0.0, 0.0, 0.0));
-    u_xlat0 = u_xlat0 * u_xlat3;
-    u_xlat3.xyz = u_xlat0.yyy * unity_LightColor[1].xyz;
-    u_xlat3.xyz = unity_LightColor[0].xyz * u_xlat0.xxx + u_xlat3.xyz;
-    u_xlat0.xyz = unity_LightColor[2].xyz * u_xlat0.zzz + u_xlat3.xyz;
-    u_xlat0.xyz = unity_LightColor[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    u_xlat3.xyz = u_xlat0.xyz * vec3(0.305306017, 0.305306017, 0.305306017) + vec3(0.682171106, 0.682171106, 0.682171106);
-    u_xlat3.xyz = u_xlat0.xyz * u_xlat3.xyz + vec3(0.0125228781, 0.0125228781, 0.0125228781);
-    u_xlat16_6.x = u_xlat2.y * u_xlat2.y;
-    u_xlat16_6.x = u_xlat2.x * u_xlat2.x + (-u_xlat16_6.x);
-    u_xlat16_2 = u_xlat2.yzzx * u_xlat2.xyzz;
-    u_xlat16_7.x = dot(unity_SHBr, u_xlat16_2);
-    u_xlat16_7.y = dot(unity_SHBg, u_xlat16_2);
-    u_xlat16_7.z = dot(unity_SHBb, u_xlat16_2);
-    u_xlat16_6.xyz = unity_SHC.xyz * u_xlat16_6.xxx + u_xlat16_7.xyz;
-    vs_TEXCOORD3.xyz = u_xlat0.xyz * u_xlat3.xyz + u_xlat16_6.xyz;
-    u_xlat0.x = u_xlat1.y * _ProjectionParams.x;
-    u_xlat0.w = u_xlat0.x * 0.5;
-    u_xlat0.xz = u_xlat1.xw * vec2(0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat1.zw;
-    vs_TEXCOORD5.xy = u_xlat0.zz + u_xlat0.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 unity_FogColor;
-uniform 	vec4 unity_FogParams;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _ShadowMapTexture;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD4;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-in mediump vec3 vs_TEXCOORD3;
-in highp vec4 vs_TEXCOORD5;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec3 u_xlat4;
-mediump float u_xlat16_4;
-float u_xlat12;
-mediump float u_xlat16_14;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat4.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat4.x = dot(u_xlat4.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat4.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat4.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat4.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat16_4 = texture(_ShadowMapTexture, u_xlat4.xy).x;
-    u_xlat16_2.x = (-u_xlat16_4) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat16_4;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat1.xyz = vs_TEXCOORD1.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_3.xyz = u_xlat16_3.xyz + vs_TEXCOORD3.xyz;
-    u_xlat16_3.xyz = max(u_xlat16_3.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_1.xyz = log2(u_xlat16_3.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat16_1.xyz = exp2(u_xlat16_1.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat16_1.xyz = max(u_xlat16_1.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_3.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz;
-    u_xlat16_14 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_14 = max(u_xlat16_14, 0.0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz * vec3(u_xlat16_14) + u_xlat16_3.xyz;
-    u_xlat16_0.xyz = u_xlat16_2.xyz + (-unity_FogColor.xyz);
-    u_xlat12 = vs_TEXCOORD4 * unity_FogParams.y;
-    u_xlat12 = exp2((-u_xlat12));
-    u_xlat12 = min(u_xlat12, 1.0);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" "FOG_EXP" "VERTEXLIGHT_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	vec4 unity_4LightPosX0;
-uniform 	vec4 unity_4LightPosY0;
-uniform 	vec4 unity_4LightPosZ0;
-uniform 	mediump vec4 unity_4LightAtten0;
-uniform 	mediump vec4 unity_LightColor[8];
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD6;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-mediump vec4 u_xlat16_2;
-vec4 u_xlat3;
-vec4 u_xlat4;
-vec4 u_xlat5;
-mediump vec3 u_xlat16_6;
-mediump vec3 u_xlat16_7;
-float u_xlat24;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat0.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    vs_TEXCOORD4 = u_xlat1.z;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat2.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat2.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat2.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat24 = dot(u_xlat2.xyz, u_xlat2.xyz);
-    u_xlat24 = inversesqrt(u_xlat24);
-    u_xlat2.xyz = vec3(u_xlat24) * u_xlat2.xyz;
-    vs_TEXCOORD1.xyz = u_xlat2.xyz;
-    vs_TEXCOORD2.xyz = u_xlat0.xyz;
-    u_xlat3 = (-u_xlat0.xxxx) + unity_4LightPosX0;
-    u_xlat4 = (-u_xlat0.yyyy) + unity_4LightPosY0;
-    u_xlat0 = (-u_xlat0.zzzz) + unity_4LightPosZ0;
-    u_xlat5 = u_xlat2.yyyy * u_xlat4;
-    u_xlat4 = u_xlat4 * u_xlat4;
-    u_xlat4 = u_xlat3 * u_xlat3 + u_xlat4;
-    u_xlat3 = u_xlat3 * u_xlat2.xxxx + u_xlat5;
-    u_xlat3 = u_xlat0 * u_xlat2.zzzz + u_xlat3;
-    u_xlat0 = u_xlat0 * u_xlat0 + u_xlat4;
-    u_xlat0 = max(u_xlat0, vec4(9.99999997e-07, 9.99999997e-07, 9.99999997e-07, 9.99999997e-07));
-    u_xlat4 = inversesqrt(u_xlat0);
-    u_xlat0 = u_xlat0 * unity_4LightAtten0 + vec4(1.0, 1.0, 1.0, 1.0);
-    u_xlat0 = vec4(1.0, 1.0, 1.0, 1.0) / u_xlat0;
-    u_xlat3 = u_xlat3 * u_xlat4;
-    u_xlat3 = max(u_xlat3, vec4(0.0, 0.0, 0.0, 0.0));
-    u_xlat0 = u_xlat0 * u_xlat3;
-    u_xlat3.xyz = u_xlat0.yyy * unity_LightColor[1].xyz;
-    u_xlat3.xyz = unity_LightColor[0].xyz * u_xlat0.xxx + u_xlat3.xyz;
-    u_xlat0.xyz = unity_LightColor[2].xyz * u_xlat0.zzz + u_xlat3.xyz;
-    u_xlat0.xyz = unity_LightColor[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    u_xlat3.xyz = u_xlat0.xyz * vec3(0.305306017, 0.305306017, 0.305306017) + vec3(0.682171106, 0.682171106, 0.682171106);
-    u_xlat3.xyz = u_xlat0.xyz * u_xlat3.xyz + vec3(0.0125228781, 0.0125228781, 0.0125228781);
-    u_xlat16_6.x = u_xlat2.y * u_xlat2.y;
-    u_xlat16_6.x = u_xlat2.x * u_xlat2.x + (-u_xlat16_6.x);
-    u_xlat16_2 = u_xlat2.yzzx * u_xlat2.xyzz;
-    u_xlat16_7.x = dot(unity_SHBr, u_xlat16_2);
-    u_xlat16_7.y = dot(unity_SHBg, u_xlat16_2);
-    u_xlat16_7.z = dot(unity_SHBb, u_xlat16_2);
-    u_xlat16_6.xyz = unity_SHC.xyz * u_xlat16_6.xxx + u_xlat16_7.xyz;
-    vs_TEXCOORD3.xyz = u_xlat0.xyz * u_xlat3.xyz + u_xlat16_6.xyz;
-    u_xlat0.x = u_xlat1.y * _ProjectionParams.x;
-    u_xlat0.w = u_xlat0.x * 0.5;
-    u_xlat0.xz = u_xlat1.xw * vec2(0.5, 0.5);
-    vs_TEXCOORD5.zw = u_xlat1.zw;
-    vs_TEXCOORD5.xy = u_xlat0.zz + u_xlat0.xw;
-    vs_TEXCOORD6 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec3 _WorldSpaceCameraPos;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 _LightShadowData;
-uniform 	vec4 unity_ShadowFadeCenterAndType;
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixV[4];
-uniform 	mediump vec4 unity_FogColor;
-uniform 	vec4 unity_FogParams;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _ShadowMapTexture;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD4;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying mediump vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD5;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-vec3 u_xlat4;
-lowp float u_xlat10_4;
-float u_xlat12;
-mediump float u_xlat16_14;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.xyz + (-unity_ShadowFadeCenterAndType.xyz);
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = sqrt(u_xlat0.x);
-    u_xlat4.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceCameraPos.xyz;
-    u_xlat1.x = hlslcc_mtx4x4unity_MatrixV[0].z;
-    u_xlat1.y = hlslcc_mtx4x4unity_MatrixV[1].z;
-    u_xlat1.z = hlslcc_mtx4x4unity_MatrixV[2].z;
-    u_xlat4.x = dot(u_xlat4.xyz, u_xlat1.xyz);
-    u_xlat0.x = (-u_xlat4.x) + u_xlat0.x;
-    u_xlat0.x = unity_ShadowFadeCenterAndType.w * u_xlat0.x + u_xlat4.x;
-    u_xlat0.x = u_xlat0.x * _LightShadowData.z + _LightShadowData.w;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat4.xy = vs_TEXCOORD5.xy / vs_TEXCOORD5.ww;
-    u_xlat10_4 = texture2D(_ShadowMapTexture, u_xlat4.xy).x;
-    u_xlat16_2.x = (-u_xlat10_4) + 1.0;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x + u_xlat10_4;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat1.xyz = vs_TEXCOORD1.xyz;
-    u_xlat1.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat1);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat1);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat1);
-    u_xlat16_3.xyz = u_xlat16_3.xyz + vs_TEXCOORD3.xyz;
-    u_xlat16_3.xyz = max(u_xlat16_3.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_1.xyz = log2(u_xlat16_3.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat16_1.xyz = exp2(u_xlat16_1.xyz);
-    u_xlat16_1.xyz = u_xlat16_1.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat16_1.xyz = max(u_xlat16_1.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat16_3.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz;
-    u_xlat16_14 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_14 = max(u_xlat16_14, 0.0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz * vec3(u_xlat16_14) + u_xlat16_3.xyz;
-    u_xlat16_0.xyz = u_xlat16_2.xyz + (-unity_FogColor.xyz);
-    u_xlat12 = vs_TEXCOORD4 * unity_FogParams.y;
-    u_xlat12 = exp2((-u_xlat12));
-    u_xlat12 = min(u_xlat12, 1.0);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat16_0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" }
+SubProgram "gles " {
+Keywords { "DIRECTIONAL" "SHADOWS_OFF" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" }
 ""
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" }
+Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" }
 ""
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" }
+Keywords { "DIRECTIONAL" "SHADOWS_OFF" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" }
 ""
 }
 SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" }
-""
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "FOG_EXP" }
-""
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "FOG_EXP" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" "FOG_EXP" }
-""
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "LIGHTPROBE_SH" "FOG_EXP" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "FOG_EXP" }
-""
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "FOG_EXP" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" "FOG_EXP" }
-""
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTPROBE_SH" "FOG_EXP" }
+Keywords { "DIRECTIONAL" "SHADOWS_SCREEN" "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" }
 ""
 }
 }
-}
+ }
  Pass {
- Name "FORWARD"
-  LOD 200
-  Tags { "LIGHTMODE" = "FORWARDADD" "RenderType" = "Opaque" }
- ZWrite Off
-  GpuProgramID 89910
+  Name "FORWARD"
+  Tags { "LIGHTMODE"="ForwardAdd" "RenderType"="Opaque" }
+  ZWrite Off
+  Blend One One
+  GpuProgramID 79369
 Program "vp" {
-SubProgram "gles3 " {
-Keywords { "POINT" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1.xyz = u_xlat0.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat1.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * u_xlat0.xxx + u_xlat1.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * u_xlat0.zzz + u_xlat1.xyz;
-    vs_TEXCOORD3.xyz = hlslcc_mtx4x4unity_WorldToLight[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * vs_TEXCOORD2.xxx + u_xlat0.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * vs_TEXCOORD2.zzz + u_xlat0.xyz;
-    u_xlat0.xyz = u_xlat0.xyz + hlslcc_mtx4x4unity_WorldToLight[3].xyz;
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture(_LightTexture0, u_xlat0.xx).x;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
 Keywords { "POINT" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1.xyz = u_xlat0.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat1.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * u_xlat0.xxx + u_xlat1.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * u_xlat0.zzz + u_xlat1.xyz;
-    vs_TEXCOORD3.xyz = hlslcc_mtx4x4unity_WorldToLight[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 v_3;
+  v_3.x = _World2Object[0].x;
+  v_3.y = _World2Object[1].x;
+  v_3.z = _World2Object[2].x;
+  v_3.w = _World2Object[3].x;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].y;
+  v_4.y = _World2Object[1].y;
+  v_4.z = _World2Object[2].y;
+  v_4.w = _World2Object[3].y;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].z;
+  v_5.y = _World2Object[1].z;
+  v_5.z = _World2Object[2].z;
+  v_5.w = _World2Object[3].z;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize(((
+    (v_3.xyz * _glesNormal.x)
+   + 
+    (v_4.xyz * _glesNormal.y)
+  ) + (v_5.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_6;
+  tmpvar_2 = worldNormal_1;
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
+uniform highp vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _LightTexture0;
+uniform mediump mat4 _LightMatrix0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0.xyz = vs_TEXCOORD2.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * vs_TEXCOORD2.xxx + u_xlat0.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * vs_TEXCOORD2.zzz + u_xlat0.xyz;
-    u_xlat0.xyz = u_xlat0.xyz + hlslcc_mtx4x4unity_WorldToLight[3].xyz;
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture2D(_LightTexture0, u_xlat0.xx).x;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize((_WorldSpaceLightPos0.xyz - xlv_TEXCOORD2));
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  highp vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = xlv_TEXCOORD2;
+  highp vec3 tmpvar_9;
+  tmpvar_9 = (_LightMatrix0 * tmpvar_8).xyz;
+  highp float tmpvar_10;
+  tmpvar_10 = dot (tmpvar_9, tmpvar_9);
+  lowp float tmpvar_11;
+  tmpvar_11 = texture2D (_LightTexture0, vec2(tmpvar_10)).w;
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  tmpvar_1 = (tmpvar_1 * tmpvar_11);
+  lowp vec4 c_12;
+  lowp vec4 c_13;
+  lowp float diff_14;
+  mediump float tmpvar_15;
+  tmpvar_15 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_14 = tmpvar_15;
+  c_13.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_14);
+  c_13.w = tmpvar_7.w;
+  c_12.w = c_13.w;
+  c_12.xyz = c_13.xyz;
+  c_3.xyz = c_12.xyz;
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "DIRECTIONAL" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 v_3;
+  v_3.x = _World2Object[0].x;
+  v_3.y = _World2Object[1].x;
+  v_3.z = _World2Object[2].x;
+  v_3.w = _World2Object[3].x;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].y;
+  v_4.y = _World2Object[1].y;
+  v_4.z = _World2Object[2].y;
+  v_4.w = _World2Object[3].y;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].z;
+  v_5.y = _World2Object[1].z;
+  v_5.z = _World2Object[2].z;
+  v_5.w = _World2Object[3].z;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize(((
+    (v_3.xyz * _glesNormal.x)
+   + 
+    (v_4.xyz * _glesNormal.y)
+  ) + (v_5.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_6;
+  tmpvar_2 = worldNormal_1;
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-#define SV_Target0 gl_FragData[0]
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+void main ()
 {
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  mediump vec3 tmpvar_6;
+  tmpvar_6 = _WorldSpaceLightPos0.xyz;
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  lowp vec4 c_8;
+  lowp vec4 c_9;
+  lowp float diff_10;
+  mediump float tmpvar_11;
+  tmpvar_11 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_10 = tmpvar_11;
+  c_9.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_10);
+  c_9.w = tmpvar_7.w;
+  c_8.w = c_9.w;
+  c_8.xyz = c_9.xyz;
+  c_3.xyz = c_8.xyz;
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "SPOT" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_WorldToLight[1];
-    u_xlat1 = hlslcc_mtx4x4unity_WorldToLight[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_WorldToLight[2] * u_xlat0.zzzz + u_xlat1;
-    vs_TEXCOORD3 = hlslcc_mtx4x4unity_WorldToLight[3] * u_xlat0.wwww + u_xlat1;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-uniform highp sampler2D _LightTextureB0;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec2 u_xlat1;
-bool u_xlatb1;
-mediump vec3 u_xlat16_2;
-float u_xlat9;
-mediump float u_xlat16_11;
-void main()
-{
-    u_xlat0 = vs_TEXCOORD2.yyyy * hlslcc_mtx4x4unity_WorldToLight[1];
-    u_xlat0 = hlslcc_mtx4x4unity_WorldToLight[0] * vs_TEXCOORD2.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_WorldToLight[2] * vs_TEXCOORD2.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_WorldToLight[3];
-    u_xlat1.xy = u_xlat0.xy / u_xlat0.ww;
-    u_xlat1.xy = u_xlat1.xy + vec2(0.5, 0.5);
-    u_xlat9 = texture(_LightTexture0, u_xlat1.xy).w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlatb1 = !!(0.0<u_xlat0.z);
-#else
-    u_xlatb1 = 0.0<u_xlat0.z;
-#endif
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture(_LightTextureB0, u_xlat0.xx).x;
-    u_xlat16_2.x = (u_xlatb1) ? 1.0 : 0.0;
-    u_xlat16_2.x = u_xlat9 * u_xlat16_2.x;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat9 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat9 = inversesqrt(u_xlat9);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_11) * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "SPOT" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_WorldToLight[1];
-    u_xlat1 = hlslcc_mtx4x4unity_WorldToLight[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_WorldToLight[2] * u_xlat0.zzzz + u_xlat1;
-    vs_TEXCOORD3 = hlslcc_mtx4x4unity_WorldToLight[3] * u_xlat0.wwww + u_xlat1;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 v_3;
+  v_3.x = _World2Object[0].x;
+  v_3.y = _World2Object[1].x;
+  v_3.z = _World2Object[2].x;
+  v_3.w = _World2Object[3].x;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].y;
+  v_4.y = _World2Object[1].y;
+  v_4.z = _World2Object[2].y;
+  v_4.w = _World2Object[3].y;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].z;
+  v_5.y = _World2Object[1].z;
+  v_5.z = _World2Object[2].z;
+  v_5.w = _World2Object[3].z;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize(((
+    (v_3.xyz * _glesNormal.x)
+   + 
+    (v_4.xyz * _glesNormal.y)
+  ) + (v_5.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_6;
+  tmpvar_2 = worldNormal_1;
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-uniform highp sampler2D _LightTextureB0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-#define SV_Target0 gl_FragData[0]
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec2 u_xlat1;
-bool u_xlatb1;
-mediump vec3 u_xlat16_2;
-float u_xlat9;
-mediump float u_xlat16_11;
-void main()
+uniform highp vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _LightTexture0;
+uniform mediump mat4 _LightMatrix0;
+uniform sampler2D _LightTextureB0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0 = vs_TEXCOORD2.yyyy * hlslcc_mtx4x4unity_WorldToLight[1];
-    u_xlat0 = hlslcc_mtx4x4unity_WorldToLight[0] * vs_TEXCOORD2.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_WorldToLight[2] * vs_TEXCOORD2.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_WorldToLight[3];
-    u_xlat1.xy = u_xlat0.xy / u_xlat0.ww;
-    u_xlat1.xy = u_xlat1.xy + vec2(0.5, 0.5);
-    u_xlat9 = texture2D(_LightTexture0, u_xlat1.xy).w;
-    u_xlatb1 = 0.0<u_xlat0.z;
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture2D(_LightTextureB0, u_xlat0.xx).x;
-    u_xlat16_2.x = (u_xlatb1) ? 1.0 : 0.0;
-    u_xlat16_2.x = u_xlat9 * u_xlat16_2.x;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat9 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat9 = inversesqrt(u_xlat9);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_11) * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp float atten_4;
+  mediump vec4 lightCoord_5;
+  lowp vec3 tmpvar_6;
+  lowp vec3 lightDir_7;
+  highp vec3 tmpvar_8;
+  tmpvar_8 = normalize((_WorldSpaceLightPos0.xyz - xlv_TEXCOORD2));
+  lightDir_7 = tmpvar_8;
+  tmpvar_6 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_9;
+  tmpvar_9 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  highp vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = xlv_TEXCOORD2;
+  highp vec4 tmpvar_11;
+  tmpvar_11 = (_LightMatrix0 * tmpvar_10);
+  lightCoord_5 = tmpvar_11;
+  lowp vec4 tmpvar_12;
+  mediump vec2 P_13;
+  P_13 = ((lightCoord_5.xy / lightCoord_5.w) + 0.5);
+  tmpvar_12 = texture2D (_LightTexture0, P_13);
+  highp vec3 LightCoord_14;
+  LightCoord_14 = lightCoord_5.xyz;
+  highp float tmpvar_15;
+  tmpvar_15 = dot (LightCoord_14, LightCoord_14);
+  lowp vec4 tmpvar_16;
+  tmpvar_16 = texture2D (_LightTextureB0, vec2(tmpvar_15));
+  mediump float tmpvar_17;
+  tmpvar_17 = ((float(
+    (lightCoord_5.z > 0.0)
+  ) * tmpvar_12.w) * tmpvar_16.w);
+  atten_4 = tmpvar_17;
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_7;
+  tmpvar_1 = (tmpvar_1 * atten_4);
+  lowp vec4 c_18;
+  lowp vec4 c_19;
+  lowp float diff_20;
+  mediump float tmpvar_21;
+  tmpvar_21 = max (0.0, dot (tmpvar_6, tmpvar_2));
+  diff_20 = tmpvar_21;
+  c_19.xyz = ((tmpvar_9.xyz * tmpvar_1) * diff_20);
+  c_19.w = tmpvar_9.w;
+  c_18.w = c_19.w;
+  c_18.xyz = c_19.xyz;
+  c_3.xyz = c_18.xyz;
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "POINT_COOKIE" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1.xyz = u_xlat0.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat1.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * u_xlat0.xxx + u_xlat1.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * u_xlat0.zzz + u_xlat1.xyz;
-    vs_TEXCOORD3.xyz = hlslcc_mtx4x4unity_WorldToLight[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform highp sampler2D _LightTextureB0;
-uniform highp samplerCube _LightTexture0;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-float u_xlat2;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * vs_TEXCOORD2.xxx + u_xlat0.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * vs_TEXCOORD2.zzz + u_xlat0.xyz;
-    u_xlat0.xyz = u_xlat0.xyz + hlslcc_mtx4x4unity_WorldToLight[3].xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture(_LightTexture0, u_xlat0.xyz).w;
-    u_xlat2 = texture(_LightTextureB0, vec2(u_xlat6)).x;
-    u_xlat0.x = u_xlat0.x * u_xlat2;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "POINT_COOKIE" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1.xyz = u_xlat0.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat1.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * u_xlat0.xxx + u_xlat1.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * u_xlat0.zzz + u_xlat1.xyz;
-    vs_TEXCOORD3.xyz = hlslcc_mtx4x4unity_WorldToLight[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 v_3;
+  v_3.x = _World2Object[0].x;
+  v_3.y = _World2Object[1].x;
+  v_3.z = _World2Object[2].x;
+  v_3.w = _World2Object[3].x;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].y;
+  v_4.y = _World2Object[1].y;
+  v_4.z = _World2Object[2].y;
+  v_4.w = _World2Object[3].y;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].z;
+  v_5.y = _World2Object[1].z;
+  v_5.z = _World2Object[2].z;
+  v_5.w = _World2Object[3].z;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize(((
+    (v_3.xyz * _glesNormal.x)
+   + 
+    (v_4.xyz * _glesNormal.y)
+  ) + (v_5.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_6;
+  tmpvar_2 = worldNormal_1;
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform highp sampler2D _LightTextureB0;
-uniform highp samplerCube _LightTexture0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-float u_xlat2;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
+uniform highp vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform lowp samplerCube _LightTexture0;
+uniform mediump mat4 _LightMatrix0;
+uniform sampler2D _LightTextureB0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0.xyz = vs_TEXCOORD2.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * vs_TEXCOORD2.xxx + u_xlat0.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * vs_TEXCOORD2.zzz + u_xlat0.xyz;
-    u_xlat0.xyz = u_xlat0.xyz + hlslcc_mtx4x4unity_WorldToLight[3].xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = textureCube(_LightTexture0, u_xlat0.xyz).w;
-    u_xlat2 = texture2D(_LightTextureB0, vec2(u_xlat6)).x;
-    u_xlat0.x = u_xlat0.x * u_xlat2;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize((_WorldSpaceLightPos0.xyz - xlv_TEXCOORD2));
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  highp vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = xlv_TEXCOORD2;
+  highp vec3 tmpvar_9;
+  tmpvar_9 = (_LightMatrix0 * tmpvar_8).xyz;
+  highp float tmpvar_10;
+  tmpvar_10 = dot (tmpvar_9, tmpvar_9);
+  lowp float tmpvar_11;
+  tmpvar_11 = (texture2D (_LightTextureB0, vec2(tmpvar_10)).w * textureCube (_LightTexture0, tmpvar_9).w);
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  tmpvar_1 = (tmpvar_1 * tmpvar_11);
+  lowp vec4 c_12;
+  lowp vec4 c_13;
+  lowp float diff_14;
+  mediump float tmpvar_15;
+  tmpvar_15 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_14 = tmpvar_15;
+  c_13.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_14);
+  c_13.w = tmpvar_7.w;
+  c_12.w = c_13.w;
+  c_12.xyz = c_13.xyz;
+  c_3.xyz = c_12.xyz;
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL_COOKIE" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec2 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat9;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0.xy = u_xlat1.yy * hlslcc_mtx4x4unity_WorldToLight[1].xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[0].xy * u_xlat1.xx + u_xlat0.xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[2].xy * u_xlat1.zz + u_xlat0.xy;
-    vs_TEXCOORD3.xy = hlslcc_mtx4x4unity_WorldToLight[3].xy * u_xlat1.ww + u_xlat0.xy;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat9 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat9 = inversesqrt(u_xlat9);
-    vs_TEXCOORD1.xyz = vec3(u_xlat9) * u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec2 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.yy * hlslcc_mtx4x4unity_WorldToLight[1].xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[0].xy * vs_TEXCOORD2.xx + u_xlat0.xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[2].xy * vs_TEXCOORD2.zz + u_xlat0.xy;
-    u_xlat0.xy = u_xlat0.xy + hlslcc_mtx4x4unity_WorldToLight[3].xy;
-    u_xlat0.x = texture(_LightTexture0, u_xlat0.xy).w;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "DIRECTIONAL_COOKIE" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat9;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0.xy = u_xlat1.yy * hlslcc_mtx4x4unity_WorldToLight[1].xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[0].xy * u_xlat1.xx + u_xlat0.xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[2].xy * u_xlat1.zz + u_xlat0.xy;
-    vs_TEXCOORD3.xy = hlslcc_mtx4x4unity_WorldToLight[3].xy * u_xlat1.ww + u_xlat0.xy;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat9 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat9 = inversesqrt(u_xlat9);
-    vs_TEXCOORD1.xyz = vec3(u_xlat9) * u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 v_3;
+  v_3.x = _World2Object[0].x;
+  v_3.y = _World2Object[1].x;
+  v_3.z = _World2Object[2].x;
+  v_3.w = _World2Object[3].x;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].y;
+  v_4.y = _World2Object[1].y;
+  v_4.z = _World2Object[2].y;
+  v_4.w = _World2Object[3].y;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].z;
+  v_5.y = _World2Object[1].z;
+  v_5.z = _World2Object[2].z;
+  v_5.w = _World2Object[3].z;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize(((
+    (v_3.xyz * _glesNormal.x)
+   + 
+    (v_4.xyz * _glesNormal.y)
+  ) + (v_5.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_6;
+  tmpvar_2 = worldNormal_1;
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-#define SV_Target0 gl_FragData[0]
-vec2 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _LightTexture0;
+uniform mediump mat4 _LightMatrix0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+void main ()
 {
-    u_xlat0.xy = vs_TEXCOORD2.yy * hlslcc_mtx4x4unity_WorldToLight[1].xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[0].xy * vs_TEXCOORD2.xx + u_xlat0.xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[2].xy * vs_TEXCOORD2.zz + u_xlat0.xy;
-    u_xlat0.xy = u_xlat0.xy + hlslcc_mtx4x4unity_WorldToLight[3].xy;
-    u_xlat0.x = texture2D(_LightTexture0, u_xlat0.xy).w;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    SV_Target0.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  mediump vec3 tmpvar_6;
+  tmpvar_6 = _WorldSpaceLightPos0.xyz;
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  highp vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = xlv_TEXCOORD2;
+  highp vec2 tmpvar_9;
+  tmpvar_9 = (_LightMatrix0 * tmpvar_8).xy;
+  lowp float tmpvar_10;
+  tmpvar_10 = texture2D (_LightTexture0, tmpvar_9).w;
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  tmpvar_1 = (tmpvar_1 * tmpvar_10);
+  lowp vec4 c_11;
+  lowp vec4 c_12;
+  lowp float diff_13;
+  mediump float tmpvar_14;
+  tmpvar_14 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_13 = tmpvar_14;
+  c_12.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_13);
+  c_12.w = tmpvar_7.w;
+  c_11.w = c_12.w;
+  c_11.xyz = c_12.xyz;
+  c_3.xyz = c_11.xyz;
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "POINT" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat1.x = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1.xyz = u_xlat0.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat1.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * u_xlat0.xxx + u_xlat1.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * u_xlat0.zzz + u_xlat1.xyz;
-    vs_TEXCOORD3.xyz = hlslcc_mtx4x4unity_WorldToLight[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD5;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * vs_TEXCOORD2.xxx + u_xlat0.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * vs_TEXCOORD2.zzz + u_xlat0.xyz;
-    u_xlat0.xyz = u_xlat0.xyz + hlslcc_mtx4x4unity_WorldToLight[3].xyz;
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture(_LightTexture0, u_xlat0.xx).x;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_1.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "POINT" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat1.x = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1.xyz = u_xlat0.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat1.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * u_xlat0.xxx + u_xlat1.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * u_xlat0.zzz + u_xlat1.xyz;
-    vs_TEXCOORD3.xyz = hlslcc_mtx4x4unity_WorldToLight[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].x;
+  v_4.y = _World2Object[1].x;
+  v_4.z = _World2Object[2].x;
+  v_4.w = _World2Object[3].x;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].y;
+  v_5.y = _World2Object[1].y;
+  v_5.z = _World2Object[2].y;
+  v_5.w = _World2Object[3].y;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].z;
+  v_6.y = _World2Object[1].z;
+  v_6.z = _World2Object[2].z;
+  v_6.w = _World2Object[3].z;
+  highp vec3 tmpvar_7;
+  tmpvar_7 = normalize(((
+    (v_4.xyz * _glesNormal.x)
+   + 
+    (v_5.xyz * _glesNormal.y)
+  ) + (v_6.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_7;
+  tmpvar_3 = worldNormal_1;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD4 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
+uniform highp vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _LightTexture0;
+uniform mediump mat4 _LightMatrix0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0.xyz = vs_TEXCOORD2.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * vs_TEXCOORD2.xxx + u_xlat0.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * vs_TEXCOORD2.zzz + u_xlat0.xyz;
-    u_xlat0.xyz = u_xlat0.xyz + hlslcc_mtx4x4unity_WorldToLight[3].xyz;
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture2D(_LightTexture0, u_xlat0.xx).x;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_1.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize((_WorldSpaceLightPos0.xyz - xlv_TEXCOORD2));
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  highp vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = xlv_TEXCOORD2;
+  highp vec3 tmpvar_9;
+  tmpvar_9 = (_LightMatrix0 * tmpvar_8).xyz;
+  highp float tmpvar_10;
+  tmpvar_10 = dot (tmpvar_9, tmpvar_9);
+  lowp float tmpvar_11;
+  tmpvar_11 = texture2D (_LightTexture0, vec2(tmpvar_10)).w;
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  tmpvar_1 = (tmpvar_1 * tmpvar_11);
+  lowp vec4 c_12;
+  lowp float diff_13;
+  mediump float tmpvar_14;
+  tmpvar_14 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_13 = tmpvar_14;
+  c_12.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_13);
+  c_12.w = tmpvar_7.w;
+  highp float tmpvar_15;
+  tmpvar_15 = clamp (xlv_TEXCOORD4, 0.0, 1.0);
+  c_3.xyz = (c_12.xyz * vec3(tmpvar_15));
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat0.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat0.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD5;
-in highp vec3 vs_TEXCOORD1;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_1.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "DIRECTIONAL" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat0.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat0.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].x;
+  v_4.y = _World2Object[1].x;
+  v_4.z = _World2Object[2].x;
+  v_4.w = _World2Object[3].x;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].y;
+  v_5.y = _World2Object[1].y;
+  v_5.z = _World2Object[2].y;
+  v_5.w = _World2Object[3].y;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].z;
+  v_6.y = _World2Object[1].z;
+  v_6.z = _World2Object[2].z;
+  v_6.w = _World2Object[3].z;
+  highp vec3 tmpvar_7;
+  tmpvar_7 = normalize(((
+    (v_4.xyz * _glesNormal.x)
+   + 
+    (v_5.xyz * _glesNormal.y)
+  ) + (v_6.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_7;
+  tmpvar_3 = worldNormal_1;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD4 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * _LightColor0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_1.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  mediump vec3 tmpvar_6;
+  tmpvar_6 = _WorldSpaceLightPos0.xyz;
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  lowp vec4 c_8;
+  lowp float diff_9;
+  mediump float tmpvar_10;
+  tmpvar_10 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_9 = tmpvar_10;
+  c_8.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_9);
+  c_8.w = tmpvar_7.w;
+  highp float tmpvar_11;
+  tmpvar_11 = clamp (xlv_TEXCOORD4, 0.0, 1.0);
+  c_3.xyz = (c_8.xyz * vec3(tmpvar_11));
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "SPOT" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat1.x = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_WorldToLight[1];
-    u_xlat1 = hlslcc_mtx4x4unity_WorldToLight[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_WorldToLight[2] * u_xlat0.zzzz + u_xlat1;
-    vs_TEXCOORD3 = hlslcc_mtx4x4unity_WorldToLight[3] * u_xlat0.wwww + u_xlat1;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-uniform highp sampler2D _LightTextureB0;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD5;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-vec2 u_xlat1;
-bool u_xlatb1;
-mediump vec3 u_xlat16_2;
-float u_xlat9;
-mediump float u_xlat16_11;
-void main()
-{
-    u_xlat0 = vs_TEXCOORD2.yyyy * hlslcc_mtx4x4unity_WorldToLight[1];
-    u_xlat0 = hlslcc_mtx4x4unity_WorldToLight[0] * vs_TEXCOORD2.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_WorldToLight[2] * vs_TEXCOORD2.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_WorldToLight[3];
-    u_xlat1.xy = u_xlat0.xy / u_xlat0.ww;
-    u_xlat1.xy = u_xlat1.xy + vec2(0.5, 0.5);
-    u_xlat9 = texture(_LightTexture0, u_xlat1.xy).w;
-#ifdef UNITY_ADRENO_ES3
-    u_xlatb1 = !!(0.0<u_xlat0.z);
-#else
-    u_xlatb1 = 0.0<u_xlat0.z;
-#endif
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture(_LightTextureB0, u_xlat0.xx).x;
-    u_xlat16_2.x = (u_xlatb1) ? 1.0 : 0.0;
-    u_xlat16_2.x = u_xlat9 * u_xlat16_2.x;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat9 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat9 = inversesqrt(u_xlat9);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    u_xlat16_2.xyz = vec3(u_xlat16_11) * u_xlat16_2.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = u_xlat16_2.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "SPOT" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat1.x = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_WorldToLight[1];
-    u_xlat1 = hlslcc_mtx4x4unity_WorldToLight[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_WorldToLight[2] * u_xlat0.zzzz + u_xlat1;
-    vs_TEXCOORD3 = hlslcc_mtx4x4unity_WorldToLight[3] * u_xlat0.wwww + u_xlat1;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].x;
+  v_4.y = _World2Object[1].x;
+  v_4.z = _World2Object[2].x;
+  v_4.w = _World2Object[3].x;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].y;
+  v_5.y = _World2Object[1].y;
+  v_5.z = _World2Object[2].y;
+  v_5.w = _World2Object[3].y;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].z;
+  v_6.y = _World2Object[1].z;
+  v_6.z = _World2Object[2].z;
+  v_6.w = _World2Object[3].z;
+  highp vec3 tmpvar_7;
+  tmpvar_7 = normalize(((
+    (v_4.xyz * _glesNormal.x)
+   + 
+    (v_5.xyz * _glesNormal.y)
+  ) + (v_6.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_7;
+  tmpvar_3 = worldNormal_1;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD4 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-uniform highp sampler2D _LightTextureB0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-#define SV_Target0 gl_FragData[0]
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-vec2 u_xlat1;
-bool u_xlatb1;
-mediump vec3 u_xlat16_2;
-float u_xlat9;
-mediump float u_xlat16_11;
-void main()
+uniform highp vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _LightTexture0;
+uniform mediump mat4 _LightMatrix0;
+uniform sampler2D _LightTextureB0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = vs_TEXCOORD2.yyyy * hlslcc_mtx4x4unity_WorldToLight[1];
-    u_xlat0 = hlslcc_mtx4x4unity_WorldToLight[0] * vs_TEXCOORD2.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_WorldToLight[2] * vs_TEXCOORD2.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_WorldToLight[3];
-    u_xlat1.xy = u_xlat0.xy / u_xlat0.ww;
-    u_xlat1.xy = u_xlat1.xy + vec2(0.5, 0.5);
-    u_xlat9 = texture2D(_LightTexture0, u_xlat1.xy).w;
-    u_xlatb1 = 0.0<u_xlat0.z;
-    u_xlat0.x = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture2D(_LightTextureB0, u_xlat0.xx).x;
-    u_xlat16_2.x = (u_xlatb1) ? 1.0 : 0.0;
-    u_xlat16_2.x = u_xlat9 * u_xlat16_2.x;
-    u_xlat16_2.x = u_xlat0.x * u_xlat16_2.x;
-    u_xlat16_2.xyz = u_xlat16_2.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat9 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat9 = inversesqrt(u_xlat9);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat0.xyz;
-    u_xlat16_11 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_11 = max(u_xlat16_11, 0.0);
-    u_xlat16_2.xyz = vec3(u_xlat16_11) * u_xlat16_2.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat0.xyz = u_xlat16_2.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp float atten_4;
+  mediump vec4 lightCoord_5;
+  lowp vec3 tmpvar_6;
+  lowp vec3 lightDir_7;
+  highp vec3 tmpvar_8;
+  tmpvar_8 = normalize((_WorldSpaceLightPos0.xyz - xlv_TEXCOORD2));
+  lightDir_7 = tmpvar_8;
+  tmpvar_6 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_9;
+  tmpvar_9 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  highp vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = xlv_TEXCOORD2;
+  highp vec4 tmpvar_11;
+  tmpvar_11 = (_LightMatrix0 * tmpvar_10);
+  lightCoord_5 = tmpvar_11;
+  lowp vec4 tmpvar_12;
+  mediump vec2 P_13;
+  P_13 = ((lightCoord_5.xy / lightCoord_5.w) + 0.5);
+  tmpvar_12 = texture2D (_LightTexture0, P_13);
+  highp vec3 LightCoord_14;
+  LightCoord_14 = lightCoord_5.xyz;
+  highp float tmpvar_15;
+  tmpvar_15 = dot (LightCoord_14, LightCoord_14);
+  lowp vec4 tmpvar_16;
+  tmpvar_16 = texture2D (_LightTextureB0, vec2(tmpvar_15));
+  mediump float tmpvar_17;
+  tmpvar_17 = ((float(
+    (lightCoord_5.z > 0.0)
+  ) * tmpvar_12.w) * tmpvar_16.w);
+  atten_4 = tmpvar_17;
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_7;
+  tmpvar_1 = (tmpvar_1 * atten_4);
+  lowp vec4 c_18;
+  lowp float diff_19;
+  mediump float tmpvar_20;
+  tmpvar_20 = max (0.0, dot (tmpvar_6, tmpvar_2));
+  diff_19 = tmpvar_20;
+  c_18.xyz = ((tmpvar_9.xyz * tmpvar_1) * diff_19);
+  c_18.w = tmpvar_9.w;
+  highp float tmpvar_21;
+  tmpvar_21 = clamp (xlv_TEXCOORD4, 0.0, 1.0);
+  c_3.xyz = (c_18.xyz * vec3(tmpvar_21));
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "POINT_COOKIE" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec3 vs_TEXCOORD3;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat1.x = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1.xyz = u_xlat0.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat1.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * u_xlat0.xxx + u_xlat1.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * u_xlat0.zzz + u_xlat1.xyz;
-    vs_TEXCOORD3.xyz = hlslcc_mtx4x4unity_WorldToLight[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform highp sampler2D _LightTextureB0;
-uniform highp samplerCube _LightTexture0;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD5;
-in highp vec3 vs_TEXCOORD1;
-in highp vec3 vs_TEXCOORD2;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-float u_xlat2;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat0.xyz = vs_TEXCOORD2.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * vs_TEXCOORD2.xxx + u_xlat0.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * vs_TEXCOORD2.zzz + u_xlat0.xyz;
-    u_xlat0.xyz = u_xlat0.xyz + hlslcc_mtx4x4unity_WorldToLight[3].xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = texture(_LightTexture0, u_xlat0.xyz).w;
-    u_xlat2 = texture(_LightTextureB0, vec2(u_xlat6)).x;
-    u_xlat0.x = u_xlat0.x * u_xlat2;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_1.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "POINT_COOKIE" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD3;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat10;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat1.x = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat1.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat1.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat1.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat10 = dot(u_xlat1.xyz, u_xlat1.xyz);
-    u_xlat10 = inversesqrt(u_xlat10);
-    vs_TEXCOORD1.xyz = vec3(u_xlat10) * u_xlat1.xyz;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    u_xlat1.xyz = u_xlat0.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat1.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * u_xlat0.xxx + u_xlat1.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * u_xlat0.zzz + u_xlat1.xyz;
-    vs_TEXCOORD3.xyz = hlslcc_mtx4x4unity_WorldToLight[3].xyz * u_xlat0.www + u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].x;
+  v_4.y = _World2Object[1].x;
+  v_4.z = _World2Object[2].x;
+  v_4.w = _World2Object[3].x;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].y;
+  v_5.y = _World2Object[1].y;
+  v_5.z = _World2Object[2].y;
+  v_5.w = _World2Object[3].y;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].z;
+  v_6.y = _World2Object[1].z;
+  v_6.z = _World2Object[2].z;
+  v_6.w = _World2Object[3].z;
+  highp vec3 tmpvar_7;
+  tmpvar_7 = normalize(((
+    (v_4.xyz * _glesNormal.x)
+   + 
+    (v_5.xyz * _glesNormal.y)
+  ) + (v_6.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_7;
+  tmpvar_3 = worldNormal_1;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD4 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform highp sampler2D _LightTextureB0;
-uniform highp samplerCube _LightTexture0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-float u_xlat2;
-float u_xlat6;
-mediump float u_xlat16_7;
-void main()
+uniform highp vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform lowp samplerCube _LightTexture0;
+uniform mediump mat4 _LightMatrix0;
+uniform sampler2D _LightTextureB0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0.xyz = vs_TEXCOORD2.yyy * hlslcc_mtx4x4unity_WorldToLight[1].xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[0].xyz * vs_TEXCOORD2.xxx + u_xlat0.xyz;
-    u_xlat0.xyz = hlslcc_mtx4x4unity_WorldToLight[2].xyz * vs_TEXCOORD2.zzz + u_xlat0.xyz;
-    u_xlat0.xyz = u_xlat0.xyz + hlslcc_mtx4x4unity_WorldToLight[3].xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat0.x = textureCube(_LightTexture0, u_xlat0.xyz).w;
-    u_xlat2 = texture2D(_LightTextureB0, vec2(u_xlat6)).x;
-    u_xlat0.x = u_xlat0.x * u_xlat2;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat0.xyz = (-vs_TEXCOORD2.xyz) + _WorldSpaceLightPos0.xyz;
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, u_xlat0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_1.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize((_WorldSpaceLightPos0.xyz - xlv_TEXCOORD2));
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  highp vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = xlv_TEXCOORD2;
+  highp vec3 tmpvar_9;
+  tmpvar_9 = (_LightMatrix0 * tmpvar_8).xyz;
+  highp float tmpvar_10;
+  tmpvar_10 = dot (tmpvar_9, tmpvar_9);
+  lowp float tmpvar_11;
+  tmpvar_11 = (texture2D (_LightTextureB0, vec2(tmpvar_10)).w * textureCube (_LightTexture0, tmpvar_9).w);
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  tmpvar_1 = (tmpvar_1 * tmpvar_11);
+  lowp vec4 c_12;
+  lowp float diff_13;
+  mediump float tmpvar_14;
+  tmpvar_14 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_13 = tmpvar_14;
+  c_12.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_13);
+  c_12.w = tmpvar_7.w;
+  highp float tmpvar_15;
+  tmpvar_15 = clamp (xlv_TEXCOORD4, 0.0, 1.0);
+  c_3.xyz = (c_12.xyz * vec3(tmpvar_15));
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL_COOKIE" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec2 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD1;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat9;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat1.x = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    u_xlat1 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0.xy = u_xlat1.yy * hlslcc_mtx4x4unity_WorldToLight[1].xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[0].xy * u_xlat1.xx + u_xlat0.xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[2].xy * u_xlat1.zz + u_xlat0.xy;
-    vs_TEXCOORD3.xy = hlslcc_mtx4x4unity_WorldToLight[3].xy * u_xlat1.ww + u_xlat0.xy;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat9 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat9 = inversesqrt(u_xlat9);
-    vs_TEXCOORD1.xyz = vec3(u_xlat9) * u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in highp float vs_TEXCOORD5;
-in highp vec3 vs_TEXCOORD2;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.yy * hlslcc_mtx4x4unity_WorldToLight[1].xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[0].xy * vs_TEXCOORD2.xx + u_xlat0.xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[2].xy * vs_TEXCOORD2.zz + u_xlat0.xy;
-    u_xlat0.xy = u_xlat0.xy + hlslcc_mtx4x4unity_WorldToLight[3].xy;
-    u_xlat0.x = texture(_LightTexture0, u_xlat0.xy).w;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_1.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat0.x = min(max(u_xlat0.x, 0.0), 1.0);
-#else
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
 Keywords { "DIRECTIONAL_COOKIE" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD1;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-vec4 u_xlat2;
-float u_xlat9;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat2 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat2;
-    u_xlat2 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat2;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat2;
-    gl_Position = u_xlat1;
-    u_xlat1.x = u_xlat1.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    u_xlat1 = hlslcc_mtx4x4unity_ObjectToWorld[3] * in_POSITION0.wwww + u_xlat0;
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0.xy = u_xlat1.yy * hlslcc_mtx4x4unity_WorldToLight[1].xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[0].xy * u_xlat1.xx + u_xlat0.xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[2].xy * u_xlat1.zz + u_xlat0.xy;
-    vs_TEXCOORD3.xy = hlslcc_mtx4x4unity_WorldToLight[3].xy * u_xlat1.ww + u_xlat0.xy;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat9 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat9 = inversesqrt(u_xlat9);
-    vs_TEXCOORD1.xyz = vec3(u_xlat9) * u_xlat0.xyz;
-    vs_TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  highp vec4 tmpvar_2;
+  mediump vec3 tmpvar_3;
+  tmpvar_2 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].x;
+  v_4.y = _World2Object[1].x;
+  v_4.z = _World2Object[2].x;
+  v_4.w = _World2Object[3].x;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].y;
+  v_5.y = _World2Object[1].y;
+  v_5.z = _World2Object[2].y;
+  v_5.w = _World2Object[3].y;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].z;
+  v_6.y = _World2Object[1].z;
+  v_6.z = _World2Object[2].z;
+  v_6.w = _World2Object[3].z;
+  highp vec3 tmpvar_7;
+  tmpvar_7 = normalize(((
+    (v_4.xyz * _glesNormal.x)
+   + 
+    (v_5.xyz * _glesNormal.y)
+  ) + (v_6.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_7;
+  tmpvar_3 = worldNormal_1;
+  gl_Position = tmpvar_2;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_3;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD4 = exp2(-((unity_FogParams.y * tmpvar_2.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _WorldSpaceLightPos0;
-uniform 	mediump vec4 _LightColor0;
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToLight[4];
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform highp sampler2D _LightTexture0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD2;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump float u_xlat16_7;
-void main()
+uniform mediump vec4 _WorldSpaceLightPos0;
+uniform lowp vec4 _LightColor0;
+uniform sampler2D _LightTexture0;
+uniform mediump mat4 _LightMatrix0;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp float xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0.xy = vs_TEXCOORD2.yy * hlslcc_mtx4x4unity_WorldToLight[1].xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[0].xy * vs_TEXCOORD2.xx + u_xlat0.xy;
-    u_xlat0.xy = hlslcc_mtx4x4unity_WorldToLight[2].xy * vs_TEXCOORD2.zz + u_xlat0.xy;
-    u_xlat0.xy = u_xlat0.xy + hlslcc_mtx4x4unity_WorldToLight[3].xy;
-    u_xlat0.x = texture2D(_LightTexture0, u_xlat0.xy).w;
-    u_xlat16_1.xyz = u_xlat0.xxx * _LightColor0.xyz;
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * u_xlat16_0.xyz;
-    u_xlat16_7 = dot(vs_TEXCOORD1.xyz, _WorldSpaceLightPos0.xyz);
-    u_xlat16_7 = max(u_xlat16_7, 0.0);
-    u_xlat16_1.xyz = vec3(u_xlat16_7) * u_xlat16_1.xyz;
-    u_xlat0.x = vs_TEXCOORD5;
-    u_xlat0.x = clamp(u_xlat0.x, 0.0, 1.0);
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xxx;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  mediump vec3 tmpvar_1;
+  mediump vec3 tmpvar_2;
+  lowp vec4 c_3;
+  lowp vec3 tmpvar_4;
+  lowp vec3 lightDir_5;
+  mediump vec3 tmpvar_6;
+  tmpvar_6 = _WorldSpaceLightPos0.xyz;
+  lightDir_5 = tmpvar_6;
+  tmpvar_4 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_7;
+  tmpvar_7 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  highp vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = xlv_TEXCOORD2;
+  highp vec2 tmpvar_9;
+  tmpvar_9 = (_LightMatrix0 * tmpvar_8).xy;
+  lowp float tmpvar_10;
+  tmpvar_10 = texture2D (_LightTexture0, tmpvar_9).w;
+  tmpvar_1 = _LightColor0.xyz;
+  tmpvar_2 = lightDir_5;
+  tmpvar_1 = (tmpvar_1 * tmpvar_10);
+  lowp vec4 c_11;
+  lowp float diff_12;
+  mediump float tmpvar_13;
+  tmpvar_13 = max (0.0, dot (tmpvar_4, tmpvar_2));
+  diff_12 = tmpvar_13;
+  c_11.xyz = ((tmpvar_7.xyz * tmpvar_1) * diff_12);
+  c_11.w = tmpvar_7.w;
+  highp float tmpvar_14;
+  tmpvar_14 = clamp (xlv_TEXCOORD4, 0.0, 1.0);
+  c_3.xyz = (c_11.xyz * vec3(tmpvar_14));
+  c_3.w = 1.0;
+  gl_FragData[0] = c_3;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" }
-""
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL" "FOG_EXP" }
-""
-}
-SubProgram "gles " {
-Keywords { "DIRECTIONAL" "FOG_EXP" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "POINT" }
-""
-}
 SubProgram "gles " {
 Keywords { "POINT" }
 ""
 }
-SubProgram "gles3 " {
-Keywords { "SPOT" }
+SubProgram "gles " {
+Keywords { "DIRECTIONAL" }
 ""
 }
 SubProgram "gles " {
 Keywords { "SPOT" }
 ""
 }
-SubProgram "gles3 " {
-Keywords { "POINT_COOKIE" }
-""
-}
 SubProgram "gles " {
 Keywords { "POINT_COOKIE" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL_COOKIE" }
 ""
 }
 SubProgram "gles " {
 Keywords { "DIRECTIONAL_COOKIE" }
 ""
 }
-SubProgram "gles3 " {
-Keywords { "POINT" "FOG_EXP" }
-""
-}
 SubProgram "gles " {
 Keywords { "POINT" "FOG_EXP" }
 ""
 }
-SubProgram "gles3 " {
-Keywords { "SPOT" "FOG_EXP" }
+SubProgram "gles " {
+Keywords { "DIRECTIONAL" "FOG_EXP" }
 ""
 }
 SubProgram "gles " {
 Keywords { "SPOT" "FOG_EXP" }
 ""
 }
-SubProgram "gles3 " {
-Keywords { "POINT_COOKIE" "FOG_EXP" }
-""
-}
 SubProgram "gles " {
 Keywords { "POINT_COOKIE" "FOG_EXP" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "DIRECTIONAL_COOKIE" "FOG_EXP" }
 ""
 }
 SubProgram "gles " {
@@ -6222,2872 +2465,902 @@ Keywords { "DIRECTIONAL_COOKIE" "FOG_EXP" }
 ""
 }
 }
-}
+ }
  Pass {
- Name "PREPASS"
-  LOD 200
-  Tags { "LIGHTMODE" = "PREPASSBASE" "RenderType" = "Opaque" }
-  GpuProgramID 182031
+  Name "PREPASS"
+  Tags { "LIGHTMODE"="PrePassBase" "RenderType"="Opaque" }
+  GpuProgramID 161489
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-out highp vec3 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-in highp vec3 vs_TEXCOORD0;
-layout(location = 0) out mediump vec4 SV_Target0;
-void main()
-{
-    SV_Target0.xyz = vs_TEXCOORD0.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    SV_Target0.w = 0.0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-varying highp vec3 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+varying mediump vec3 xlv_TEXCOORD0;
+varying highp vec3 xlv_TEXCOORD1;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD0.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 v_3;
+  v_3.x = _World2Object[0].x;
+  v_3.y = _World2Object[1].x;
+  v_3.z = _World2Object[2].x;
+  v_3.w = _World2Object[3].x;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].y;
+  v_4.y = _World2Object[1].y;
+  v_4.z = _World2Object[2].y;
+  v_4.w = _World2Object[3].y;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].z;
+  v_5.y = _World2Object[1].z;
+  v_5.z = _World2Object[2].z;
+  v_5.w = _World2Object[3].z;
+  highp vec3 tmpvar_6;
+  tmpvar_6 = normalize(((
+    (v_3.xyz * _glesNormal.x)
+   + 
+    (v_4.xyz * _glesNormal.y)
+  ) + (v_5.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_6;
+  tmpvar_2 = worldNormal_1;
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = tmpvar_2;
+  xlv_TEXCOORD1 = (_Object2World * _glesVertex).xyz;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-varying highp vec3 vs_TEXCOORD0;
-#define SV_Target0 gl_FragData[0]
-void main()
+varying mediump vec3 xlv_TEXCOORD0;
+void main ()
 {
-    SV_Target0.xyz = vs_TEXCOORD0.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    SV_Target0.w = 0.0;
-    return;
+  lowp vec4 res_1;
+  lowp vec3 tmpvar_2;
+  tmpvar_2 = xlv_TEXCOORD0;
+  res_1.xyz = ((tmpvar_2 * 0.5) + 0.5);
+  res_1.w = 0.0;
+  gl_FragData[0] = res_1;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-""
-}
 SubProgram "gles " {
 ""
 }
 }
-}
+ }
  Pass {
- Name "PREPASS"
-  LOD 200
-  Tags { "LIGHTMODE" = "PREPASSFINAL" "RenderType" = "Opaque" }
- ZWrite Off
-  GpuProgramID 256528
+  Name "PREPASS"
+  Tags { "LIGHTMODE"="PrePassFinal" "RenderType"="Opaque" }
+  ZWrite Off
+  GpuProgramID 200775
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
+SubProgram "gles " {
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "HDR_LIGHT_PREPASS_OFF" }
+"#version 100
 
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec4 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 _ProjectionParams;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying highp vec3 xlv_TEXCOORD1;
+varying highp vec4 xlv_TEXCOORD2;
+varying highp vec4 xlv_TEXCOORD3;
+varying highp vec3 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
+  highp vec4 tmpvar_1;
+  highp vec4 tmpvar_2;
+  highp vec3 tmpvar_3;
+  tmpvar_1 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 o_4;
+  highp vec4 tmpvar_5;
+  tmpvar_5 = (tmpvar_1 * 0.5);
+  highp vec2 tmpvar_6;
+  tmpvar_6.x = tmpvar_5.x;
+  tmpvar_6.y = (tmpvar_5.y * _ProjectionParams.x);
+  o_4.xy = (tmpvar_6 + tmpvar_5.w);
+  o_4.zw = tmpvar_1.zw;
+  tmpvar_2.zw = vec2(0.0, 0.0);
+  tmpvar_2.xy = vec2(0.0, 0.0);
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].x;
+  v_7.y = _World2Object[1].x;
+  v_7.z = _World2Object[2].x;
+  v_7.w = _World2Object[3].x;
+  highp vec4 v_8;
+  v_8.x = _World2Object[0].y;
+  v_8.y = _World2Object[1].y;
+  v_8.z = _World2Object[2].y;
+  v_8.w = _World2Object[3].y;
+  highp vec4 v_9;
+  v_9.x = _World2Object[0].z;
+  v_9.y = _World2Object[1].z;
+  v_9.z = _World2Object[2].z;
+  v_9.w = _World2Object[3].z;
+  highp vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = normalize(((
+    (v_7.xyz * _glesNormal.x)
+   + 
+    (v_8.xyz * _glesNormal.y)
+  ) + (v_9.xyz * _glesNormal.z)));
+  mediump vec4 normal_11;
+  normal_11 = tmpvar_10;
+  mediump vec3 res_12;
+  mediump vec3 x_13;
+  x_13.x = dot (unity_SHAr, normal_11);
+  x_13.y = dot (unity_SHAg, normal_11);
+  x_13.z = dot (unity_SHAb, normal_11);
+  mediump vec3 x1_14;
+  mediump vec4 tmpvar_15;
+  tmpvar_15 = (normal_11.xyzz * normal_11.yzzx);
+  x1_14.x = dot (unity_SHBr, tmpvar_15);
+  x1_14.y = dot (unity_SHBg, tmpvar_15);
+  x1_14.z = dot (unity_SHBb, tmpvar_15);
+  res_12 = (x_13 + (x1_14 + (unity_SHC.xyz * 
+    ((normal_11.x * normal_11.x) - (normal_11.y * normal_11.y))
+  )));
+  res_12 = max (((1.055 * 
+    pow (max (res_12, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  tmpvar_3 = res_12;
+  gl_Position = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD2 = o_4;
+  xlv_TEXCOORD3 = tmpvar_2;
+  xlv_TEXCOORD4 = tmpvar_3;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _LightBuffer;
-in highp vec2 vs_TEXCOORD0;
-in highp vec4 vs_TEXCOORD2;
-in highp vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-void main()
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+uniform sampler2D _LightBuffer;
+varying highp vec2 xlv_TEXCOORD0;
+varying highp vec4 xlv_TEXCOORD2;
+varying highp vec3 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat16_0.xyz = texture(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat16_1.xyz = log2(u_xlat16_0.xyz);
-    u_xlat0.xyz = (-u_xlat16_1.xyz) + vs_TEXCOORD4.xyz;
-    u_xlat16_2.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat0.xyz * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 c_2;
+  mediump vec4 light_3;
+  lowp vec4 tmpvar_4;
+  tmpvar_4 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  lowp vec4 tmpvar_5;
+  tmpvar_5 = texture2DProj (_LightBuffer, xlv_TEXCOORD2);
+  light_3 = tmpvar_5;
+  light_3 = -(log2(max (light_3, vec4(0.001, 0.001, 0.001, 0.001))));
+  light_3.xyz = (light_3.xyz + xlv_TEXCOORD4);
+  lowp vec4 c_6;
+  c_6.xyz = (tmpvar_4.xyz * light_3.xyz);
+  c_6.w = tmpvar_4.w;
+  c_2.xyz = c_6.xyz;
+  c_2.w = 1.0;
+  tmpvar_1 = c_2;
+  gl_FragData[0] = tmpvar_1;
 }
+
 
 #endif
 "
 }
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "UNITY_HDR_ON" }
+"#version 100
 
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 _ProjectionParams;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying highp vec3 xlv_TEXCOORD1;
+varying highp vec4 xlv_TEXCOORD2;
+varying highp vec4 xlv_TEXCOORD3;
+varying highp vec3 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
+  highp vec4 tmpvar_1;
+  highp vec4 tmpvar_2;
+  highp vec3 tmpvar_3;
+  tmpvar_1 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 o_4;
+  highp vec4 tmpvar_5;
+  tmpvar_5 = (tmpvar_1 * 0.5);
+  highp vec2 tmpvar_6;
+  tmpvar_6.x = tmpvar_5.x;
+  tmpvar_6.y = (tmpvar_5.y * _ProjectionParams.x);
+  o_4.xy = (tmpvar_6 + tmpvar_5.w);
+  o_4.zw = tmpvar_1.zw;
+  tmpvar_2.zw = vec2(0.0, 0.0);
+  tmpvar_2.xy = vec2(0.0, 0.0);
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].x;
+  v_7.y = _World2Object[1].x;
+  v_7.z = _World2Object[2].x;
+  v_7.w = _World2Object[3].x;
+  highp vec4 v_8;
+  v_8.x = _World2Object[0].y;
+  v_8.y = _World2Object[1].y;
+  v_8.z = _World2Object[2].y;
+  v_8.w = _World2Object[3].y;
+  highp vec4 v_9;
+  v_9.x = _World2Object[0].z;
+  v_9.y = _World2Object[1].z;
+  v_9.z = _World2Object[2].z;
+  v_9.w = _World2Object[3].z;
+  highp vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = normalize(((
+    (v_7.xyz * _glesNormal.x)
+   + 
+    (v_8.xyz * _glesNormal.y)
+  ) + (v_9.xyz * _glesNormal.z)));
+  mediump vec4 normal_11;
+  normal_11 = tmpvar_10;
+  mediump vec3 res_12;
+  mediump vec3 x_13;
+  x_13.x = dot (unity_SHAr, normal_11);
+  x_13.y = dot (unity_SHAg, normal_11);
+  x_13.z = dot (unity_SHAb, normal_11);
+  mediump vec3 x1_14;
+  mediump vec4 tmpvar_15;
+  tmpvar_15 = (normal_11.xyzz * normal_11.yzzx);
+  x1_14.x = dot (unity_SHBr, tmpvar_15);
+  x1_14.y = dot (unity_SHBg, tmpvar_15);
+  x1_14.z = dot (unity_SHBb, tmpvar_15);
+  res_12 = (x_13 + (x1_14 + (unity_SHC.xyz * 
+    ((normal_11.x * normal_11.x) - (normal_11.y * normal_11.y))
+  )));
+  res_12 = max (((1.055 * 
+    pow (max (res_12, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  tmpvar_3 = res_12;
+  gl_Position = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD2 = o_4;
+  xlv_TEXCOORD3 = tmpvar_2;
+  xlv_TEXCOORD4 = tmpvar_3;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _LightBuffer;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-lowp vec3 u_xlat10_2;
-void main()
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+uniform sampler2D _LightBuffer;
+varying highp vec2 xlv_TEXCOORD0;
+varying highp vec4 xlv_TEXCOORD2;
+varying highp vec3 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat10_0.xyz = texture2D(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat16_1.xyz = log2(u_xlat10_0.xyz);
-    u_xlat0.xyz = (-u_xlat16_1.xyz) + vs_TEXCOORD4.xyz;
-    u_xlat10_2.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_2.xyz = u_xlat10_2.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat0.xyz * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 c_2;
+  mediump vec4 light_3;
+  lowp vec4 tmpvar_4;
+  tmpvar_4 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  lowp vec4 tmpvar_5;
+  tmpvar_5 = texture2DProj (_LightBuffer, xlv_TEXCOORD2);
+  light_3 = tmpvar_5;
+  mediump vec4 tmpvar_6;
+  tmpvar_6 = max (light_3, vec4(0.001, 0.001, 0.001, 0.001));
+  light_3.w = tmpvar_6.w;
+  light_3.xyz = (tmpvar_6.xyz + xlv_TEXCOORD4);
+  lowp vec4 c_7;
+  c_7.xyz = (tmpvar_4.xyz * light_3.xyz);
+  c_7.w = tmpvar_4.w;
+  c_2.xyz = c_7.xyz;
+  c_2.w = 1.0;
+  tmpvar_1 = c_2;
+  gl_FragData[0] = tmpvar_1;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec4 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _LightBuffer;
-in highp vec2 vs_TEXCOORD0;
-in highp vec4 vs_TEXCOORD2;
-in highp vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat16_0.xyz = texture(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat16_1.xyz = log2(u_xlat16_0.xyz);
-    u_xlat0.xyz = (-u_xlat16_1.xyz) + vs_TEXCOORD4.xyz;
-    u_xlat16_2.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat0.xyz * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" }
-"#ifdef VERTEX
-#version 100
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" "HDR_LIGHT_PREPASS_OFF" }
+"#version 100
 
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 _ProjectionParams;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying highp vec3 xlv_TEXCOORD1;
+varying highp vec4 xlv_TEXCOORD2;
+varying highp vec4 xlv_TEXCOORD3;
+varying highp vec3 xlv_TEXCOORD4;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
+  highp vec4 tmpvar_1;
+  highp vec4 tmpvar_2;
+  highp vec3 tmpvar_3;
+  tmpvar_1 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 o_4;
+  highp vec4 tmpvar_5;
+  tmpvar_5 = (tmpvar_1 * 0.5);
+  highp vec2 tmpvar_6;
+  tmpvar_6.x = tmpvar_5.x;
+  tmpvar_6.y = (tmpvar_5.y * _ProjectionParams.x);
+  o_4.xy = (tmpvar_6 + tmpvar_5.w);
+  o_4.zw = tmpvar_1.zw;
+  tmpvar_2.zw = vec2(0.0, 0.0);
+  tmpvar_2.xy = vec2(0.0, 0.0);
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].x;
+  v_7.y = _World2Object[1].x;
+  v_7.z = _World2Object[2].x;
+  v_7.w = _World2Object[3].x;
+  highp vec4 v_8;
+  v_8.x = _World2Object[0].y;
+  v_8.y = _World2Object[1].y;
+  v_8.z = _World2Object[2].y;
+  v_8.w = _World2Object[3].y;
+  highp vec4 v_9;
+  v_9.x = _World2Object[0].z;
+  v_9.y = _World2Object[1].z;
+  v_9.z = _World2Object[2].z;
+  v_9.w = _World2Object[3].z;
+  highp vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = normalize(((
+    (v_7.xyz * _glesNormal.x)
+   + 
+    (v_8.xyz * _glesNormal.y)
+  ) + (v_9.xyz * _glesNormal.z)));
+  mediump vec4 normal_11;
+  normal_11 = tmpvar_10;
+  mediump vec3 res_12;
+  mediump vec3 x_13;
+  x_13.x = dot (unity_SHAr, normal_11);
+  x_13.y = dot (unity_SHAg, normal_11);
+  x_13.z = dot (unity_SHAb, normal_11);
+  mediump vec3 x1_14;
+  mediump vec4 tmpvar_15;
+  tmpvar_15 = (normal_11.xyzz * normal_11.yzzx);
+  x1_14.x = dot (unity_SHBr, tmpvar_15);
+  x1_14.y = dot (unity_SHBg, tmpvar_15);
+  x1_14.z = dot (unity_SHBb, tmpvar_15);
+  res_12 = (x_13 + (x1_14 + (unity_SHC.xyz * 
+    ((normal_11.x * normal_11.x) - (normal_11.y * normal_11.y))
+  )));
+  res_12 = max (((1.055 * 
+    pow (max (res_12, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  tmpvar_3 = res_12;
+  gl_Position = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD2 = o_4;
+  xlv_TEXCOORD3 = tmpvar_2;
+  xlv_TEXCOORD4 = tmpvar_3;
+  xlv_TEXCOORD5 = exp2(-((unity_FogParams.y * tmpvar_1.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _LightBuffer;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-lowp vec3 u_xlat10_2;
-void main()
+uniform lowp vec4 unity_FogColor;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+uniform sampler2D _LightBuffer;
+varying highp vec2 xlv_TEXCOORD0;
+varying highp vec4 xlv_TEXCOORD2;
+varying highp vec3 xlv_TEXCOORD4;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat10_0.xyz = texture2D(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat16_1.xyz = log2(u_xlat10_0.xyz);
-    u_xlat0.xyz = (-u_xlat16_1.xyz) + vs_TEXCOORD4.xyz;
-    u_xlat10_2.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_2.xyz = u_xlat10_2.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat0.xyz * u_xlat16_2.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 c_2;
+  mediump vec4 light_3;
+  lowp vec4 tmpvar_4;
+  tmpvar_4 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  lowp vec4 tmpvar_5;
+  tmpvar_5 = texture2DProj (_LightBuffer, xlv_TEXCOORD2);
+  light_3 = tmpvar_5;
+  light_3 = -(log2(max (light_3, vec4(0.001, 0.001, 0.001, 0.001))));
+  light_3.xyz = (light_3.xyz + xlv_TEXCOORD4);
+  lowp vec4 c_6;
+  c_6.xyz = (tmpvar_4.xyz * light_3.xyz);
+  c_6.w = tmpvar_4.w;
+  c_2 = c_6;
+  highp float tmpvar_7;
+  tmpvar_7 = clamp (xlv_TEXCOORD5, 0.0, 1.0);
+  c_2.xyz = mix (unity_FogColor.xyz, c_2.xyz, vec3(tmpvar_7));
+  c_2.w = 1.0;
+  tmpvar_1 = c_2;
+  gl_FragData[0] = tmpvar_1;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec4 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _LightBuffer;
-in highp vec2 vs_TEXCOORD0;
-in highp vec4 vs_TEXCOORD2;
-in highp vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat16_0.xyz = texture(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat0.xyz = u_xlat16_0.xyz + vs_TEXCOORD4.xyz;
-    u_xlat16_1.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat0.xyz * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 SubProgram "gles " {
-Keywords { "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 100
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" "UNITY_HDR_ON" }
+"#version 100
 
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp vec4 _ProjectionParams;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 unity_FogParams;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying highp vec3 xlv_TEXCOORD1;
+varying highp vec4 xlv_TEXCOORD2;
+varying highp vec4 xlv_TEXCOORD3;
+varying highp vec3 xlv_TEXCOORD4;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
+  highp vec4 tmpvar_1;
+  highp vec4 tmpvar_2;
+  highp vec3 tmpvar_3;
+  tmpvar_1 = (glstate_matrix_mvp * _glesVertex);
+  highp vec4 o_4;
+  highp vec4 tmpvar_5;
+  tmpvar_5 = (tmpvar_1 * 0.5);
+  highp vec2 tmpvar_6;
+  tmpvar_6.x = tmpvar_5.x;
+  tmpvar_6.y = (tmpvar_5.y * _ProjectionParams.x);
+  o_4.xy = (tmpvar_6 + tmpvar_5.w);
+  o_4.zw = tmpvar_1.zw;
+  tmpvar_2.zw = vec2(0.0, 0.0);
+  tmpvar_2.xy = vec2(0.0, 0.0);
+  highp vec4 v_7;
+  v_7.x = _World2Object[0].x;
+  v_7.y = _World2Object[1].x;
+  v_7.z = _World2Object[2].x;
+  v_7.w = _World2Object[3].x;
+  highp vec4 v_8;
+  v_8.x = _World2Object[0].y;
+  v_8.y = _World2Object[1].y;
+  v_8.z = _World2Object[2].y;
+  v_8.w = _World2Object[3].y;
+  highp vec4 v_9;
+  v_9.x = _World2Object[0].z;
+  v_9.y = _World2Object[1].z;
+  v_9.z = _World2Object[2].z;
+  v_9.w = _World2Object[3].z;
+  highp vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = normalize(((
+    (v_7.xyz * _glesNormal.x)
+   + 
+    (v_8.xyz * _glesNormal.y)
+  ) + (v_9.xyz * _glesNormal.z)));
+  mediump vec4 normal_11;
+  normal_11 = tmpvar_10;
+  mediump vec3 res_12;
+  mediump vec3 x_13;
+  x_13.x = dot (unity_SHAr, normal_11);
+  x_13.y = dot (unity_SHAg, normal_11);
+  x_13.z = dot (unity_SHAb, normal_11);
+  mediump vec3 x1_14;
+  mediump vec4 tmpvar_15;
+  tmpvar_15 = (normal_11.xyzz * normal_11.yzzx);
+  x1_14.x = dot (unity_SHBr, tmpvar_15);
+  x1_14.y = dot (unity_SHBg, tmpvar_15);
+  x1_14.z = dot (unity_SHBb, tmpvar_15);
+  res_12 = (x_13 + (x1_14 + (unity_SHC.xyz * 
+    ((normal_11.x * normal_11.x) - (normal_11.y * normal_11.y))
+  )));
+  res_12 = max (((1.055 * 
+    pow (max (res_12, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  tmpvar_3 = res_12;
+  gl_Position = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD2 = o_4;
+  xlv_TEXCOORD3 = tmpvar_2;
+  xlv_TEXCOORD4 = tmpvar_3;
+  xlv_TEXCOORD5 = exp2(-((unity_FogParams.y * tmpvar_1.z)));
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _LightBuffer;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-lowp vec3 u_xlat10_1;
-void main()
+uniform lowp vec4 unity_FogColor;
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+uniform sampler2D _LightBuffer;
+varying highp vec2 xlv_TEXCOORD0;
+varying highp vec4 xlv_TEXCOORD2;
+varying highp vec3 xlv_TEXCOORD4;
+varying highp float xlv_TEXCOORD5;
+void main ()
 {
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat10_0.xyz = texture2D(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat0.xyz = u_xlat10_0.xyz + vs_TEXCOORD4.xyz;
-    u_xlat10_1.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat10_1.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat0.xyz * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 c_2;
+  mediump vec4 light_3;
+  lowp vec4 tmpvar_4;
+  tmpvar_4 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  lowp vec4 tmpvar_5;
+  tmpvar_5 = texture2DProj (_LightBuffer, xlv_TEXCOORD2);
+  light_3 = tmpvar_5;
+  mediump vec4 tmpvar_6;
+  tmpvar_6 = max (light_3, vec4(0.001, 0.001, 0.001, 0.001));
+  light_3.w = tmpvar_6.w;
+  light_3.xyz = (tmpvar_6.xyz + xlv_TEXCOORD4);
+  lowp vec4 c_7;
+  c_7.xyz = (tmpvar_4.xyz * light_3.xyz);
+  c_7.w = tmpvar_4.w;
+  c_2 = c_7;
+  highp float tmpvar_8;
+  tmpvar_8 = clamp (xlv_TEXCOORD5, 0.0, 1.0);
+  c_2.xyz = mix (unity_FogColor.xyz, c_2.xyz, vec3(tmpvar_8));
+  c_2.w = 1.0;
+  tmpvar_1 = c_2;
+  gl_FragData[0] = tmpvar_1;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec4 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _LightBuffer;
-in highp vec2 vs_TEXCOORD0;
-in highp vec4 vs_TEXCOORD2;
-in highp vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat16_0.xyz = texture(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat0.xyz = u_xlat16_0.xyz + vs_TEXCOORD4.xyz;
-    u_xlat16_1.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat0.xyz * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _LightBuffer;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-lowp vec3 u_xlat10_1;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat10_0.xyz = texture2D(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat0.xyz = u_xlat10_0.xyz + vs_TEXCOORD4.xyz;
-    u_xlat10_1.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat10_1.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat0.xyz * u_xlat16_1.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD1;
-out highp vec4 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat1.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _LightBuffer;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD5;
-in highp vec4 vs_TEXCOORD2;
-in highp vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-float u_xlat9;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat16_0.xyz = texture(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat16_1.xyz = log2(u_xlat16_0.xyz);
-    u_xlat0.xyz = (-u_xlat16_1.xyz) + vs_TEXCOORD4.xyz;
-    u_xlat16_2.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * _Color.xyz;
-    u_xlat0.xyz = u_xlat16_2.xyz * u_xlat0.xyz + (-unity_FogColor.xyz);
-    u_xlat9 = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat9 = min(max(u_xlat9, 0.0), 1.0);
-#else
-    u_xlat9 = clamp(u_xlat9, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat1.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _LightBuffer;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-lowp vec3 u_xlat10_2;
-float u_xlat9;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat10_0.xyz = texture2D(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat16_1.xyz = log2(u_xlat10_0.xyz);
-    u_xlat0.xyz = (-u_xlat16_1.xyz) + vs_TEXCOORD4.xyz;
-    u_xlat10_2.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_2.xyz = u_xlat10_2.xyz * _Color.xyz;
-    u_xlat0.xyz = u_xlat16_2.xyz * u_xlat0.xyz + (-unity_FogColor.xyz);
-    u_xlat9 = vs_TEXCOORD5;
-    u_xlat9 = clamp(u_xlat9, 0.0, 1.0);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" "FOG_EXP" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD1;
-out highp vec4 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat1.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _LightBuffer;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD5;
-in highp vec4 vs_TEXCOORD2;
-in highp vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-float u_xlat9;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat16_0.xyz = texture(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat16_1.xyz = log2(u_xlat16_0.xyz);
-    u_xlat0.xyz = (-u_xlat16_1.xyz) + vs_TEXCOORD4.xyz;
-    u_xlat16_2.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_2.xyz = u_xlat16_2.xyz * _Color.xyz;
-    u_xlat0.xyz = u_xlat16_2.xyz * u_xlat0.xyz + (-unity_FogColor.xyz);
-    u_xlat9 = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat9 = min(max(u_xlat9, 0.0), 1.0);
-#else
-    u_xlat9 = clamp(u_xlat9, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" "FOG_EXP" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat1.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _LightBuffer;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-lowp vec3 u_xlat10_2;
-float u_xlat9;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat10_0.xyz = texture2D(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat16_1.xyz = log2(u_xlat10_0.xyz);
-    u_xlat0.xyz = (-u_xlat16_1.xyz) + vs_TEXCOORD4.xyz;
-    u_xlat10_2.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_2.xyz = u_xlat10_2.xyz * _Color.xyz;
-    u_xlat0.xyz = u_xlat16_2.xyz * u_xlat0.xyz + (-unity_FogColor.xyz);
-    u_xlat9 = vs_TEXCOORD5;
-    u_xlat9 = clamp(u_xlat9, 0.0, 1.0);
-    u_xlat0.xyz = vec3(u_xlat9) * u_xlat0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "FOG_EXP" "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD1;
-out highp vec4 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat1.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _LightBuffer;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD5;
-in highp vec4 vs_TEXCOORD2;
-in highp vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat16_0.xyz = texture(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat0.xyz = u_xlat16_0.xyz + vs_TEXCOORD4.xyz;
-    u_xlat16_1.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * _Color.xyz;
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xyz + (-unity_FogColor.xyz);
-    u_xlat6 = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat6 = min(max(u_xlat6, 0.0), 1.0);
-#else
-    u_xlat6 = clamp(u_xlat6, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "FOG_EXP" "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat1.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _LightBuffer;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-lowp vec3 u_xlat10_1;
-float u_xlat6;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat10_0.xyz = texture2D(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat0.xyz = u_xlat10_0.xyz + vs_TEXCOORD4.xyz;
-    u_xlat10_1.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat10_1.xyz * _Color.xyz;
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xyz + (-unity_FogColor.xyz);
-    u_xlat6 = vs_TEXCOORD5;
-    u_xlat6 = clamp(u_xlat6, 0.0, 1.0);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" "FOG_EXP" "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp float vs_TEXCOORD5;
-out highp vec3 vs_TEXCOORD1;
-out highp vec4 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat1.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-uniform mediump sampler2D _LightBuffer;
-in highp vec2 vs_TEXCOORD0;
-in highp float vs_TEXCOORD5;
-in highp vec4 vs_TEXCOORD2;
-in highp vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec3 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-float u_xlat6;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat16_0.xyz = texture(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat0.xyz = u_xlat16_0.xyz + vs_TEXCOORD4.xyz;
-    u_xlat16_1.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat16_1.xyz * _Color.xyz;
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xyz + (-unity_FogColor.xyz);
-    u_xlat6 = vs_TEXCOORD5;
-#ifdef UNITY_ADRENO_ES3
-    u_xlat6 = min(max(u_xlat6, 0.0), 1.0);
-#else
-    u_xlat6 = clamp(u_xlat6, 0.0, 1.0);
-#endif
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" "FOG_EXP" "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 _ProjectionParams;
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 unity_FogParams;
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying highp vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD1.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    gl_Position = u_xlat0;
-    u_xlat1.x = u_xlat0.z * unity_FogParams.y;
-    vs_TEXCOORD5 = exp2((-u_xlat1.x));
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.y = u_xlat0.y * _ProjectionParams.x;
-    u_xlat1.xzw = u_xlat0.xwy * vec3(0.5, 0.5, 0.5);
-    vs_TEXCOORD2.zw = u_xlat0.zw;
-    vs_TEXCOORD2.xy = u_xlat1.zz + u_xlat1.xw;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    vs_TEXCOORD4.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 unity_FogColor;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-uniform lowp sampler2D _LightBuffer;
-varying highp vec2 vs_TEXCOORD0;
-varying highp float vs_TEXCOORD5;
-varying highp vec4 vs_TEXCOORD2;
-varying highp vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-vec3 u_xlat0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-lowp vec3 u_xlat10_1;
-float u_xlat6;
-void main()
-{
-    u_xlat0.xy = vs_TEXCOORD2.xy / vs_TEXCOORD2.ww;
-    u_xlat10_0.xyz = texture2D(_LightBuffer, u_xlat0.xy).xyz;
-    u_xlat0.xyz = u_xlat10_0.xyz + vs_TEXCOORD4.xyz;
-    u_xlat10_1.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_1.xyz = u_xlat10_1.xyz * _Color.xyz;
-    u_xlat0.xyz = u_xlat16_1.xyz * u_xlat0.xyz + (-unity_FogColor.xyz);
-    u_xlat6 = vs_TEXCOORD5;
-    u_xlat6 = clamp(u_xlat6, 0.0, 1.0);
-    u_xlat0.xyz = vec3(u_xlat6) * u_xlat0.xyz + unity_FogColor.xyz;
-    SV_Target0.xyz = u_xlat0.xyz;
-    SV_Target0.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
+SubProgram "gles " {
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "HDR_LIGHT_PREPASS_OFF" }
 ""
 }
 SubProgram "gles " {
-""
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" }
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "UNITY_HDR_ON" }
 ""
 }
 SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "UNITY_HDR_ON" }
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" "HDR_LIGHT_PREPASS_OFF" }
 ""
 }
 SubProgram "gles " {
-Keywords { "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "FOG_EXP" }
-""
-}
-SubProgram "gles " {
-Keywords { "FOG_EXP" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" "FOG_EXP" }
-""
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" "FOG_EXP" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "FOG_EXP" "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles " {
-Keywords { "FOG_EXP" "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" "FOG_EXP" "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" "FOG_EXP" "UNITY_HDR_ON" }
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "FOG_EXP" "UNITY_HDR_ON" }
 ""
 }
 }
-}
+ }
  Pass {
- Name "DEFERRED"
-  LOD 200
-  Tags { "LIGHTMODE" = "DEFERRED" "RenderType" = "Opaque" }
-  GpuProgramID 286018
+  Name "DEFERRED"
+  Tags { "LIGHTMODE"="Deferred" "RenderType"="Opaque" }
+  GpuProgramID 267886
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
+SubProgram "gles " {
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "HDR_LIGHT_PREPASS_OFF" }
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp vec4 xlv_TEXCOORD3;
+varying mediump vec3 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 tmpvar_3;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].x;
+  v_4.y = _World2Object[1].x;
+  v_4.z = _World2Object[2].x;
+  v_4.w = _World2Object[3].x;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].y;
+  v_5.y = _World2Object[1].y;
+  v_5.z = _World2Object[2].y;
+  v_5.w = _World2Object[3].y;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].z;
+  v_6.y = _World2Object[1].z;
+  v_6.z = _World2Object[2].z;
+  v_6.w = _World2Object[3].z;
+  highp vec3 tmpvar_7;
+  tmpvar_7 = normalize(((
+    (v_4.xyz * _glesNormal.x)
+   + 
+    (v_5.xyz * _glesNormal.y)
+  ) + (v_6.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_7;
+  tmpvar_2 = worldNormal_1;
+  tmpvar_3.zw = vec2(0.0, 0.0);
+  tmpvar_3.xy = vec2(0.0, 0.0);
+  mediump vec3 normal_8;
+  normal_8 = worldNormal_1;
+  mediump vec4 tmpvar_9;
+  tmpvar_9.w = 1.0;
+  tmpvar_9.xyz = normal_8;
+  mediump vec3 res_10;
+  mediump vec3 x_11;
+  x_11.x = dot (unity_SHAr, tmpvar_9);
+  x_11.y = dot (unity_SHAg, tmpvar_9);
+  x_11.z = dot (unity_SHAb, tmpvar_9);
+  mediump vec3 x1_12;
+  mediump vec4 tmpvar_13;
+  tmpvar_13 = (normal_8.xyzz * normal_8.yzzx);
+  x1_12.x = dot (unity_SHBr, tmpvar_13);
+  x1_12.y = dot (unity_SHBg, tmpvar_13);
+  x1_12.z = dot (unity_SHBb, tmpvar_13);
+  res_10 = (x_11 + (x1_12 + (unity_SHC.xyz * 
+    ((normal_8.x * normal_8.x) - (normal_8.y * normal_8.y))
+  )));
+  res_10 = max (((1.055 * 
+    pow (max (res_10, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD3 = tmpvar_3;
+  xlv_TEXCOORD4 = max (vec3(0.0, 0.0, 0.0), res_10);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-layout(location = 0) out mediump vec4 SV_Target0;
-layout(location = 1) out mediump vec4 SV_Target1;
-layout(location = 2) out mediump vec4 SV_Target2;
-layout(location = 3) out mediump vec4 SV_Target3;
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-void main()
+#extension GL_EXT_draw_buffers : enable
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat16_0.xyz;
-    SV_Target0.w = 1.0;
-    SV_Target1 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.xyz = vs_TEXCOORD1.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    u_xlat0.w = 1.0;
-    SV_Target2 = u_xlat0;
-    SV_Target3 = vec4(1.0, 1.0, 1.0, 1.0);
-    return;
+  mediump vec4 outDiffuse_1;
+  mediump vec4 outEmission_2;
+  lowp vec3 tmpvar_3;
+  tmpvar_3 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_4;
+  tmpvar_4 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  mediump vec4 outDiffuseOcclusion_5;
+  mediump vec4 outNormal_6;
+  mediump vec4 emission_7;
+  lowp vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = tmpvar_4.xyz;
+  outDiffuseOcclusion_5 = tmpvar_8;
+  lowp vec4 tmpvar_9;
+  tmpvar_9.w = 1.0;
+  tmpvar_9.xyz = ((tmpvar_3 * 0.5) + 0.5);
+  outNormal_6 = tmpvar_9;
+  lowp vec4 tmpvar_10;
+  tmpvar_10.w = 1.0;
+  tmpvar_10.xyz = vec3(0.0, 0.0, 0.0);
+  emission_7 = tmpvar_10;
+  emission_7.xyz = (emission_7.xyz + (tmpvar_4.xyz * xlv_TEXCOORD4));
+  outDiffuse_1.xyz = outDiffuseOcclusion_5.xyz;
+  outEmission_2.w = emission_7.w;
+  outEmission_2.xyz = exp2(-(emission_7.xyz));
+  outDiffuse_1.w = 1.0;
+  gl_FragData[0] = outDiffuse_1;
+  gl_FragData[1] = vec4(0.0, 0.0, 0.0, 0.0);
+  gl_FragData[2] = outNormal_6;
+  gl_FragData[3] = outEmission_2;
 }
+
 
 #endif
 "
 }
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "UNITY_HDR_ON" }
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec3 _glesNormal;
+attribute vec4 _glesMultiTexCoord0;
+uniform mediump vec4 unity_SHAr;
+uniform mediump vec4 unity_SHAg;
+uniform mediump vec4 unity_SHAb;
+uniform mediump vec4 unity_SHBr;
+uniform mediump vec4 unity_SHBg;
+uniform mediump vec4 unity_SHBb;
+uniform mediump vec4 unity_SHC;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp mat4 _Object2World;
+uniform highp mat4 _World2Object;
+uniform highp vec4 _MainTex_ST;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying highp vec3 xlv_TEXCOORD2;
+varying highp vec4 xlv_TEXCOORD3;
+varying mediump vec3 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
+  lowp vec3 worldNormal_1;
+  mediump vec3 tmpvar_2;
+  highp vec4 tmpvar_3;
+  highp vec4 v_4;
+  v_4.x = _World2Object[0].x;
+  v_4.y = _World2Object[1].x;
+  v_4.z = _World2Object[2].x;
+  v_4.w = _World2Object[3].x;
+  highp vec4 v_5;
+  v_5.x = _World2Object[0].y;
+  v_5.y = _World2Object[1].y;
+  v_5.z = _World2Object[2].y;
+  v_5.w = _World2Object[3].y;
+  highp vec4 v_6;
+  v_6.x = _World2Object[0].z;
+  v_6.y = _World2Object[1].z;
+  v_6.z = _World2Object[2].z;
+  v_6.w = _World2Object[3].z;
+  highp vec3 tmpvar_7;
+  tmpvar_7 = normalize(((
+    (v_4.xyz * _glesNormal.x)
+   + 
+    (v_5.xyz * _glesNormal.y)
+  ) + (v_6.xyz * _glesNormal.z)));
+  worldNormal_1 = tmpvar_7;
+  tmpvar_2 = worldNormal_1;
+  tmpvar_3.zw = vec2(0.0, 0.0);
+  tmpvar_3.xy = vec2(0.0, 0.0);
+  mediump vec3 normal_8;
+  normal_8 = worldNormal_1;
+  mediump vec4 tmpvar_9;
+  tmpvar_9.w = 1.0;
+  tmpvar_9.xyz = normal_8;
+  mediump vec3 res_10;
+  mediump vec3 x_11;
+  x_11.x = dot (unity_SHAr, tmpvar_9);
+  x_11.y = dot (unity_SHAg, tmpvar_9);
+  x_11.z = dot (unity_SHAb, tmpvar_9);
+  mediump vec3 x1_12;
+  mediump vec4 tmpvar_13;
+  tmpvar_13 = (normal_8.xyzz * normal_8.yzzx);
+  x1_12.x = dot (unity_SHBr, tmpvar_13);
+  x1_12.y = dot (unity_SHBg, tmpvar_13);
+  x1_12.z = dot (unity_SHBb, tmpvar_13);
+  res_10 = (x_11 + (x1_12 + (unity_SHC.xyz * 
+    ((normal_8.x * normal_8.x) - (normal_8.y * normal_8.y))
+  )));
+  res_10 = max (((1.055 * 
+    pow (max (res_10, vec3(0.0, 0.0, 0.0)), vec3(0.4166667, 0.4166667, 0.4166667))
+  ) - 0.055), vec3(0.0, 0.0, 0.0));
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _MainTex_ST.xy) + _MainTex_ST.zw);
+  xlv_TEXCOORD1 = tmpvar_2;
+  xlv_TEXCOORD2 = (_Object2World * _glesVertex).xyz;
+  xlv_TEXCOORD3 = tmpvar_3;
+  xlv_TEXCOORD4 = max (vec3(0.0, 0.0, 0.0), res_10);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-#ifdef GL_EXT_draw_buffers
 #extension GL_EXT_draw_buffers : enable
-#endif
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-#define SV_Target0 gl_FragData[0]
-#define SV_Target1 gl_FragData[1]
-#define SV_Target2 gl_FragData[2]
-#define SV_Target3 gl_FragData[3]
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-void main()
+uniform sampler2D _MainTex;
+uniform lowp vec4 _Color;
+varying highp vec2 xlv_TEXCOORD0;
+varying mediump vec3 xlv_TEXCOORD1;
+varying mediump vec3 xlv_TEXCOORD4;
+void main ()
 {
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat16_0.xyz;
-    SV_Target0.w = 1.0;
-    SV_Target1 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.xyz = vs_TEXCOORD1.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    u_xlat0.w = 1.0;
-    SV_Target2 = u_xlat0;
-    SV_Target3 = vec4(1.0, 1.0, 1.0, 1.0);
-    return;
+  mediump vec4 outDiffuse_1;
+  lowp vec3 tmpvar_2;
+  tmpvar_2 = xlv_TEXCOORD1;
+  lowp vec4 tmpvar_3;
+  tmpvar_3 = (texture2D (_MainTex, xlv_TEXCOORD0) * _Color);
+  mediump vec4 outDiffuseOcclusion_4;
+  mediump vec4 outNormal_5;
+  mediump vec4 emission_6;
+  lowp vec4 tmpvar_7;
+  tmpvar_7.w = 1.0;
+  tmpvar_7.xyz = tmpvar_3.xyz;
+  outDiffuseOcclusion_4 = tmpvar_7;
+  lowp vec4 tmpvar_8;
+  tmpvar_8.w = 1.0;
+  tmpvar_8.xyz = ((tmpvar_2 * 0.5) + 0.5);
+  outNormal_5 = tmpvar_8;
+  lowp vec4 tmpvar_9;
+  tmpvar_9.w = 1.0;
+  tmpvar_9.xyz = vec3(0.0, 0.0, 0.0);
+  emission_6 = tmpvar_9;
+  emission_6.xyz = (emission_6.xyz + (tmpvar_3.xyz * xlv_TEXCOORD4));
+  outDiffuse_1.xyz = outDiffuseOcclusion_4.xyz;
+  outDiffuse_1.w = 1.0;
+  gl_FragData[0] = outDiffuse_1;
+  gl_FragData[1] = vec4(0.0, 0.0, 0.0, 0.0);
+  gl_FragData[2] = outNormal_5;
+  gl_FragData[3] = emission_6;
 }
 
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out mediump vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    vs_TEXCOORD1.xyz = u_xlat0.xyz;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat0.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD4.xyz = u_xlat0.xyz;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in mediump vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-layout(location = 1) out mediump vec4 SV_Target1;
-layout(location = 2) out mediump vec4 SV_Target2;
-layout(location = 3) out mediump vec4 SV_Target3;
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-mediump vec3 u_xlat16_1;
-void main()
-{
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat16_0.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * vs_TEXCOORD4.xyz;
-    SV_Target3.xyz = exp2((-u_xlat16_1.xyz));
-    SV_Target0.w = 1.0;
-    SV_Target1 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.xyz = vs_TEXCOORD1.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    u_xlat0.w = 1.0;
-    SV_Target2 = u_xlat0;
-    SV_Target3.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying mediump vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    vs_TEXCOORD1.xyz = u_xlat0.xyz;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat0.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD4.xyz = u_xlat0.xyz;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-#ifdef GL_EXT_draw_buffers
-#extension GL_EXT_draw_buffers : enable
-#endif
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying mediump vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-#define SV_Target1 gl_FragData[1]
-#define SV_Target2 gl_FragData[2]
-#define SV_Target3 gl_FragData[3]
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-mediump vec3 u_xlat16_1;
-void main()
-{
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat16_0.xyz;
-    u_xlat16_1.xyz = u_xlat16_0.xyz * vs_TEXCOORD4.xyz;
-    SV_Target3.xyz = exp2((-u_xlat16_1.xyz));
-    SV_Target0.w = 1.0;
-    SV_Target1 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.xyz = vs_TEXCOORD1.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    u_xlat0.w = 1.0;
-    SV_Target2 = u_xlat0;
-    SV_Target3.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-layout(location = 0) out mediump vec4 SV_Target0;
-layout(location = 1) out mediump vec4 SV_Target1;
-layout(location = 2) out mediump vec4 SV_Target2;
-layout(location = 3) out mediump vec4 SV_Target3;
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-void main()
-{
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat16_0.xyz;
-    SV_Target0.w = 1.0;
-    SV_Target1 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.xyz = vs_TEXCOORD1.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    u_xlat0.w = 1.0;
-    SV_Target2 = u_xlat0;
-    SV_Target3 = vec4(0.0, 0.0, 0.0, 1.0);
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-vec4 u_xlat0;
-vec4 u_xlat1;
-float u_xlat6;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat6 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat6 = inversesqrt(u_xlat6);
-    vs_TEXCOORD1.xyz = vec3(u_xlat6) * u_xlat0.xyz;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-#ifdef GL_EXT_draw_buffers
-#extension GL_EXT_draw_buffers : enable
-#endif
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-#define SV_Target0 gl_FragData[0]
-#define SV_Target1 gl_FragData[1]
-#define SV_Target2 gl_FragData[2]
-#define SV_Target3 gl_FragData[3]
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-void main()
-{
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat16_0.xyz;
-    SV_Target0.w = 1.0;
-    SV_Target1 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.xyz = vs_TEXCOORD1.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    u_xlat0.w = 1.0;
-    SV_Target2 = u_xlat0;
-    SV_Target3 = vec4(0.0, 0.0, 0.0, 1.0);
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-in highp vec4 in_POSITION0;
-in highp vec3 in_NORMAL0;
-in highp vec4 in_TEXCOORD0;
-out highp vec2 vs_TEXCOORD0;
-out highp vec3 vs_TEXCOORD1;
-out highp vec3 vs_TEXCOORD2;
-out highp vec4 vs_TEXCOORD3;
-out mediump vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    vs_TEXCOORD1.xyz = u_xlat0.xyz;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat0.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD4.xyz = u_xlat0.xyz;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in highp vec3 vs_TEXCOORD1;
-in mediump vec3 vs_TEXCOORD4;
-layout(location = 0) out mediump vec4 SV_Target0;
-layout(location = 1) out mediump vec4 SV_Target1;
-layout(location = 2) out mediump vec4 SV_Target2;
-layout(location = 3) out mediump vec4 SV_Target3;
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-void main()
-{
-    u_xlat16_0.xyz = texture(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat16_0.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat16_0.xyz;
-    SV_Target3.xyz = u_xlat16_0.xyz * vs_TEXCOORD4.xyz;
-    SV_Target0.w = 1.0;
-    SV_Target1 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.xyz = vs_TEXCOORD1.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    u_xlat0.w = 1.0;
-    SV_Target2 = u_xlat0;
-    SV_Target3.w = 1.0;
-    return;
-}
-
-#endif
-"
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" "UNITY_HDR_ON" }
-"#ifdef VERTEX
-#version 100
-
-uniform 	mediump vec4 unity_SHAr;
-uniform 	mediump vec4 unity_SHAg;
-uniform 	mediump vec4 unity_SHAb;
-uniform 	mediump vec4 unity_SHBr;
-uniform 	mediump vec4 unity_SHBg;
-uniform 	mediump vec4 unity_SHBb;
-uniform 	mediump vec4 unity_SHC;
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_WorldToObject[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _MainTex_ST;
-attribute highp vec4 in_POSITION0;
-attribute highp vec3 in_NORMAL0;
-attribute highp vec4 in_TEXCOORD0;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying highp vec3 vs_TEXCOORD2;
-varying highp vec4 vs_TEXCOORD3;
-varying mediump vec3 vs_TEXCOORD4;
-vec4 u_xlat0;
-vec4 u_xlat1;
-mediump vec4 u_xlat16_1;
-mediump vec3 u_xlat16_2;
-mediump vec3 u_xlat16_3;
-float u_xlat12;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat1 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    vs_TEXCOORD2.xyz = hlslcc_mtx4x4unity_ObjectToWorld[3].xyz * in_POSITION0.www + u_xlat0.xyz;
-    u_xlat0 = u_xlat1.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat1.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat1.zzzz + u_xlat0;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat1.wwww + u_xlat0;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _MainTex_ST.xy + _MainTex_ST.zw;
-    u_xlat0.x = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[0].xyz);
-    u_xlat0.y = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[1].xyz);
-    u_xlat0.z = dot(in_NORMAL0.xyz, hlslcc_mtx4x4unity_WorldToObject[2].xyz);
-    u_xlat12 = dot(u_xlat0.xyz, u_xlat0.xyz);
-    u_xlat12 = inversesqrt(u_xlat12);
-    u_xlat0.xyz = vec3(u_xlat12) * u_xlat0.xyz;
-    vs_TEXCOORD1.xyz = u_xlat0.xyz;
-    vs_TEXCOORD3 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat16_2.x = u_xlat0.y * u_xlat0.y;
-    u_xlat16_2.x = u_xlat0.x * u_xlat0.x + (-u_xlat16_2.x);
-    u_xlat16_1 = u_xlat0.yzzx * u_xlat0.xyzz;
-    u_xlat16_3.x = dot(unity_SHBr, u_xlat16_1);
-    u_xlat16_3.y = dot(unity_SHBg, u_xlat16_1);
-    u_xlat16_3.z = dot(unity_SHBb, u_xlat16_1);
-    u_xlat16_2.xyz = unity_SHC.xyz * u_xlat16_2.xxx + u_xlat16_3.xyz;
-    u_xlat0.w = 1.0;
-    u_xlat16_3.x = dot(unity_SHAr, u_xlat0);
-    u_xlat16_3.y = dot(unity_SHAg, u_xlat0);
-    u_xlat16_3.z = dot(unity_SHAb, u_xlat0);
-    u_xlat16_2.xyz = u_xlat16_2.xyz + u_xlat16_3.xyz;
-    u_xlat16_2.xyz = max(u_xlat16_2.xyz, vec3(0.0, 0.0, 0.0));
-    u_xlat0.xyz = log2(u_xlat16_2.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(0.416666657, 0.416666657, 0.416666657);
-    u_xlat0.xyz = exp2(u_xlat0.xyz);
-    u_xlat0.xyz = u_xlat0.xyz * vec3(1.05499995, 1.05499995, 1.05499995) + vec3(-0.0549999997, -0.0549999997, -0.0549999997);
-    u_xlat0.xyz = max(u_xlat0.xyz, vec3(0.0, 0.0, 0.0));
-    vs_TEXCOORD4.xyz = u_xlat0.xyz;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 100
-#ifdef GL_EXT_draw_buffers
-#extension GL_EXT_draw_buffers : enable
-#endif
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	mediump vec4 _Color;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying highp vec3 vs_TEXCOORD1;
-varying mediump vec3 vs_TEXCOORD4;
-#define SV_Target0 gl_FragData[0]
-#define SV_Target1 gl_FragData[1]
-#define SV_Target2 gl_FragData[2]
-#define SV_Target3 gl_FragData[3]
-vec4 u_xlat0;
-mediump vec3 u_xlat16_0;
-lowp vec3 u_xlat10_0;
-void main()
-{
-    u_xlat10_0.xyz = texture2D(_MainTex, vs_TEXCOORD0.xy).xyz;
-    u_xlat16_0.xyz = u_xlat10_0.xyz * _Color.xyz;
-    SV_Target0.xyz = u_xlat16_0.xyz;
-    SV_Target3.xyz = u_xlat16_0.xyz * vs_TEXCOORD4.xyz;
-    SV_Target0.w = 1.0;
-    SV_Target1 = vec4(0.0, 0.0, 0.0, 0.0);
-    u_xlat0.xyz = vs_TEXCOORD1.xyz * vec3(0.5, 0.5, 0.5) + vec3(0.5, 0.5, 0.5);
-    u_xlat0.w = 1.0;
-    SV_Target2 = u_xlat0;
-    SV_Target3.w = 1.0;
-    return;
-}
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
+SubProgram "gles " {
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "HDR_LIGHT_PREPASS_OFF" }
 ""
 }
 SubProgram "gles " {
-""
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" }
-""
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles " {
-Keywords { "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles3 " {
-Keywords { "LIGHTPROBE_SH" "UNITY_HDR_ON" }
-""
-}
-SubProgram "gles " {
-Keywords { "LIGHTPROBE_SH" "UNITY_HDR_ON" }
+Keywords { "LIGHTMAP_OFF" "DIRLIGHTMAP_OFF" "DYNAMICLIGHTMAP_OFF" "UNITY_HDR_ON" }
 ""
 }
 }
+ }
 }
-}
-Fall back "VertexLit"
+Fallback "VertexLit"
 }

@@ -1,10 +1,10 @@
 {
     "file": "resources.assets",
     "resources_path": "pro/free/prefabs/multiplayerprefabs/menus/__lobby",
-    "root": "resources.assets:388",
+    "root": "resources.assets:369",
     "nodes": [
         {
-            "ref": "resources.assets:388",
+            "ref": "resources.assets:369",
             "name": "__Lobby",
             "active": true,
             "layer": 0,
@@ -12,17 +12,17 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16273",
+                    "ref": "resources.assets:16234",
                     "data": {
                         "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
                         "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
                         "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
                     }
                 },
-                { "type": "MonoBehaviour", "ref": "resources.assets:41000", "enabled": true, "script": null, "script_ref": null },
+                { "type": "MonoBehaviour", "ref": "resources.assets:40971", "enabled": true, "script": null, "script_ref": null },
                 {
                     "type": "AudioSource",
-                    "ref": "resources.assets:39534",
+                    "ref": "resources.assets:39540",
                     "data": {
                         "m_Enabled": 1,
                         "OutputAudioMixerGroup": null,
@@ -33,7 +33,6 @@
                         "Loop": true,
                         "Mute": false,
                         "Spatialize": false,
-                        "SpatializePostEffects": false,
                         "Priority": 128,
                         "DopplerLevel": 1.0,
                         "MinDistance": 1.0,
@@ -45,8 +44,8 @@
                         "BypassReverbZones": false,
                         "rolloffCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 },
-                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 },
+                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -54,7 +53,7 @@
                         },
                         "panLevelCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -62,7 +61,7 @@
                         },
                         "spreadCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -70,7 +69,7 @@
                         },
                         "reverbZoneMixCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -80,7 +79,7 @@
                 },
                 {
                     "type": "AudioSource",
-                    "ref": "resources.assets:39428",
+                    "ref": "resources.assets:39434",
                     "data": {
                         "m_Enabled": 1,
                         "OutputAudioMixerGroup": null,
@@ -91,7 +90,6 @@
                         "Loop": true,
                         "Mute": false,
                         "Spatialize": false,
-                        "SpatializePostEffects": false,
                         "Priority": 128,
                         "DopplerLevel": 1.0,
                         "MinDistance": 1.0,
@@ -103,8 +101,8 @@
                         "BypassReverbZones": false,
                         "rolloffCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 },
-                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 },
+                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -112,7 +110,7 @@
                         },
                         "panLevelCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -120,7 +118,7 @@
                         },
                         "spreadCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -128,7 +126,7 @@
                         },
                         "reverbZoneMixCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -138,7 +136,7 @@
                 },
                 {
                     "type": "AudioSource",
-                    "ref": "resources.assets:39438",
+                    "ref": "resources.assets:39444",
                     "data": {
                         "m_Enabled": 1,
                         "OutputAudioMixerGroup": null,
@@ -149,7 +147,6 @@
                         "Loop": true,
                         "Mute": false,
                         "Spatialize": false,
-                        "SpatializePostEffects": false,
                         "Priority": 128,
                         "DopplerLevel": 1.0,
                         "MinDistance": 1.0,
@@ -161,8 +158,8 @@
                         "BypassReverbZones": false,
                         "rolloffCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 },
-                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 },
+                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -170,7 +167,7 @@
                         },
                         "panLevelCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -178,7 +175,7 @@
                         },
                         "spreadCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -186,7 +183,7 @@
                         },
                         "reverbZoneMixCustomCurve": {
                             "m_Curve": [
-                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0, "weightedMode": 0, "inWeight": 0.33333334, "outWeight": 0.33333334 }
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
                             ],
                             "m_PreInfinity": 2,
                             "m_PostInfinity": 2,
@@ -195,11 +192,11 @@
                     }
                 }
             ],
-            "children": ["resources.assets:406"],
+            "children": ["resources.assets:384"],
             "parent": null
         },
         {
-            "ref": "resources.assets:406",
+            "ref": "resources.assets:384",
             "name": "Camera",
             "active": true,
             "layer": 0,
@@ -207,7 +204,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16291",
+                    "ref": "resources.assets:16249",
                     "data": {
                         "m_LocalRotation": { "x": 0.05273116, "y": 0.0, "z": 0.0, "w": 0.99860877 },
                         "m_LocalPosition": { "x": -0.83, "y": -0.12, "z": 1.14 },
@@ -216,16 +213,11 @@
                 },
                 {
                     "type": "Camera",
-                    "ref": "resources.assets:32092",
+                    "ref": "resources.assets:32079",
                     "data": {
                         "m_Enabled": 1,
                         "m_ClearFlags": 1,
                         "m_BackGroundColor": { "r": 0.9117647, "g": 0.9117647, "b": 0.9117647, "a": 0.019607844 },
-                        "m_projectionMatrixMode": 1,
-                        "m_SensorSize": { "x": 36.0, "y": 24.0 },
-                        "m_LensShift": { "x": 0.0, "y": 0.0 },
-                        "m_GateFitMode": 2,
-                        "m_FocalLength": 50.0,
                         "m_NormalizedViewPortRect": { "x": 0.0, "y": 0.0, "width": 1.0, "height": 1.0 },
                         "near clip plane": 0.3,
                         "far clip plane": 600.0,
@@ -239,32 +231,30 @@
                         "m_TargetDisplay": 0,
                         "m_TargetEye": 3,
                         "m_HDR": false,
-                        "m_AllowMSAA": true,
-                        "m_AllowDynamicResolution": false,
-                        "m_ForceIntoRT": false,
                         "m_OcclusionCulling": true,
                         "m_StereoConvergence": 10.0,
-                        "m_StereoSeparation": 0.022
+                        "m_StereoSeparation": 0.022,
+                        "m_StereoMirrorMode": false
                     }
                 },
                 {
                     "type": "FlareLayer",
-                    "ref": "resources.assets:40307",
+                    "ref": "resources.assets:40312",
                     "data": { "m_Enabled": 1 }
                 },
                 {
                     "type": "GUILayer",
-                    "ref": "resources.assets:39876",
+                    "ref": "resources.assets:39881",
                     "data": { "m_Enabled": 1 }
                 },
                 {
                     "type": "AudioListener",
-                    "ref": "resources.assets:39184",
+                    "ref": "resources.assets:39189",
                     "data": { "m_Enabled": 1 }
                 }
             ],
             "children": [],
-            "parent": "resources.assets:388"
+            "parent": "resources.assets:369"
         }
     ]
 }

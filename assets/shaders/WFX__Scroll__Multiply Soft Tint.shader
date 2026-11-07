@@ -5,176 +5,89 @@
 ///////////////////////////////////////////
 Shader "WFX/Scroll/Multiply Soft Tint" {
 Properties {
-
-_TintColor ("Tint Color", Color) = (0.5,0.5,0.5,0.5)
-
-_MainTex ("Texture", 2D) = "white" { }
-
-_ScrollSpeed ("Scroll Speed", Float) = 2.0
-
+ _TintColor ("Tint Color", Color) = (0.5,0.5,0.5,0.5)
+ _MainTex ("Texture", 2D) = "white" { }
+ _ScrollSpeed ("Scroll Speed", Float) = 2
 }
-SubShader {
- Tags { "IGNOREPROJECTOR" = "true" "QUEUE" = "Transparent" "RenderType" = "Transparent" }
+SubShader { 
+ Tags { "QUEUE"="Transparent" "IGNOREPROJECTOR"="true" "RenderType"="Transparent" }
  Pass {
-  Tags { "IGNOREPROJECTOR" = "true" "QUEUE" = "Transparent" "RenderType" = "Transparent" }
- ZWrite Off
- Cull Off
-  GpuProgramID 6850
+  Tags { "QUEUE"="Transparent" "IGNOREPROJECTOR"="true" "RenderType"="Transparent" }
+  ZWrite Off
+  Cull Off
+  Blend DstColor SrcColor
+  GpuProgramID 58774
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-in highp vec4 in_POSITION0;
-in mediump vec2 in_TEXCOORD0;
-in mediump vec4 in_COLOR0;
-out highp vec2 vs_TEXCOORD0;
-out mediump vec4 vs_COLOR0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
-{
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy;
-    vs_COLOR0 = in_COLOR0;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform 	vec4 _Time;
-uniform 	mediump vec4 _TintColor;
-uniform 	float _ScrollSpeed;
-uniform mediump sampler2D _MainTex;
-in highp vec2 vs_TEXCOORD0;
-in mediump vec4 vs_COLOR0;
-layout(location = 0) out mediump vec4 SV_Target0;
-vec4 u_xlat0;
-mediump vec4 u_xlat16_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-bool u_xlatb2;
-void main()
-{
-    u_xlat0.x = _Time.x * _ScrollSpeed;
-#ifdef UNITY_ADRENO_ES3
-    u_xlatb2 = !!(u_xlat0.x>=(-u_xlat0.x));
-#else
-    u_xlatb2 = u_xlat0.x>=(-u_xlat0.x);
-#endif
-    u_xlat0.x = fract(abs(u_xlat0.x));
-    u_xlat0.x = (u_xlatb2) ? u_xlat0.x : (-u_xlat0.x);
-    u_xlat0.y = (-u_xlat0.x) + vs_TEXCOORD0.y;
-    u_xlat0.x = vs_TEXCOORD0.x;
-    u_xlat16_0 = texture(_MainTex, u_xlat0.xy);
-    u_xlat16_1.xyz = vs_COLOR0.xyz * _TintColor.xyz;
-    u_xlat1.xyz = u_xlat16_0.xyz * u_xlat16_1.xyz + vec3(-0.5, -0.5, -0.5);
-    u_xlat1.w = u_xlat16_0.w + -0.5;
-    u_xlat16_0.x = texture(_MainTex, vs_TEXCOORD0.xy).w;
-    u_xlat16_0.x = u_xlat16_0.x * vs_COLOR0.w;
-    u_xlat0 = u_xlat16_0.xxxx * u_xlat1 + vec4(0.5, 0.5, 0.5, 0.5);
-    SV_Target0 = u_xlat0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-attribute highp vec4 in_POSITION0;
-attribute mediump vec2 in_TEXCOORD0;
-attribute mediump vec4 in_COLOR0;
-varying highp vec2 vs_TEXCOORD0;
-varying mediump vec4 vs_COLOR0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec4 _glesColor;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+varying highp vec2 xlv_TEXCOORD0;
+varying lowp vec4 xlv_COLOR;
+void main ()
 {
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy;
-    vs_COLOR0 = in_COLOR0;
-    return;
+  mediump vec2 tmpvar_1;
+  tmpvar_1 = _glesMultiTexCoord0.xy;
+  highp vec2 tmpvar_2;
+  tmpvar_2 = tmpvar_1;
+  gl_Position = (glstate_matrix_mvp * _glesVertex);
+  xlv_TEXCOORD0 = tmpvar_2;
+  xlv_COLOR = _glesColor;
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform 	vec4 _Time;
-uniform 	mediump vec4 _TintColor;
-uniform 	float _ScrollSpeed;
-uniform lowp sampler2D _MainTex;
-varying highp vec2 vs_TEXCOORD0;
-varying mediump vec4 vs_COLOR0;
-#define SV_Target0 gl_FragData[0]
-vec4 u_xlat0;
-mediump float u_xlat16_0;
-lowp vec4 u_xlat10_0;
-vec4 u_xlat1;
-mediump vec3 u_xlat16_1;
-bool u_xlatb2;
-void main()
+uniform highp vec4 _Time;
+uniform lowp vec4 _TintColor;
+uniform sampler2D _MainTex;
+uniform highp float _ScrollSpeed;
+varying highp vec2 xlv_TEXCOORD0;
+varying lowp vec4 xlv_COLOR;
+void main ()
 {
-    u_xlat0.x = _Time.x * _ScrollSpeed;
-    u_xlatb2 = u_xlat0.x>=(-u_xlat0.x);
-    u_xlat0.x = fract(abs(u_xlat0.x));
-    u_xlat0.x = (u_xlatb2) ? u_xlat0.x : (-u_xlat0.x);
-    u_xlat0.y = (-u_xlat0.x) + vs_TEXCOORD0.y;
-    u_xlat0.x = vs_TEXCOORD0.x;
-    u_xlat10_0 = texture2D(_MainTex, u_xlat0.xy);
-    u_xlat16_1.xyz = vs_COLOR0.xyz * _TintColor.xyz;
-    u_xlat1.xyz = u_xlat10_0.xyz * u_xlat16_1.xyz + vec3(-0.5, -0.5, -0.5);
-    u_xlat1.w = u_xlat10_0.w + -0.5;
-    u_xlat10_0.x = texture2D(_MainTex, vs_TEXCOORD0.xy).w;
-    u_xlat16_0 = u_xlat10_0.x * vs_COLOR0.w;
-    u_xlat0 = vec4(u_xlat16_0) * u_xlat1 + vec4(0.5, 0.5, 0.5, 0.5);
-    SV_Target0 = u_xlat0;
-    return;
+  highp vec2 tmpvar_1;
+  tmpvar_1 = xlv_TEXCOORD0;
+  lowp vec4 tex_2;
+  highp float mask_3;
+  lowp float tmpvar_4;
+  tmpvar_4 = (texture2D (_MainTex, xlv_TEXCOORD0).w * xlv_COLOR.w);
+  mask_3 = tmpvar_4;
+  highp vec4 tmpvar_5;
+  tmpvar_5 = (_Time * _ScrollSpeed);
+  highp vec4 tmpvar_6;
+  tmpvar_6 = fract(abs(tmpvar_5));
+  highp float tmpvar_7;
+  if ((tmpvar_5.x >= 0.0)) {
+    tmpvar_7 = tmpvar_6.x;
+  } else {
+    tmpvar_7 = -(tmpvar_6.x);
+  };
+  tmpvar_1.y = (xlv_TEXCOORD0.y - tmpvar_7);
+  lowp vec4 tmpvar_8;
+  tmpvar_8 = texture2D (_MainTex, tmpvar_1);
+  tex_2.w = tmpvar_8.w;
+  tex_2.xyz = (tmpvar_8.xyz * (xlv_COLOR.xyz * _TintColor.xyz));
+  highp vec4 tmpvar_9;
+  tmpvar_9 = mix (vec4(0.5, 0.5, 0.5, 0.5), tex_2, vec4(mask_3));
+  tex_2 = tmpvar_9;
+  gl_FragData[0] = tex_2;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-""
-}
 SubProgram "gles " {
 ""
 }
 }
-}
+ }
 }
 }

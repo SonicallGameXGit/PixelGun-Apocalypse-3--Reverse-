@@ -5,717 +5,332 @@
 ///////////////////////////////////////////
 Shader "Mobile/Skybox" {
 Properties {
-
-_FrontTex ("Front (+Z)", 2D) = "white" { }
-
-_BackTex ("Back (-Z)", 2D) = "white" { }
-
-_LeftTex ("Left (+X)", 2D) = "white" { }
-
-_RightTex ("Right (-X)", 2D) = "white" { }
-
-_UpTex ("Up (+Y)", 2D) = "white" { }
-
-_DownTex ("Down (-Y)", 2D) = "white" { }
-
+ _FrontTex ("Front (+Z)", 2D) = "white" { }
+ _BackTex ("Back (-Z)", 2D) = "white" { }
+ _LeftTex ("Left (+X)", 2D) = "white" { }
+ _RightTex ("Right (-X)", 2D) = "white" { }
+ _UpTex ("Up (+Y)", 2D) = "white" { }
+ _DownTex ("Down (-Y)", 2D) = "white" { }
 }
-SubShader {
- Tags { "PreviewType" = "Skybox" "QUEUE" = "Background" "RenderType" = "Background" }
+SubShader { 
+ Tags { "QUEUE"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
  Pass {
-  Tags { "PreviewType" = "Skybox" "QUEUE" = "Background" "RenderType" = "Background" }
- ZWrite Off
- Cull Off
-  GpuProgramID 24641
+  Tags { "QUEUE"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
+  ZWrite Off
+  Cull Off
+  GpuProgramID 20721
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _FrontTex_ST;
-in highp vec3 in_POSITION0;
-in highp vec3 in_TEXCOORD0;
-out mediump vec4 vs_COLOR0;
-out highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
-{
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _FrontTex_ST.xy + _FrontTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform mediump sampler2D _FrontTex;
-in highp vec2 vs_TEXCOORD0;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec4 u_xlat16_0;
-void main()
-{
-    u_xlat16_0 = texture(_FrontTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat16_0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _FrontTex_ST;
-attribute highp vec3 in_POSITION0;
-attribute highp vec3 in_TEXCOORD0;
-varying mediump vec4 vs_COLOR0;
-varying highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp vec4 _FrontTex_ST;
+varying lowp vec4 xlv_COLOR0;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _FrontTex_ST.xy + _FrontTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 tmpvar_2;
+  tmpvar_2 = clamp (vec4(0.0, 0.0, 0.0, 1.1), 0.0, 1.0);
+  tmpvar_1 = tmpvar_2;
+  highp vec4 tmpvar_3;
+  tmpvar_3.w = 1.0;
+  tmpvar_3.xyz = _glesVertex.xyz;
+  xlv_COLOR0 = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _FrontTex_ST.xy) + _FrontTex_ST.zw);
+  gl_Position = (glstate_matrix_mvp * tmpvar_3);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform lowp sampler2D _FrontTex;
-varying highp vec2 vs_TEXCOORD0;
-#define SV_Target0 gl_FragData[0]
-lowp vec4 u_xlat10_0;
-void main()
+uniform sampler2D _FrontTex;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    u_xlat10_0 = texture2D(_FrontTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat10_0;
-    return;
+  lowp vec4 tmpvar_1;
+  tmpvar_1 = texture2D (_FrontTex, xlv_TEXCOORD0);
+  gl_FragData[0] = tmpvar_1;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-""
-}
 SubProgram "gles " {
 ""
 }
 }
-}
+ }
  Pass {
-  Tags { "PreviewType" = "Skybox" "QUEUE" = "Background" "RenderType" = "Background" }
- ZWrite Off
- Cull Off
-  GpuProgramID 76896
+  Tags { "QUEUE"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
+  ZWrite Off
+  Cull Off
+  GpuProgramID 107871
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _BackTex_ST;
-in highp vec3 in_POSITION0;
-in highp vec3 in_TEXCOORD0;
-out mediump vec4 vs_COLOR0;
-out highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
-{
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _BackTex_ST.xy + _BackTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform mediump sampler2D _BackTex;
-in highp vec2 vs_TEXCOORD0;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec4 u_xlat16_0;
-void main()
-{
-    u_xlat16_0 = texture(_BackTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat16_0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _BackTex_ST;
-attribute highp vec3 in_POSITION0;
-attribute highp vec3 in_TEXCOORD0;
-varying mediump vec4 vs_COLOR0;
-varying highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp vec4 _BackTex_ST;
+varying lowp vec4 xlv_COLOR0;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _BackTex_ST.xy + _BackTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 tmpvar_2;
+  tmpvar_2 = clamp (vec4(0.0, 0.0, 0.0, 1.1), 0.0, 1.0);
+  tmpvar_1 = tmpvar_2;
+  highp vec4 tmpvar_3;
+  tmpvar_3.w = 1.0;
+  tmpvar_3.xyz = _glesVertex.xyz;
+  xlv_COLOR0 = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _BackTex_ST.xy) + _BackTex_ST.zw);
+  gl_Position = (glstate_matrix_mvp * tmpvar_3);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform lowp sampler2D _BackTex;
-varying highp vec2 vs_TEXCOORD0;
-#define SV_Target0 gl_FragData[0]
-lowp vec4 u_xlat10_0;
-void main()
+uniform sampler2D _BackTex;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    u_xlat10_0 = texture2D(_BackTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat10_0;
-    return;
+  lowp vec4 tmpvar_1;
+  tmpvar_1 = texture2D (_BackTex, xlv_TEXCOORD0);
+  gl_FragData[0] = tmpvar_1;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-""
-}
 SubProgram "gles " {
 ""
 }
 }
-}
+ }
  Pass {
-  Tags { "PreviewType" = "Skybox" "QUEUE" = "Background" "RenderType" = "Background" }
- ZWrite Off
- Cull Off
-  GpuProgramID 136649
+  Tags { "QUEUE"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
+  ZWrite Off
+  Cull Off
+  GpuProgramID 190997
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _LeftTex_ST;
-in highp vec3 in_POSITION0;
-in highp vec3 in_TEXCOORD0;
-out mediump vec4 vs_COLOR0;
-out highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
-{
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _LeftTex_ST.xy + _LeftTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform mediump sampler2D _LeftTex;
-in highp vec2 vs_TEXCOORD0;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec4 u_xlat16_0;
-void main()
-{
-    u_xlat16_0 = texture(_LeftTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat16_0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _LeftTex_ST;
-attribute highp vec3 in_POSITION0;
-attribute highp vec3 in_TEXCOORD0;
-varying mediump vec4 vs_COLOR0;
-varying highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp vec4 _LeftTex_ST;
+varying lowp vec4 xlv_COLOR0;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _LeftTex_ST.xy + _LeftTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 tmpvar_2;
+  tmpvar_2 = clamp (vec4(0.0, 0.0, 0.0, 1.1), 0.0, 1.0);
+  tmpvar_1 = tmpvar_2;
+  highp vec4 tmpvar_3;
+  tmpvar_3.w = 1.0;
+  tmpvar_3.xyz = _glesVertex.xyz;
+  xlv_COLOR0 = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _LeftTex_ST.xy) + _LeftTex_ST.zw);
+  gl_Position = (glstate_matrix_mvp * tmpvar_3);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform lowp sampler2D _LeftTex;
-varying highp vec2 vs_TEXCOORD0;
-#define SV_Target0 gl_FragData[0]
-lowp vec4 u_xlat10_0;
-void main()
+uniform sampler2D _LeftTex;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    u_xlat10_0 = texture2D(_LeftTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat10_0;
-    return;
+  lowp vec4 tmpvar_1;
+  tmpvar_1 = texture2D (_LeftTex, xlv_TEXCOORD0);
+  gl_FragData[0] = tmpvar_1;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-""
-}
 SubProgram "gles " {
 ""
 }
 }
-}
+ }
  Pass {
-  Tags { "PreviewType" = "Skybox" "QUEUE" = "Background" "RenderType" = "Background" }
- ZWrite Off
- Cull Off
-  GpuProgramID 242582
+  Tags { "QUEUE"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
+  ZWrite Off
+  Cull Off
+  GpuProgramID 229975
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _RightTex_ST;
-in highp vec3 in_POSITION0;
-in highp vec3 in_TEXCOORD0;
-out mediump vec4 vs_COLOR0;
-out highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
-{
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _RightTex_ST.xy + _RightTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform mediump sampler2D _RightTex;
-in highp vec2 vs_TEXCOORD0;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec4 u_xlat16_0;
-void main()
-{
-    u_xlat16_0 = texture(_RightTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat16_0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _RightTex_ST;
-attribute highp vec3 in_POSITION0;
-attribute highp vec3 in_TEXCOORD0;
-varying mediump vec4 vs_COLOR0;
-varying highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp vec4 _RightTex_ST;
+varying lowp vec4 xlv_COLOR0;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _RightTex_ST.xy + _RightTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 tmpvar_2;
+  tmpvar_2 = clamp (vec4(0.0, 0.0, 0.0, 1.1), 0.0, 1.0);
+  tmpvar_1 = tmpvar_2;
+  highp vec4 tmpvar_3;
+  tmpvar_3.w = 1.0;
+  tmpvar_3.xyz = _glesVertex.xyz;
+  xlv_COLOR0 = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _RightTex_ST.xy) + _RightTex_ST.zw);
+  gl_Position = (glstate_matrix_mvp * tmpvar_3);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform lowp sampler2D _RightTex;
-varying highp vec2 vs_TEXCOORD0;
-#define SV_Target0 gl_FragData[0]
-lowp vec4 u_xlat10_0;
-void main()
+uniform sampler2D _RightTex;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    u_xlat10_0 = texture2D(_RightTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat10_0;
-    return;
+  lowp vec4 tmpvar_1;
+  tmpvar_1 = texture2D (_RightTex, xlv_TEXCOORD0);
+  gl_FragData[0] = tmpvar_1;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-""
-}
 SubProgram "gles " {
 ""
 }
 }
-}
+ }
  Pass {
-  Tags { "PreviewType" = "Skybox" "QUEUE" = "Background" "RenderType" = "Background" }
- ZWrite Off
- Cull Off
-  GpuProgramID 300846
+  Tags { "QUEUE"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
+  ZWrite Off
+  Cull Off
+  GpuProgramID 295102
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _UpTex_ST;
-in highp vec3 in_POSITION0;
-in highp vec3 in_TEXCOORD0;
-out mediump vec4 vs_COLOR0;
-out highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
-{
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _UpTex_ST.xy + _UpTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform mediump sampler2D _UpTex;
-in highp vec2 vs_TEXCOORD0;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec4 u_xlat16_0;
-void main()
-{
-    u_xlat16_0 = texture(_UpTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat16_0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _UpTex_ST;
-attribute highp vec3 in_POSITION0;
-attribute highp vec3 in_TEXCOORD0;
-varying mediump vec4 vs_COLOR0;
-varying highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp vec4 _UpTex_ST;
+varying lowp vec4 xlv_COLOR0;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _UpTex_ST.xy + _UpTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 tmpvar_2;
+  tmpvar_2 = clamp (vec4(0.0, 0.0, 0.0, 1.1), 0.0, 1.0);
+  tmpvar_1 = tmpvar_2;
+  highp vec4 tmpvar_3;
+  tmpvar_3.w = 1.0;
+  tmpvar_3.xyz = _glesVertex.xyz;
+  xlv_COLOR0 = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _UpTex_ST.xy) + _UpTex_ST.zw);
+  gl_Position = (glstate_matrix_mvp * tmpvar_3);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform lowp sampler2D _UpTex;
-varying highp vec2 vs_TEXCOORD0;
-#define SV_Target0 gl_FragData[0]
-lowp vec4 u_xlat10_0;
-void main()
+uniform sampler2D _UpTex;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    u_xlat10_0 = texture2D(_UpTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat10_0;
-    return;
+  lowp vec4 tmpvar_1;
+  tmpvar_1 = texture2D (_UpTex, xlv_TEXCOORD0);
+  gl_FragData[0] = tmpvar_1;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-""
-}
 SubProgram "gles " {
 ""
 }
 }
-}
+ }
  Pass {
-  Tags { "PreviewType" = "Skybox" "QUEUE" = "Background" "RenderType" = "Background" }
- ZWrite Off
- Cull Off
-  GpuProgramID 357803
+  Tags { "QUEUE"="Background" "RenderType"="Background" "PreviewType"="Skybox" }
+  ZWrite Off
+  Cull Off
+  GpuProgramID 386277
 Program "vp" {
-SubProgram "gles3 " {
-"#ifdef VERTEX
-#version 300 es
-
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _DownTex_ST;
-in highp vec3 in_POSITION0;
-in highp vec3 in_TEXCOORD0;
-out mediump vec4 vs_COLOR0;
-out highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
-{
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _DownTex_ST.xy + _DownTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
-}
-
-#endif
-#ifdef FRAGMENT
-#version 300 es
-
-precision highp float;
-precision highp int;
-uniform mediump sampler2D _DownTex;
-in highp vec2 vs_TEXCOORD0;
-layout(location = 0) out mediump vec4 SV_Target0;
-mediump vec4 u_xlat16_0;
-void main()
-{
-    u_xlat16_0 = texture(_DownTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat16_0;
-    return;
-}
-
-#endif
-"
-}
 SubProgram "gles " {
-"#ifdef VERTEX
-#version 100
+"#version 100
 
-uniform 	vec4 hlslcc_mtx4x4unity_ObjectToWorld[4];
-uniform 	vec4 hlslcc_mtx4x4unity_MatrixVP[4];
-uniform 	vec4 _DownTex_ST;
-attribute highp vec3 in_POSITION0;
-attribute highp vec3 in_TEXCOORD0;
-varying mediump vec4 vs_COLOR0;
-varying highp vec2 vs_TEXCOORD0;
-vec4 u_xlat0;
-vec4 u_xlat1;
-void main()
+#ifdef VERTEX
+attribute vec4 _glesVertex;
+attribute vec4 _glesMultiTexCoord0;
+uniform highp mat4 glstate_matrix_mvp;
+uniform highp vec4 _DownTex_ST;
+varying lowp vec4 xlv_COLOR0;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    vs_COLOR0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vs_TEXCOORD0.xy = in_TEXCOORD0.xy * _DownTex_ST.xy + _DownTex_ST.zw;
-    u_xlat0 = in_POSITION0.yyyy * hlslcc_mtx4x4unity_ObjectToWorld[1];
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[0] * in_POSITION0.xxxx + u_xlat0;
-    u_xlat0 = hlslcc_mtx4x4unity_ObjectToWorld[2] * in_POSITION0.zzzz + u_xlat0;
-    u_xlat0 = u_xlat0 + hlslcc_mtx4x4unity_ObjectToWorld[3];
-    u_xlat1 = u_xlat0.yyyy * hlslcc_mtx4x4unity_MatrixVP[1];
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[0] * u_xlat0.xxxx + u_xlat1;
-    u_xlat1 = hlslcc_mtx4x4unity_MatrixVP[2] * u_xlat0.zzzz + u_xlat1;
-    gl_Position = hlslcc_mtx4x4unity_MatrixVP[3] * u_xlat0.wwww + u_xlat1;
-    return;
+  lowp vec4 tmpvar_1;
+  mediump vec4 tmpvar_2;
+  tmpvar_2 = clamp (vec4(0.0, 0.0, 0.0, 1.1), 0.0, 1.0);
+  tmpvar_1 = tmpvar_2;
+  highp vec4 tmpvar_3;
+  tmpvar_3.w = 1.0;
+  tmpvar_3.xyz = _glesVertex.xyz;
+  xlv_COLOR0 = tmpvar_1;
+  xlv_TEXCOORD0 = ((_glesMultiTexCoord0.xy * _DownTex_ST.xy) + _DownTex_ST.zw);
+  gl_Position = (glstate_matrix_mvp * tmpvar_3);
 }
+
 
 #endif
 #ifdef FRAGMENT
-#version 100
-
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
-#endif
-precision highp int;
-uniform lowp sampler2D _DownTex;
-varying highp vec2 vs_TEXCOORD0;
-#define SV_Target0 gl_FragData[0]
-lowp vec4 u_xlat10_0;
-void main()
+uniform sampler2D _DownTex;
+varying highp vec2 xlv_TEXCOORD0;
+void main ()
 {
-    u_xlat10_0 = texture2D(_DownTex, vs_TEXCOORD0.xy);
-    SV_Target0 = u_xlat10_0;
-    return;
+  lowp vec4 tmpvar_1;
+  tmpvar_1 = texture2D (_DownTex, xlv_TEXCOORD0);
+  gl_FragData[0] = tmpvar_1;
 }
+
 
 #endif
 "
 }
 }
 Program "fp" {
-SubProgram "gles3 " {
-""
-}
 SubProgram "gles " {
 ""
 }
 }
-}
+ }
 }
 }

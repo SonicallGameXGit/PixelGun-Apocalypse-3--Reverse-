@@ -1,5 +1,5 @@
-//! Unity `ParticleSystem` ("Shuriken", 2018.3) for the effects this game spawns: impacts, the
-//! rocket explosion and the shotgun's smoke (spec: `docs/gameplay/particles.md`).
+//! Unity `ParticleSystem` ("Shuriken", 2018.3 semantics; 5.3 data is upgraded on load) for the
+//! effects this game spawns: impacts and the rocket explosion (spec: `docs/gameplay/particles.md`).
 //!
 //! The modules and modes these prefabs enable are implemented: main module (start delay,
 //! lifetime, speed, size, rotation, colour, gravity, simulation space, max particles), emission
@@ -333,14 +333,124 @@ fn curve(value: &Value) -> MinMaxCurve {
     MinMaxCurve::from_json(value)
 }
 
+/// `ColorRGBA32` (`{"rgba": u32}`, red in the low byte) → `{r, g, b, a}` floats; `MinMaxCurve`
+/// without `minScalar` (5.3) → the 2018.3 form, where "two constants" is `(minScalar, scalar)`
+/// = `scalar` × the first key of `minCurve` / `maxCurve`. Applied to a whole subtree.
+fn upgrade_values_5_3(value: &mut Value) {
+    match value {
+        Value::Object(map) => {
+            if map.len() == 1
+                && let Some(rgba) = map.get("rgba").and_then(Value::as_u64)
+            {
+                let channel = |i: u32| ((rgba >> (8 * i)) & 0xFF) as f64 / 255.0;
+                *value = serde_json::json!({
+                    "r": channel(0),
+                    "g": channel(1),
+                    "b": channel(2),
+                    "a": channel(3),
+                });
+                return;
+            }
+            map.values_mut().for_each(upgrade_values_5_3);
+            if map.contains_key("minMaxState")
+                && map.contains_key("scalar")
+                && !map.contains_key("minScalar")
+            {
+                let scalar = map["scalar"].as_f64().unwrap_or(0.0);
+                let first = |name: &str| map[name]["m_Curve"][0]["value"].as_f64().unwrap_or(0.0);
+                let (min, max) = if map["minMaxState"].as_i64() == Some(3) {
+                    (scalar * first("minCurve"), scalar * first("maxCurve"))
+                } else {
+                    (scalar, scalar)
+                };
+                map.insert("minScalar".into(), min.into());
+                map.insert("scalar".into(), max.into());
+            }
+        }
+        Value::Array(items) => items.iter_mut().for_each(upgrade_values_5_3),
+        _ => {}
+    }
+}
+
+/// A Unity 5.3 `ParticleSystem` (the CrazyGames build) rewritten into the 2018.3 layout that
+/// `from_components` reads, following the serialization upgrade Unity applies between the two
+/// versions (`docs/gameplay/particles.md`, "Unity 5.3 layout"). Verified against the 36 effects
+/// present in both builds: every field read here comes out equal except where the effect data
+/// itself changed. Fields the client does not read are left as they are.
+fn upgrade_unity_5_3(ps: &Value) -> Value {
+    let mut ps = ps.clone();
+    upgrade_values_5_3(&mut ps);
+    // Simulation space: bool "move with transform" (true = local) → enum (0 local, 1 world).
+    let local = ps["moveWithTransform"].as_bool().unwrap_or(true);
+    ps["moveWithTransform"] = Value::from(if local { 0 } else { 1 });
+    let gravity = ps["InitialModule"]["gravityModifier"]
+        .as_f64()
+        .unwrap_or(0.0);
+    ps["InitialModule"]["gravityModifier"] =
+        serde_json::json!({ "minMaxState": 0, "scalar": gravity, "minScalar": gravity });
+    let emission = &mut ps["EmissionModule"];
+    // `m_Type` 0 = rate over time; 1 (over distance) is used by none of the game's systems.
+    let rate = if emission["m_Type"].as_i64() == Some(1) {
+        serde_json::json!({ "minMaxState": 0, "scalar": 0.0, "minScalar": 0.0 })
+    } else {
+        emission["rate"].take()
+    };
+    emission["rateOverTime"] = rate;
+    // Up to four bursts: time, min and max count (random between them), one cycle.
+    let bursts: Vec<Value> = (0..emission["m_BurstCount"].as_u64().unwrap_or(0).min(4))
+        .map(|i| {
+            let min = emission[format!("cnt{i}")].as_f64().unwrap_or(0.0);
+            let max = emission[format!("cntmax{i}")].as_f64().unwrap_or(min);
+            serde_json::json!({
+                "time": emission[format!("time{i}")].as_f64().unwrap_or(0.0),
+                "countCurve": {
+                    "minMaxState": if min == max { 0 } else { 3 },
+                    "minScalar": min,
+                    "scalar": max,
+                },
+                "cycleCount": 1,
+                "repeatInterval": 0.01,
+                "probability": 1.0,
+            })
+        })
+        .collect();
+    emission["m_Bursts"] = Value::from(bursts);
+    let shape = &mut ps["ShapeModule"];
+    // The "shell" / "edge" shape types became their volume type with radius thickness 0.
+    let kind = shape["type"].as_i64().unwrap_or(0);
+    let (kind, thickness) = match kind {
+        1 => (0, 0.0),
+        3 => (2, 0.0),
+        7 => (4, 0.0),
+        9 => (8, 0.0),
+        11 => (10, 0.0),
+        k => (k, 1.0),
+    };
+    shape["type"] = Value::from(kind);
+    shape["radiusThickness"] = Value::from(thickness);
+    shape["radius"] = serde_json::json!({ "value": shape["radius"].take() });
+    shape["arc"] = serde_json::json!({ "value": shape["arc"].take() });
+    let random = shape["randomDirection"].as_bool().unwrap_or(false);
+    shape["randomDirectionAmount"] = Value::from(if random { 1.0 } else { 0.0 });
+    shape["sphericalDirectionAmount"] = Value::from(0.0);
+    ps
+}
+
 impl ParticleSystemDef {
-    /// From a `ParticleSystem` and its `ParticleSystemRenderer` component data. `mesh` loads the
-    /// renderer's mesh for the mesh render mode.
+    /// From a `ParticleSystem` and its `ParticleSystemRenderer` component data (Unity 2018.3 or
+    /// 5.3 layout). `mesh` loads the renderer's mesh for the mesh render mode.
     pub fn from_components(
         ps: &Value,
         renderer: Option<&Value>,
         mesh: impl FnOnce(&Value) -> Option<Arc<MeshData>>,
     ) -> ParticleSystemDef {
+        let upgraded;
+        let ps = if ps["EmissionModule"].get("m_BurstCount").is_some() {
+            upgraded = upgrade_unity_5_3(ps);
+            &upgraded
+        } else {
+            ps
+        };
         let initial = &ps["InitialModule"];
         let shape = match module(ps, "ShapeModule") {
             None => Shape {
@@ -956,7 +1066,7 @@ fn space_of_local(def: &ParticleSystemDef, emitter: Mat4, v: Vec3) -> Vec3 {
     }
 }
 
-fn push_vertex(out: &mut Vec<f32>, p: Vec3, n: Vec3, uv: Vec2, c: Vec4) {
+pub(crate) fn push_vertex(out: &mut Vec<f32>, p: Vec3, n: Vec3, uv: Vec2, c: Vec4) {
     out.extend_from_slice(&[p.x, p.y, p.z, n.x, n.y, n.z, uv.x, uv.y, c.x, c.y, c.z, c.w]);
 }
 
@@ -1052,6 +1162,76 @@ mod tests {
         }));
         let mid = g.evaluate(0.5);
         assert!((mid - Vec4::new(0.5, 0.0, 0.5, 0.5)).length() < 1e-4);
+    }
+
+    /// A 5.3 `ParticleSystem` (CrazyGames layout) reads like its 2018.3 upgrade.
+    #[test]
+    fn unity_5_3_layout_is_upgraded() {
+        let keys = |a: f32, b: f32| {
+            json!({ "m_Curve": [{ "time": 0.0, "value": a, "inSlope": 0.0, "outSlope": 0.0 },
+                                { "time": 1.0, "value": b, "inSlope": 0.0, "outSlope": 0.0 }] })
+        };
+        let curve_5_3 = |state: i64, scalar: f32, min: f32, max: f32| {
+            json!({ "minMaxState": state, "scalar": scalar, "minCurve": keys(min, min),
+                    "maxCurve": keys(max, max) })
+        };
+        let ps = json!({
+            "lengthInSec": 2.0,
+            "looping": false,
+            "playOnAwake": true,
+            "speed": 1.0,
+            "startDelay": curve_5_3(0, 0.0, 0.0, 1.0),
+            "moveWithTransform": false,
+            "InitialModule": {
+                "enabled": true,
+                "startLifetime": curve_5_3(3, 3.0, 0.0333, 1.0),
+                "startSpeed": curve_5_3(3, 10.0, 1.0, -1.0),
+                "startColor": { "minMaxState": 2, "minColor": { "rgba": 0xFF00_007Eu32 },
+                                "maxColor": { "rgba": 0xFFFF_FFFFu32 } },
+                "startSize": curve_5_3(0, 0.5, 0.0, 1.0),
+                "startRotation": curve_5_3(0, 0.0, 0.0, 1.0),
+                "gravityModifier": 0.25,
+                "maxNumParticles": 50,
+            },
+            "EmissionModule": {
+                "enabled": true,
+                "m_Type": 0,
+                "rate": curve_5_3(0, 4.0, 0.0, 1.0),
+                "cnt0": 30, "cntmax0": 30, "time0": 0.0,
+                "cnt1": 5, "cntmax1": 8, "time1": 0.5,
+                "cnt2": 9, "cntmax2": 9, "time2": 0.0,
+                "m_BurstCount": 2,
+            },
+            "ShapeModule": {
+                "enabled": true, "type": 1, "radius": 0.4, "angle": 25.0, "arc": 360.0,
+                "boxX": 1.0, "boxY": 1.0, "boxZ": 1.0, "randomDirection": true,
+            },
+        });
+        let def = ParticleSystemDef::from_components(&ps, None, |_| None);
+        assert!(def.world_space);
+        let constants = |c: &MinMaxCurve| match c {
+            MinMaxCurve::TwoConstants(a, b) => (*a, *b),
+            other => panic!("{other:?}"),
+        };
+        let (min, max) = constants(&def.start_lifetime);
+        assert!((min - 0.0999).abs() < 1e-4 && max == 3.0);
+        assert_eq!(constants(&def.start_speed), (10.0, -10.0));
+        assert_eq!(def.gravity_modifier.evaluate(0.0, 0.5), 0.25);
+        assert_eq!(def.rate_over_time.as_ref().unwrap().evaluate(0.0, 0.5), 4.0);
+        let MinMaxGradient::TwoColors(low, high) = def.start_color else {
+            panic!("{:?}", def.start_color);
+        };
+        assert!((low - Vec4::new(126.0 / 255.0, 0.0, 0.0, 1.0)).length() < 1e-6);
+        assert_eq!(high, Vec4::ONE);
+        assert_eq!(def.bursts.len(), 2);
+        assert_eq!(def.bursts[0].count.evaluate(0.0, 0.3), 30.0);
+        assert_eq!(constants(&def.bursts[1].count), (5.0, 8.0));
+        assert_eq!((def.bursts[1].time, def.bursts[1].cycles), (0.5, 1));
+        // Sphere shell: sphere with radius thickness 0; random direction on.
+        assert_eq!(def.shape.kind, ShapeType::Sphere);
+        assert_eq!(def.shape.radius_thickness, 0.0);
+        assert_eq!(def.shape.radius, 0.4);
+        assert_eq!(def.shape.random_direction, 1.0);
     }
 
     #[test]

@@ -6,7 +6,7 @@
     "name": "GameSkin",
     "fields_complete": true,
     "fields": {
-        "m_Font": { "ref": "unity_default_resources:10102" },
+        "m_Font": { "ref": "unity_default_resources:10102", "asset": "fonts/Arial.ttf" },
         "m_box": {
             "name": "box",
             "normal": {
@@ -1049,111 +1049,7 @@
         },
         "m_CustomStyles": [
             {
-                "name": "thumb",
-                "normal": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "hover": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "active": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "focused": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "onNormal": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "onHover": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "onActive": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "onFocused": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "border": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
-                "margin": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
-                "padding": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
-                "overflow": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
-                "font": null,
-                "fontSize": 0,
-                "fontStyle": 0,
-                "alignment": 0,
-                "wordWrap": false,
-                "richText": true,
-                "textClipping": 0,
-                "imagePosition": 0,
-                "contentOffset": { "x": 0.0, "y": 0.0 },
-                "fixedWidth": 0.0,
-                "fixedHeight": 0.0,
-                "stretchWidth": true,
-                "stretchHeight": false
-            },
-            {
-                "name": "leftbutton",
-                "normal": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "hover": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "active": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "focused": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "onNormal": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "onHover": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "onActive": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "onFocused": {
-                    "background": null,
-                    "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }
-                },
-                "border": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
-                "margin": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
-                "padding": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
-                "overflow": { "left": 0, "right": 0, "top": 0, "bottom": 0 },
-                "font": null,
-                "fontSize": 0,
-                "fontStyle": 0,
-                "alignment": 0,
-                "wordWrap": false,
-                "richText": true,
-                "textClipping": 0,
-                "imagePosition": 0,
-                "contentOffset": { "x": 0.0, "y": 0.0 },
-                "fixedWidth": 0.0,
-                "fixedHeight": 0.0,
-                "stretchWidth": true,
-                "stretchHeight": false
-            },
-            {
-                "name": "rightbutton",
+                "name": "",
                 "normal": {
                     "background": null,
                     "textColor": { "r": 0.0, "g": 0.0, "b": 0.0, "a": 1.0 }

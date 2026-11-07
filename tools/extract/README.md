@@ -57,7 +57,19 @@ printf '12eadc\ne40fc\n' | dotnet research/tools/Il2CppDumper/Il2CppDumper/bin/R
     $C/raw/memory.wasm $C/unpacked/Il2CppData/Metadata/global-metadata.dat research/crazygames-il2cpp-dump
 ```
 
-The asset steps (3, 4 and 6–8 above) have not been run on this build yet.
+Assets (this is what `assets/` holds since 2026-11-07). The same scripts as steps 3, 4 and 6–8; they detect Unity 5.3 from the serialized files (`unity_compat.py`):
+
+```bash
+C=research/crazygames-build
+research/tools/venv/bin/python -I tools/extract/extract_assets.py "$PWD/$C/unpacked" "$PWD/research/crazygames-extracted"
+python3 -I tools/extract/publish_assets.py research/crazygames-extracted assets
+rm -rf assets/data
+research/tools/venv/bin/python -I tools/extract/export_world.py "$PWD/$C/unpacked" "$PWD/assets" "$PWD/research/crazygames-il2cpp-dump"
+research/tools/venv/bin/python -I tools/extract/export_shaders.py "$PWD/$C/unpacked" "$PWD/assets"
+research/tools/venv/bin/python -I tools/extract/export_skins.py "$PWD/$C/unpacked" "$PWD/assets"
+```
+
+To compare two published trees (e.g. a Build-7 tree from git history against this one): `research/tools/venv/bin/python -I tools/extract/compare_assets.py <assets-a> <assets-b> <report.json>` (results: `docs/crazygames-build.md`, "Assets").
 
 ## Scripts
 
@@ -68,7 +80,9 @@ The asset steps (3, 4 and 6–8 above) have not been run on this build yet.
 | `extract_assets.py` | every object → raw/decoded files + `inventory.json` (research/extracted) |
 | `publish_assets.py` | curated game-owned files → `assets/` + `assets/manifest.json` |
 | `export_world.py` | `assets/data/` JSON (see `docs/assets.md` for the format) |
-| `mono_decode.py` | decodes stripped MonoBehaviour data with `dump.cs` layouts (Unity 2018.3 rules) |
+| `mono_decode.py` | decodes stripped MonoBehaviour data with `dump.cs` layouts (Unity 2018.3 or 5.3 rules: 5.3 keyframes have no weights) |
+| `unity_compat.py` | Unity 5.3 vs 2018.3 helpers: build version, shader name from `m_Script`, 5.3 sub-program blobs read little-endian |
+| `compare_assets.py` | compares two published asset trees by content (pixels / bytes) and reports same, changed and one-sided files |
 | `dotnet_meta.py` | reads field flags (`NotSerialized`) from Il2CppDumper's DummyDll; `dump.cs` omits them |
 | `export_shaders.py` | game shaders → ShaderLab text with GLSL ES programs |
 | `export_skins.py` | bind poses + per-vertex bone indices/weights of skinned meshes → `assets/data/skins/` |

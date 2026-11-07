@@ -237,13 +237,13 @@ impl RemotePlayer {
             .find(|(n, _)| prefab.active_in_hierarchy(*n))
         {
             for child in prefab.nodes[manager].children.clone() {
-                prefab.nodes[child].active_self = false;
+                prefab.set_active(child, false);
             }
         }
         prefab.set_active_refs(&pnc["remoteObjectsToDeactivate"], false);
         let look_target = prefab.node_of_ref(&pnc["lookTarget"]);
         if let Some(node) = look_target {
-            prefab.nodes[node].active_self = true;
+            prefab.set_active(node, true);
         }
         let shoulders = [&pnc["shoulderR"], &pnc["shoulderL"]]
             .into_iter()
@@ -537,7 +537,7 @@ impl RemotePlayer {
             if let Some(weapons) = self.third_person_weapons {
                 for child in self.prefab.nodes[weapons].children.clone() {
                     let matches = self.prefab.nodes[child].name == self.current_weapon_name;
-                    self.prefab.nodes[child].active_self = matches;
+                    self.prefab.set_active(child, matches);
                     if matches {
                         self.current_active_weapon = Some(child);
                     }
@@ -705,7 +705,7 @@ impl RemotePlayer {
             return None;
         }
         for child in self.prefab.nodes[0].children.clone() {
-            self.prefab.nodes[child].active_self = false;
+            self.prefab.set_active(child, false);
         }
         self.damage.current_hp = 0.0;
         self.damage.we_killed = true;
@@ -937,7 +937,7 @@ mod tests {
             let assets = find_assets_dir().unwrap();
             let mut clips = ClipLibrary::new(&assets).unwrap();
             clips
-                .get("resources.assets:227")
+                .get("resources.assets:226")
                 .unwrap()
                 .unwrap()
                 .name

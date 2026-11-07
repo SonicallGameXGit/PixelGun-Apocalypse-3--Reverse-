@@ -35,16 +35,16 @@ Client: `damage.rs` (`PlayerDamage`, spawn protection, `RagdollController`), dri
 - The camera's local rotation slerps towards `camRot` at `dt·15`.
 - `camRot` starts as the zero quaternion, which leaves the rotation unchanged until the first shake.
 
-**`OnGUI`** (`f37886`, depth 10, skin 40959):
+**`OnGUI`** (`f37886`, depth 10, skin 40923):
 - `GUI.color = (1,1,1,fadeValueB)`, then `DrawTexture` of the full-screen bloody screen.
 - `GUI.color = (1,1,1,0.9)`, then `Box(W-220, H-55, 100, 45, "HP | " + (int)hp)`.
 
-## Death prefab `german (ragdol)` (`resources.assets:14520`)
+## Death prefab `german (ragdol)` (`resources.assets:14496`)
 
 - It is not a physics ragdoll. It is an animated body (an `Animation` component with clip 199, played automatically) with its own `Camera` at node 69. The client renders through that camera while the prefab exists.
 - It has a play-on-awake 2D `death.m4a` and `WaitForDestroy` 4 s.
 
-**`RagdollController`** (`f29667`..`f29672`, timer 2, skin 40964):
+**`RagdollController`** (`f29667`..`f29672`, timer 2, skin 40929):
 - `RespawnAfter` shows the GUI and calls `InvokeRepeating("_respawnAfter", 1, 1)`.
 - Each call decrements the timer. At 0 it calls `clearCamera` and then `RoomMultiplayerMenu.SpawnPlayer`.
 - `OnGUI`: label `"Respawn in: " + timer` at `(W/2-75, H/2-15, 150, 30)`.

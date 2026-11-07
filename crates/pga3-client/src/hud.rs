@@ -158,40 +158,26 @@ fn lerp(a: f32, b: f32, t: f32) -> f32 {
 }
 
 /// What `WeaponManager.OnGUI` changes in the default skin persists (Unity skins are shared
-/// objects): the `"Label"` style's size and alignment, the box style's size.
+/// objects): the box style's font size.
 pub struct DefaultSkin {
     pub skin: GuiSkin,
 }
 
 impl DefaultSkin {
-    /// `WeaponManager.OnGUI` (all of a frame's events).
+    /// `WeaponManager.OnGUI` (all of a frame's events; CrazyGames `hxg`: only the two room
+    /// messages, Build-7's "Auto fire on/off" label is not in this build).
     pub fn weapon_manager_gui(
         &mut self,
         gui: &mut Gui,
         font: &mut GuiFont,
         manager: &mut WeaponManager,
         w: f32,
-        h: f32,
     ) {
-        let (wi, hi) = (w as i32, h as i32);
+        let wi = w as i32;
         let yellow = Vec4::new(1.0, 0.921_568_6, 0.015_686_275, 1.0);
         let green = Vec4::new(0.0, 1.0, 0.0, 1.0);
         let mut draw = |gui: &mut Gui, font: &mut GuiFont, skin: &mut GuiSkin, last: bool| {
             gui.begin_script();
-            if manager.text_delay > 0.0 {
-                gui.color = yellow;
-                skin.label.font_size = 30;
-                skin.label.alignment = 1;
-                let rect = [(wi / 2 - 150) as f32, (hi / 3 - 25) as f32, 300.0, 50.0];
-                let text = if manager.auto_fire {
-                    "Auto fire on"
-                } else {
-                    "Auto fire off"
-                };
-                if last {
-                    gui.label(font, rect, text, &skin.label);
-                }
-            }
             let message_rect = |y: f32| [(wi / 2) as f32 - w * 0.5, y, w, 50.0];
             if manager.shownowepinroom2 > 0.0 {
                 manager.shownowepinroom2 -= 0.1;

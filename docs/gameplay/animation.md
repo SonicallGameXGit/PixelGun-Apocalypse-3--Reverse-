@@ -72,6 +72,10 @@ Flags: 1 = fading, 2 = enabled, 4 = stop when faded, 32 = automatic fade-out sta
 
 These rules reproduce single-state playback and cross-fades exactly. Additive blending does not occur in the ported scripts.
 
+**Activation (inferred).** An `Animation` with `playAutomatically` plays its default clip when the game starts (`PrefabInstance::play_automatically`), and again **from the beginning** every time its GameObject becomes active in the hierarchy (`PrefabInstance::set_active`). Unity's native enable path is not decoded: only the icalls the game calls are linked, so it can't be found by name. Animations on inactive GameObjects don't update.
+- It matters for one object: the `Mercenarys` (and `zombie`) sniper's `MuzzleFlash (1)`. Its `Default Take` (`resources.assets:208`, 0.042-0.083 s, path `""`) sets the flash's own transform to position 0, scale 1 and Euler(-90, 0, 0). That overrides the prefab's scale (0.199, 0.258, 0.258) and the random roll `machineGunMuzzleFlash` gives it, each time the shot activates it.
+- The other auto-playing animations sit on always-active bodies (`mercenary_minecraft`, `Good_legs`/`Bad_legs`) and on the zombie's Machete (`Ide`).
+
 **Not ported:** `m_CullingType` (BasedOnRenderers); the client always animates.
 
 ## Skinning (observed)

@@ -1,0 +1,128 @@
+{
+    "file": "resources.assets",
+    "resources_path": null,
+    "root": "resources.assets:358",
+    "nodes": [
+        {
+            "ref": "resources.assets:358",
+            "name": "Detonator-Heatwave(Pro)",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16223",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -0.007928729, "y": 1.0146024, "z": -0.0032983422 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40977",
+                    "enabled": true,
+                    "script": "Detonator",
+                    "script_ref": "globalgamemanagers.assets:191",
+                    "fields_complete": true,
+                    "fields": {
+                        "size": 5.0,
+                        "color": { "r": 1.0, "g": 0.423, "b": 0.0, "a": 0.5 },
+                        "explodeOnStart": true,
+                        "duration": 3.0,
+                        "detail": 1.0,
+                        "upwardsBias": 0.0,
+                        "destroyTime": 7.0,
+                        "useWorldSpace": true,
+                        "direction": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "fireballAMaterial": null,
+                        "fireballBMaterial": null,
+                        "smokeAMaterial": null,
+                        "smokeBMaterial": null,
+                        "shockwaveMaterial": null,
+                        "sparksMaterial": null,
+                        "glowMaterial": null,
+                        "heatwaveMaterial": null,
+                        "autoCreateFireball": true,
+                        "autoCreateSparks": true,
+                        "autoCreateShockwave": true,
+                        "autoCreateSmoke": true,
+                        "autoCreateGlow": true,
+                        "autoCreateLight": true,
+                        "autoCreateForce": true,
+                        "autoCreateHeatwave": true
+                    }
+                },
+                {
+                    "type": "AudioSource",
+                    "ref": "resources.assets:39260",
+                    "data": {
+                        "m_Enabled": 1,
+                        "OutputAudioMixerGroup": null,
+                        "m_audioClip": { "ref": "resources.assets:306", "asset": "audio/GrenadeExplode.m4a" },
+                        "m_PlayOnAwake": true,
+                        "m_Volume": 1.0,
+                        "m_Pitch": 1.0,
+                        "Loop": false,
+                        "Mute": false,
+                        "Spatialize": false,
+                        "Priority": 128,
+                        "DopplerLevel": 1.0,
+                        "MinDistance": 1.0,
+                        "MaxDistance": 100.0,
+                        "Pan2D": 0.0,
+                        "rolloffMode": 1,
+                        "BypassEffects": false,
+                        "BypassListenerEffects": false,
+                        "BypassReverbZones": false,
+                        "rolloffCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 },
+                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "panLevelCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "spreadCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "reverbZoneMixCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40962",
+                    "enabled": true,
+                    "script": "ExplosionDamage",
+                    "script_ref": "globalgamemanagers.assets:280",
+                    "fields_complete": true,
+                    "fields": { "explosionRadius": 5.0, "explosionPower": 14.0, "explosionDamage": 100.0, "explosionTimeout": 5.0, "isRemote": false }
+                }
+            ],
+            "children": [],
+            "parent": null
+        }
+    ]
+}

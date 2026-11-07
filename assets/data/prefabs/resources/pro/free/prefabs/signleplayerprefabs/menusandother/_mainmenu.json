@@ -1,10 +1,10 @@
 {
     "file": "resources.assets",
     "resources_path": "pro/free/prefabs/signleplayerprefabs/menusandother/_mainmenu",
-    "root": "resources.assets:370",
+    "root": "resources.assets:356",
     "nodes": [
         {
-            "ref": "resources.assets:370",
+            "ref": "resources.assets:356",
             "name": "_MainMenu",
             "active": true,
             "layer": 0,
@@ -12,7 +12,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16255",
+                    "ref": "resources.assets:16220",
                     "data": {
                         "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
                         "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
@@ -21,13 +21,13 @@
                 },
                 {
                     "type": "MonoBehaviour",
-                    "ref": "resources.assets:40987",
+                    "ref": "resources.assets:40959",
                     "enabled": true,
                     "script": "MainMenu",
-                    "script_ref": "globalgamemanagers.assets:248",
+                    "script_ref": "globalgamemanagers.assets:116",
                     "fields_complete": true,
                     "fields": {
-                        "guiStyle": { "ref": "resources.assets:40955" },
+                        "guiStyle": { "ref": "resources.assets:40921" },
                         "objective": "Objective: Find secret room using less time",
                         "showTime": true,
                         "finishedGame": false
@@ -35,14 +35,14 @@
                 },
                 {
                     "type": "MonoBehaviour",
-                    "ref": "resources.assets:41006",
+                    "ref": "resources.assets:40974",
                     "enabled": true,
                     "script": "SlowMotionEffect",
-                    "script_ref": "globalgamemanagers.assets:278",
+                    "script_ref": "globalgamemanagers.assets:132",
                     "fields_complete": true,
                     "fields": {
                         "slowMotion": false,
-                        "guiSkin": { "ref": "resources.assets:40955" },
+                        "guiSkin": { "ref": "resources.assets:40921" },
                         "slowTimeTo": 0.5,
                         "audios": []
                     }

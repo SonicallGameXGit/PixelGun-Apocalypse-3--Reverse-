@@ -1,10 +1,10 @@
 {
     "file": "resources.assets",
     "resources_path": "pro/free/prefabs/signleplayerprefabs/menusandother/ladder",
-    "root": "resources.assets:441",
+    "root": "resources.assets:414",
     "nodes": [
         {
-            "ref": "resources.assets:441",
+            "ref": "resources.assets:414",
             "name": "Ladder",
             "active": true,
             "layer": 2,
@@ -12,7 +12,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16324",
+                    "ref": "resources.assets:16277",
                     "data": {
                         "m_LocalRotation": { "x": 0.009067586, "y": 0.7070487, "z": 0.70704865, "w": -0.009067668 },
                         "m_LocalPosition": { "x": 13.11, "y": -8.142115, "z": -17.56 },
@@ -21,24 +21,18 @@
                 },
                 {
                     "type": "MeshFilter",
-                    "ref": "resources.assets:35385",
+                    "ref": "resources.assets:35391",
                     "data": {
-                        "m_Mesh": { "ref": "resources.assets:168", "asset": "models/Cylinder_001.obj" }
+                        "m_Mesh": { "ref": "resources.assets:165", "asset": "models/Cylinder_001.obj" }
                     }
                 },
                 {
                     "type": "MeshRenderer",
-                    "ref": "resources.assets:32184",
+                    "ref": "resources.assets:32172",
                     "data": {
                         "m_Enabled": true,
                         "m_CastShadows": 1,
-                        "m_ReceiveShadows": 1,
-                        "m_DynamicOccludee": 1,
-                        "m_MotionVectors": 1,
-                        "m_LightProbeUsage": 0,
-                        "m_ReflectionProbeUsage": 1,
-                        "m_RenderingLayerMask": 4294967295,
-                        "m_RendererPriority": 0,
+                        "m_ReceiveShadows": true,
                         "m_LightmapIndex": 65535,
                         "m_LightmapIndexDynamic": 65535,
                         "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
@@ -46,31 +40,31 @@
                         "m_Materials": [
                             { "ref": "resources.assets:48" }
                         ],
-                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_SubsetIndices": [],
                         "m_StaticBatchRoot": null,
+                        "m_UseLightProbes": false,
+                        "m_ReflectionProbeUsage": 1,
                         "m_ProbeAnchor": null,
-                        "m_LightProbeVolumeOverride": null,
                         "m_SortingLayerID": 0,
-                        "m_SortingLayer": 0,
                         "m_SortingOrder": 0,
                         "m_AdditionalVertexStreams": null
                     }
                 },
                 {
                     "type": "MonoBehaviour",
-                    "ref": "resources.assets:40995",
+                    "ref": "resources.assets:40956",
                     "enabled": true,
                     "script": "Ladder",
-                    "script_ref": "globalgamemanagers.assets:241",
+                    "script_ref": "globalgamemanagers.assets:109",
                     "fields_complete": true,
                     "fields": {
-                        "ladderBottom": { "ref": "resources.assets:402" },
-                        "ladderTop": { "ref": "resources.assets:381" }
+                        "ladderBottom": { "ref": "resources.assets:375" },
+                        "ladderTop": { "ref": "resources.assets:353" }
                     }
                 },
                 {
                     "type": "BoxCollider",
-                    "ref": "resources.assets:38609",
+                    "ref": "resources.assets:38616",
                     "data": {
                         "m_Material": null,
                         "m_IsTrigger": true,
@@ -80,11 +74,11 @@
                     }
                 }
             ],
-            "children": ["resources.assets:433", "resources.assets:402", "resources.assets:381"],
+            "children": ["resources.assets:404", "resources.assets:375", "resources.assets:353"],
             "parent": null
         },
         {
-            "ref": "resources.assets:433",
+            "ref": "resources.assets:404",
             "name": "MiddleCollider",
             "active": true,
             "layer": 0,
@@ -92,7 +86,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16316",
+                    "ref": "resources.assets:16268",
                     "data": {
                         "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
                         "m_LocalPosition": { "x": -0.4882813, "y": 0.9, "z": 67.45517 },
@@ -101,7 +95,7 @@
                 },
                 {
                     "type": "BoxCollider",
-                    "ref": "resources.assets:38621",
+                    "ref": "resources.assets:38627",
                     "data": {
                         "m_Material": null,
                         "m_IsTrigger": false,
@@ -112,10 +106,10 @@
                 }
             ],
             "children": [],
-            "parent": "resources.assets:441"
+            "parent": "resources.assets:414"
         },
         {
-            "ref": "resources.assets:402",
+            "ref": "resources.assets:375",
             "name": "LadderBottom",
             "active": true,
             "layer": 0,
@@ -123,7 +117,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16287",
+                    "ref": "resources.assets:16240",
                     "data": {
                         "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
                         "m_LocalPosition": { "x": -0.48828113, "y": 1.7815567, "z": 1.9596304 },
@@ -132,10 +126,10 @@
                 }
             ],
             "children": [],
-            "parent": "resources.assets:441"
+            "parent": "resources.assets:414"
         },
         {
-            "ref": "resources.assets:381",
+            "ref": "resources.assets:353",
             "name": "LadderTop",
             "active": true,
             "layer": 0,
@@ -143,7 +137,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16266",
+                    "ref": "resources.assets:16217",
                     "data": {
                         "m_LocalRotation": { "x": 3.0908623e-08, "y": 0.7071068, "z": 0.7071068, "w": 3.0908623e-08 },
                         "m_LocalPosition": { "x": -0.48828113, "y": 1.7815408, "z": 135.74767 },
@@ -152,7 +146,7 @@
                 }
             ],
             "children": [],
-            "parent": "resources.assets:441"
+            "parent": "resources.assets:414"
         }
     ]
 }

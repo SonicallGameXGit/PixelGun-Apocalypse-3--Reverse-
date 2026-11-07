@@ -148,7 +148,7 @@ The client's `WeaponEvent::SyncFire` is that call. It is ignored locally because
 
 ## Kill feed: `WhoKilledWho` (`f61870`..`f61887`)
 
-- **Skin:** `resources.assets:40955`, on `__Room` in every scene.
+- **Skin:** `WhoKilledWho.guiSkin` on `__Room` in every scene: `resources.assets:40925` ("1 win  rom_who kiled who 1") in the CrazyGames build (Build-7: 40955). The client reads it from the scene (`Scene::kill_feed_skin`).
 - **`networkAddMessage(killer, killed, middle, team)`** is an RPC to all. It appends an entry with a 5 s timer and keeps at most 5 entries.
 - **Colours:**
   - TDM, no team: both names white;

@@ -1,0 +1,268 @@
+{
+    "file": "resources.assets",
+    "resources_path": null,
+    "root": "resources.assets:359",
+    "nodes": [
+        {
+            "ref": "resources.assets:359",
+            "name": "Detonator-Wide",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16224",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 5.620392, "y": 11.445195, "z": 35.312668 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40996",
+                    "enabled": true,
+                    "script": "Detonator",
+                    "script_ref": "globalgamemanagers.assets:191",
+                    "fields_complete": true,
+                    "fields": {
+                        "size": 6.0,
+                        "color": { "r": 0.9153846, "g": 0.80272186, "b": 0.0, "a": 0.2784314 },
+                        "explodeOnStart": true,
+                        "duration": 3.0,
+                        "detail": 1.0,
+                        "upwardsBias": 0.0,
+                        "destroyTime": 7.0,
+                        "useWorldSpace": true,
+                        "direction": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "fireballAMaterial": null,
+                        "fireballBMaterial": null,
+                        "smokeAMaterial": null,
+                        "smokeBMaterial": null,
+                        "shockwaveMaterial": null,
+                        "sparksMaterial": null,
+                        "glowMaterial": null,
+                        "heatwaveMaterial": null,
+                        "autoCreateFireball": true,
+                        "autoCreateSparks": true,
+                        "autoCreateShockwave": true,
+                        "autoCreateSmoke": true,
+                        "autoCreateGlow": true,
+                        "autoCreateLight": true,
+                        "autoCreateForce": true,
+                        "autoCreateHeatwave": false
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40992",
+                    "enabled": true,
+                    "script": "DetonatorFireball",
+                    "script_ref": "globalgamemanagers.assets:279",
+                    "fields_complete": true,
+                    "fields": {
+                        "on": true,
+                        "detonatorControlled": true,
+                        "startSize": 1.0,
+                        "size": 1.0,
+                        "explodeDelayMin": 0.06,
+                        "explodeDelayMax": 0.14999999,
+                        "startDuration": 2.0,
+                        "duration": 3.0,
+                        "timeScale": 1.0,
+                        "startDetail": 1.0,
+                        "detail": 1.0,
+                        "startColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                        "color": { "r": 1.0, "g": 0.8194281, "b": 0.68705034, "a": 0.5019608 },
+                        "startLocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "localPosition": { "x": -10.162585, "y": 0.0, "z": 0.0 },
+                        "startForce": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "force": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "startVelocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "velocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "detailThreshold": 0.0,
+                        "fireballAMaterial": null,
+                        "fireballBMaterial": null,
+                        "fireShadowMaterial": null,
+                        "drawFireballA": true,
+                        "drawFireballB": true,
+                        "drawFireShadow": true
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40986",
+                    "enabled": true,
+                    "script": "DetonatorFireball",
+                    "script_ref": "globalgamemanagers.assets:279",
+                    "fields_complete": true,
+                    "fields": {
+                        "on": true,
+                        "detonatorControlled": true,
+                        "startSize": 1.0,
+                        "size": 1.2824261,
+                        "explodeDelayMin": 0.0,
+                        "explodeDelayMax": 0.0,
+                        "startDuration": 2.0,
+                        "duration": 3.0,
+                        "timeScale": 1.0,
+                        "startDetail": 1.0,
+                        "detail": 1.0,
+                        "startColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                        "color": { "r": 0.8230769, "g": 0.5664063, "b": 0.34640288, "a": 0.5019608 },
+                        "startLocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "localPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "startForce": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "force": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "startVelocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "velocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "detailThreshold": 0.0,
+                        "fireballAMaterial": null,
+                        "fireballBMaterial": null,
+                        "fireShadowMaterial": null,
+                        "drawFireballA": true,
+                        "drawFireballB": true,
+                        "drawFireShadow": true
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40978",
+                    "enabled": true,
+                    "script": "DetonatorFireball",
+                    "script_ref": "globalgamemanagers.assets:279",
+                    "fields_complete": true,
+                    "fields": {
+                        "on": true,
+                        "detonatorControlled": true,
+                        "startSize": 1.0,
+                        "size": 1.0,
+                        "explodeDelayMin": 0.14485279,
+                        "explodeDelayMax": 0.16242638,
+                        "startDuration": 2.0,
+                        "duration": 3.0,
+                        "timeScale": 1.0,
+                        "startDetail": 1.0,
+                        "detail": 1.0,
+                        "startColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                        "color": { "r": 1.0, "g": 0.89075816, "b": 0.49280578, "a": 0.5019608 },
+                        "startLocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "localPosition": { "x": 9.919768, "y": 0.0, "z": 0.0 },
+                        "startForce": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "force": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "startVelocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "velocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "detailThreshold": 0.0,
+                        "fireballAMaterial": null,
+                        "fireballBMaterial": null,
+                        "fireShadowMaterial": null,
+                        "drawFireballA": true,
+                        "drawFireballB": true,
+                        "drawFireShadow": true
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40963",
+                    "enabled": true,
+                    "script": "DetonatorShockwave",
+                    "script_ref": "globalgamemanagers.assets:150",
+                    "fields_complete": true,
+                    "fields": {
+                        "on": true,
+                        "detonatorControlled": true,
+                        "startSize": 1.0,
+                        "size": 5.0,
+                        "explodeDelayMin": 0.1324264,
+                        "explodeDelayMax": 0.14999999,
+                        "startDuration": 2.0,
+                        "duration": 0.25,
+                        "timeScale": 1.0,
+                        "startDetail": 1.0,
+                        "detail": 1.0,
+                        "startColor": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                        "color": { "r": 1.0, "g": 1.0, "b": 1.0, "a": 1.0 },
+                        "startLocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "localPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "startForce": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "force": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "startVelocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "velocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "detailThreshold": 0.0,
+                        "shockwaveMaterial": null,
+                        "renderMode": 4
+                    }
+                },
+                {
+                    "type": "AudioSource",
+                    "ref": "resources.assets:39261",
+                    "data": {
+                        "m_Enabled": 1,
+                        "OutputAudioMixerGroup": null,
+                        "m_audioClip": { "ref": "resources.assets:274", "asset": "audio/NearExplosionA.m4a" },
+                        "m_PlayOnAwake": true,
+                        "m_Volume": 1.0,
+                        "m_Pitch": 1.0,
+                        "Loop": false,
+                        "Mute": false,
+                        "Spatialize": false,
+                        "Priority": 128,
+                        "DopplerLevel": 1.0,
+                        "MinDistance": 1.0,
+                        "MaxDistance": 500.0,
+                        "Pan2D": 0.0,
+                        "rolloffMode": 1,
+                        "BypassEffects": false,
+                        "BypassListenerEffects": false,
+                        "BypassReverbZones": false,
+                        "rolloffCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 },
+                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "panLevelCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "spreadCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "reverbZoneMixCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:41003",
+                    "enabled": true,
+                    "script": "ExplosionDamage",
+                    "script_ref": "globalgamemanagers.assets:280",
+                    "fields_complete": true,
+                    "fields": { "explosionRadius": 6.0, "explosionPower": 15.0, "explosionDamage": 100.0, "explosionTimeout": 5.0, "isRemote": false }
+                }
+            ],
+            "children": [],
+            "parent": null
+        }
+    ]
+}

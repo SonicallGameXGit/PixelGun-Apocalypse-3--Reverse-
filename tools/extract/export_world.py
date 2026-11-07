@@ -20,9 +20,9 @@ import UnityPy
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mono_decode import Decoder  # noqa: E402
+from unity_compat import shader_name, unity_version  # noqa: E402
 
 src, assets_dir, dump_dir = sys.argv[1], sys.argv[2], sys.argv[3]
-decoder = Decoder(os.path.join(dump_dir, 'dump.cs'), os.path.join(dump_dir, 'DummyDll'))
 data_dir = os.path.join(assets_dir, 'data')
 
 SCENE_NAMES = None
@@ -39,6 +39,7 @@ ASSET_TYPES = {
 SCENE_LEVEL_TYPES = {'RenderSettings', 'LightmapSettings', 'OcclusionCullingSettings', 'NavMeshSettings'}
 
 env = UnityPy.load(src)
+decoder = Decoder(os.path.join(dump_dir, 'dump.cs'), os.path.join(dump_dir, 'DummyDll'), unity_version(env))
 manifest = json.load(open(os.path.join(assets_dir, 'manifest.json')))
 published = {f'{m["source"]["file"]}:{m["source"]["path_id"]}': m['path'] for m in manifest}
 
@@ -173,7 +174,8 @@ def export_game_object(key):
     }
     transform_key = None
     for comp in go['m_Component']:
-        pptr = comp['component']
+        # Unity 5.3 stores (class ID, PPtr) pairs; 5.5+ stores { component: PPtr }.
+        pptr = comp[1] if isinstance(comp, (list, tuple)) else comp['component']
         comp_key = f'{resolve_file(go_obj.assets_file, pptr["m_FileID"])}:{pptr["m_PathID"]}'
         comp_obj = objects.get(comp_key)
         if comp_obj is None:
@@ -261,9 +263,14 @@ materials = {}
 for key, obj in objects.items():
     if obj.type.name == 'Material':
         data = read_clean(obj)
+        # Unity 5.3 keys the property maps by FastPropertyName ({ name }); 2017.1+ by string.
+        for props in data['m_SavedProperties'].values():
+            for pair in props:
+                if isinstance(pair[0], dict) and set(pair[0]) == {'name'}:
+                    pair[0] = pair[0]['name']
         shader = data.get('m_Shader')
         if shader is not None and shader['ref'] in objects:
-            shader['name'] = objects[shader['ref']].read().m_ParsedForm.m_Name
+            shader['name'] = shader_name(objects[shader['ref']].read())
         materials[key] = data
 write_json('materials.json', materials)
 
@@ -275,6 +282,9 @@ for key, obj in objects.items():
     if obj.type.name == 'Texture2D' and key in published:
         tree = obj.read_typetree()
         settings = tree['m_TextureSettings']
+        # Unity 5.3 has one m_WrapMode for both axes; m_WrapU/V/W came in 2017.1.
+        wrap_u = settings.get('m_WrapU', settings.get('m_WrapMode'))
+        wrap_v = settings.get('m_WrapV', settings.get('m_WrapMode'))
         textures[published[key]] = {
             'ref': key,
             'width': tree['m_Width'],
@@ -284,8 +294,8 @@ for key, obj in objects.items():
             'filter': FILTER_MODES.get(settings['m_FilterMode'], settings['m_FilterMode']),
             'aniso': settings['m_Aniso'],
             'mip_bias': f32(settings['m_MipBias']),
-            'wrap_u': WRAP_MODES.get(settings['m_WrapU'], settings['m_WrapU']),
-            'wrap_v': WRAP_MODES.get(settings['m_WrapV'], settings['m_WrapV']),
+            'wrap_u': WRAP_MODES.get(wrap_u, wrap_u),
+            'wrap_v': WRAP_MODES.get(wrap_v, wrap_v),
             'color_space': 'srgb' if tree.get('m_ColorSpace', 1) == 1 else 'linear',
         }
 write_json('textures.json', dict(sorted(textures.items())))

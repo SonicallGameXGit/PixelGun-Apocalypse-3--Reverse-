@@ -1,75 +1,15 @@
 {
     "m_Deferred": { "m_Mode": 0, "m_Shader": null },
     "m_DeferredReflections": { "m_Mode": 0, "m_Shader": null },
-    "m_ScreenSpaceShadows": {
-        "m_Mode": 1,
-        "m_Shader": { "ref": "unity_builtin_extra:64" }
-    },
     "m_LegacyDeferred": { "m_Mode": 0, "m_Shader": null },
-    "m_DepthNormals": {
-        "m_Mode": 1,
-        "m_Shader": { "ref": "unity_builtin_extra:62" }
-    },
-    "m_MotionVectors": {
-        "m_Mode": 1,
-        "m_Shader": { "ref": "unity_builtin_extra:75" }
-    },
-    "m_LightHalo": {
-        "m_Mode": 1,
-        "m_Shader": { "ref": "unity_builtin_extra:105" }
-    },
-    "m_LensFlare": {
-        "m_Mode": 1,
-        "m_Shader": { "ref": "unity_builtin_extra:102" }
-    },
     "m_AlwaysIncludedShaders": [
         { "ref": "unity_builtin_extra:7" },
         { "ref": "unity_builtin_extra:15104" },
         { "ref": "unity_builtin_extra:15105" },
         { "ref": "unity_builtin_extra:15106" },
         { "ref": "unity_builtin_extra:10770" },
-        { "ref": "unity_builtin_extra:10782" },
-        { "ref": "unity_builtin_extra:17000" },
-        { "ref": "unity_builtin_extra:16000" },
-        { "ref": "unity_builtin_extra:19" },
-        { "ref": "unity_builtin_extra:65" },
-        { "ref": "unity_builtin_extra:66" },
-        { "ref": "unity_builtin_extra:67" },
-        { "ref": "unity_builtin_extra:109" },
-        { "ref": "unity_builtin_extra:110" },
-        { "ref": "unity_builtin_extra:107" },
-        { "ref": "unity_builtin_extra:9000" },
-        { "ref": "unity_builtin_extra:9001" },
-        { "ref": "unity_builtin_extra:9002" },
-        { "ref": "unity_builtin_extra:9003" },
-        { "ref": "unity_builtin_extra:9004" },
-        { "ref": "unity_builtin_extra:68" },
-        { "ref": "unity_builtin_extra:10757" },
-        { "ref": "unity_builtin_extra:15309" },
-        { "ref": "unity_builtin_extra:15308" }
+        { "ref": "unity_builtin_extra:10782" }
     ],
     "m_PreloadedShaders": [],
-    "m_SpritesDefaultMaterial": { "ref": "globalgamemanagers.assets:2" },
-    "m_CustomRenderPipeline": null,
-    "m_TransparencySortMode": 0,
-    "m_TransparencySortAxis": { "x": 0.0, "y": 0.0, "z": 1.0 },
-    "m_TierSettings_Tier1": { "renderingPath": 0, "hdrMode": 1, "realtimeGICPUUsage": 25, "useCascadedShadowMaps": true, "prefer32BitShadowMaps": false, "enableLPPV": true, "useHDR": true },
-    "m_TierSettings_Tier2": { "renderingPath": 0, "hdrMode": 1, "realtimeGICPUUsage": 25, "useCascadedShadowMaps": true, "prefer32BitShadowMaps": false, "enableLPPV": true, "useHDR": true },
-    "m_TierSettings_Tier3": { "renderingPath": 0, "hdrMode": 1, "realtimeGICPUUsage": 25, "useCascadedShadowMaps": true, "prefer32BitShadowMaps": false, "enableLPPV": true, "useHDR": true },
-    "m_ShaderDefinesPerShaderCompiler": [
-        {
-            "shaderPlatform": 5,
-            "defines_Tier1": [71681536],
-            "defines_Tier2": [71681536],
-            "defines_Tier3": [71681536]
-        },
-        {
-            "shaderPlatform": 9,
-            "defines_Tier1": [71681536],
-            "defines_Tier2": [71681536],
-            "defines_Tier3": [71681536]
-        }
-    ],
-    "m_LightsUseLinearIntensity": false,
-    "m_LightsUseColorTemperature": false
+    "m_ShaderSettings": { "useScreenSpaceShadows": true }
 }

@@ -560,7 +560,6 @@ impl Animation {
     }
 
     /// `Animation.Stop(name)`.
-    #[allow(dead_code, reason = "Animation API used by scripts not ported yet")]
     pub fn stop(&mut self, name: &str) {
         if let Some(state) = self.state_mut(name) {
             state.stop();

@@ -1,0 +1,21 @@
+{
+    "ref": "resources.assets:40922",
+    "enabled": true,
+    "script": "ServerSettings",
+    "script_ref": "globalgamemanagers.assets:200",
+    "name": "PhotonServerSettings",
+    "fields_complete": true,
+    "fields": {
+        "HostType": 1,
+        "Protocol": 0,
+        "ServerAddress": "",
+        "ServerPort": 5055,
+        "AppID": "7f13f7d7-e387-42af-86b9-c353459dc738",
+        "PreferredRegion": 0,
+        "EnabledRegions": -1,
+        "JoinLobby": true,
+        "EnableLobbyStatistics": false,
+        "RpcList": ["Chat", "ColorRpc", "DestroyRpc", "DoDamage", "DoJump", "DoSwapTeams", "InstantiateRpc", "Marco", "networkAddMessage", "OnAwakeRPC", "PickupItemInit", "Polo", "PunPickup", "PunPickupSimple", "PunRespawn", "RequestForPickupTimes", "SendChatMessage", "SyncWeaponsRPC", "TaggedPlayer", "AddPlayer", "attackAnimation", "attackTo", "dayTimeUpdate", "doDamage", "doOverlapDamage", "drinkUpdate", "driving", "eatUpdate", "engineUpdate", "GetItem", "GetNumTag", "getRemovedIndex", "HPUpdate", "interactive", "MoveTo", "MoveToPosition", "OnDead", "onVehicle", "placingObject", "PlayerConnectedCallback", "PlayerRegisteration", "PositionUpdate", "ReceiveFromServer", "RequestLoadFromServer", "resetAllTrees", "SaveToServer", "SceneLoadLevel", "sendRemovedTreeIndex", "toggleFlash", "updateAnimation", "UpdateHeadRotation", "UpdateOtherInventory", "UpdatePlayer", "UpdatePlayerInfo", "UpdatePlayerScore", "UpdateRemovedTrees", "UpdateScoreBoards", "UpdateTransform", "UpdateVehicle", "activatebeartrap", "activelight", "addbleed", "addkill", "addmoney", "addmyspawner", "addzombiedeath", "ask_aparence", "askmyid", "asksuplly", "asktheanimation", "asktheplayeranim", "askthewave", "asktimer", "call_for_fort", "changecintoitem", "changeitem", "dead_ask_aparence", "dead_sync_aparence", "destroy_droploot", "destroymeitem", "dropitem", "endgame", "endmissile", "fadeanim", "fadearmanim", "fadeleganim", "forcar", "get_grab", "grabammo", "grabammocrate", "grabitem", "hearnoise", "hurt2", "hurtbyzombie", "hurthead", "hurtme", "killme", "killmebuffered", "nasceterra", "openbag", "playanim", "playarmanim", "playasound", "playitemsound", "playleganim", "playzombiesound", "pushme", "receiveammo", "receiveammocrate", "receivechat", "receiveitem", "revive", "sendchat", "senddeadname", "sendstuff", "servermessage", "set_realtime", "setbleeding", "setcanmove", "setcol", "setdied", "setid", "setkillerid", "setmyname", "setpermission", "setposstuff", "setreviving", "setrot", "setskin", "setzumbistate", "setzumbistuff", "spillblood", "stun_me", "sync_aparence", "sync_grab", "syncinfo", "syncmyid", "syncnames", "syncwave", "updatemypermission", "updatename", "updateposition", "SetOnVehicle", "TeleportPosition"],
+        "DisableAutoOpenWizard": true
+    }
+}

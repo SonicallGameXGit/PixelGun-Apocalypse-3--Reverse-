@@ -100,6 +100,8 @@ pub struct Scene {
     pub spawn_points: Vec<SpawnPoint>,
     /// Renderers whose mesh is not a published asset (e.g. Unity built-in primitives).
     pub skipped_renderers: usize,
+    /// `WhoKilledWho.guiSkin` of the `__Room` object (the kill feed's GUISkin ref).
+    pub kill_feed_skin: Option<String>,
 }
 
 struct Node<'a> {
@@ -223,6 +225,7 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
         camera: None,
         spawn_points: Vec::new(),
         skipped_renderers: 0,
+        kill_feed_skin: None,
     };
 
     for node in nodes_json {
@@ -242,6 +245,12 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
                 position,
                 rotation,
             });
+        }
+        for script in node["components"].as_array().into_iter().flatten() {
+            if script["script"] == "WhoKilledWho" {
+                scene.kill_feed_skin =
+                    ref_of(&script["fields"]["guiSkin"]).map(|(r, _)| r.to_string());
+            }
         }
         if !active {
             continue;

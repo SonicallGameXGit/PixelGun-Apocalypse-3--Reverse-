@@ -1,191 +1,149 @@
 {
-    "adsettingsdata": [
-        { "ref": "resources.assets:40956", "type": "MonoBehaviour" }
-    ],
     "detonator/textures/fireball": [
-        { "ref": "resources.assets:111", "asset": "textures/Fireball.png", "type": "Texture2D" }
+        { "ref": "resources.assets:108", "asset": "textures/Fireball.png", "type": "Texture2D" }
     ],
     "detonator/textures/glow": [
-        { "ref": "resources.assets:85", "asset": "textures/Glow.png", "type": "Texture2D" }
+        { "ref": "resources.assets:84", "asset": "textures/Glow.png", "type": "Texture2D" }
     ],
     "detonator/textures/glowdot": [
-        { "ref": "resources.assets:139", "asset": "textures/GlowDot.png", "type": "Texture2D" }
+        { "ref": "resources.assets:138", "asset": "textures/GlowDot.png", "type": "Texture2D" }
+    ],
+    "detonator/textures/heatdistort": [
+        { "ref": "resources.assets:183", "type": "Shader" }
     ],
     "detonator/textures/heatwave": [
-        { "ref": "resources.assets:119", "asset": "textures/Heatwave.png", "type": "Texture2D" }
+        { "ref": "resources.assets:117", "asset": "textures/Heatwave.png", "type": "Texture2D" }
     ],
     "detonator/textures/shockwave": [
-        { "ref": "resources.assets:136", "asset": "textures/Shockwave.png", "type": "Texture2D" }
+        { "ref": "resources.assets:135", "asset": "textures/Shockwave.png", "type": "Texture2D" }
     ],
     "detonator/textures/smoke": [
-        { "ref": "resources.assets:92", "asset": "textures/Smoke.png", "type": "Texture2D" }
-    ],
-    "gamearter_loadingscreen": [
-        { "ref": "resources.assets:16213", "type": "GameObject" }
-    ],
-    "garter_noconnection": [
-        { "ref": "resources.assets:16225", "type": "GameObject" }
-    ],
-    "garter_notification": [
-        { "ref": "resources.assets:16210", "type": "GameObject" }
-    ],
-    "garter_sdk": [
-        { "ref": "resources.assets:16212", "type": "GameObject" }
+        { "ref": "resources.assets:90", "asset": "textures/Smoke.png", "type": "Texture2D" }
     ],
     "german": [
-        { "ref": "resources.assets:3464", "type": "GameObject" }
+        { "ref": "resources.assets:3439", "type": "GameObject" }
     ],
     "german (ragdol)": [
-        { "ref": "resources.assets:14520", "type": "GameObject" }
-    ],
-    "interstitial": [
-        { "ref": "resources.assets:16221", "type": "GameObject" }
+        { "ref": "resources.assets:14496", "type": "GameObject" }
     ],
     "mercenarys": [
-        { "ref": "resources.assets:9355", "type": "GameObject" }
+        { "ref": "resources.assets:9330", "type": "GameObject" }
     ],
     "mercenarys (ragdol)": [
-        { "ref": "resources.assets:14248", "type": "GameObject" }
+        { "ref": "resources.assets:14224", "type": "GameObject" }
     ],
     "old/jyjtyjy": [
-        { "ref": "resources.assets:980", "type": "GameObject" }
+        { "ref": "resources.assets:956", "type": "GameObject" }
     ],
     "old/networkplayer": [
-        { "ref": "resources.assets:982", "type": "GameObject" }
+        { "ref": "resources.assets:955", "type": "GameObject" }
     ],
     "old/special": [
-        { "ref": "resources.assets:7311", "type": "GameObject" }
+        { "ref": "resources.assets:7286", "type": "GameObject" }
     ],
     "old/specialforce": [
-        { "ref": "resources.assets:11991", "type": "GameObject" }
+        { "ref": "resources.assets:11969", "type": "GameObject" }
     ],
     "photonserversettings": [
-        { "ref": "resources.assets:40957", "type": "MonoBehaviour" }
+        { "ref": "resources.assets:40922", "type": "MonoBehaviour" }
     ],
     "pro/bad guys": [
-        { "ref": "resources.assets:3129", "type": "GameObject" }
+        { "ref": "resources.assets:3103", "type": "GameObject" }
     ],
     "pro/badknife": [
-        { "ref": "resources.assets:13340", "type": "GameObject" }
+        { "ref": "resources.assets:13316", "type": "GameObject" }
     ],
     "pro/badsnipe": [
-        { "ref": "resources.assets:9508", "type": "GameObject" }
+        { "ref": "resources.assets:9482", "type": "GameObject" }
     ],
     "pro/free/bad guys": [
-        { "ref": "resources.assets:3128", "type": "GameObject" }
+        { "ref": "resources.assets:3104", "type": "GameObject" }
     ],
     "pro/free/badknife": [
-        { "ref": "resources.assets:13341", "type": "GameObject" }
+        { "ref": "resources.assets:13317", "type": "GameObject" }
     ],
     "pro/free/badsnipe": [
-        { "ref": "resources.assets:9507", "type": "GameObject" }
+        { "ref": "resources.assets:9483", "type": "GameObject" }
     ],
     "pro/free/good guys": [
-        { "ref": "resources.assets:11993", "type": "GameObject" }
+        { "ref": "resources.assets:11967", "type": "GameObject" }
     ],
     "pro/free/goodknife": [
-        { "ref": "resources.assets:8549", "type": "GameObject" }
+        { "ref": "resources.assets:8523", "type": "GameObject" }
     ],
     "pro/free/goodsnipe": [
-        { "ref": "resources.assets:6836", "type": "GameObject" }
+        { "ref": "resources.assets:6810", "type": "GameObject" }
     ],
     "pro/free/prefabs/multiplayerprefabs/__lobby1": [
-        { "ref": "resources.assets:401", "type": "GameObject" }
+        { "ref": "resources.assets:373", "type": "GameObject" }
     ],
     "pro/free/prefabs/multiplayerprefabs/menus/__lobby": [
-        { "ref": "resources.assets:388", "type": "GameObject" }
+        { "ref": "resources.assets:369", "type": "GameObject" }
     ],
     "pro/free/prefabs/multiplayerprefabs/menus/__room": [
-        { "ref": "resources.assets:390", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/other/remote": [
-        { "ref": "resources.assets:384", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/other/soldier(ragdoll)": [
-        { "ref": "resources.assets:598", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/ballisticknife": [
-        { "ref": "resources.assets:374", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/blaser r93 ": [
-        { "ref": "resources.assets:361", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/deagle": [
-        { "ref": "resources.assets:352", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/m67": [
-        { "ref": "resources.assets:376", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/m79": [
-        { "ref": "resources.assets:362", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/m87t": [
-        { "ref": "resources.assets:350", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/mp5ka4 ": [
-        { "ref": "resources.assets:353", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/rpg": [
-        { "ref": "resources.assets:410", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/stw-25": [
-        { "ref": "resources.assets:345", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/signleplayerprefabs/menusandother/_fps": [
-        { "ref": "resources.assets:343", "type": "GameObject" }
-    ],
-    "pro/free/prefabs/signleplayerprefabs/menusandother/_mainmenu": [
         { "ref": "resources.assets:370", "type": "GameObject" }
     ],
-    "pro/free/prefabs/signleplayerprefabs/menusandother/baselevel": [
+    "pro/free/prefabs/multiplayerprefabs/other/remote": [
+        { "ref": "resources.assets:341", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/other/soldier(ragdoll)": [
+        { "ref": "resources.assets:574", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/ballisticknife": [
+        { "ref": "resources.assets:343", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/blaser r93 ": [
+        { "ref": "resources.assets:344", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/deagle": [
+        { "ref": "resources.assets:345", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/m67": [
+        { "ref": "resources.assets:346", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/m79": [
+        { "ref": "resources.assets:347", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/m87t": [
+        { "ref": "resources.assets:348", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/mp5ka4 ": [
+        { "ref": "resources.assets:349", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/rpg": [
         { "ref": "resources.assets:386", "type": "GameObject" }
     ],
+    "pro/free/prefabs/multiplayerprefabs/weaponsforpick/stw-25": [
+        { "ref": "resources.assets:351", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/signleplayerprefabs/menusandother/_fps": [
+        { "ref": "resources.assets:355", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/signleplayerprefabs/menusandother/_mainmenu": [
+        { "ref": "resources.assets:356", "type": "GameObject" }
+    ],
+    "pro/free/prefabs/signleplayerprefabs/menusandother/baselevel": [
+        { "ref": "resources.assets:352", "type": "GameObject" }
+    ],
     "pro/free/prefabs/signleplayerprefabs/menusandother/ladder": [
-        { "ref": "resources.assets:441", "type": "GameObject" }
+        { "ref": "resources.assets:414", "type": "GameObject" }
     ],
     "pro/free/prefabs/signleplayerprefabs/menusandother/singleplayercharacter": [
-        { "ref": "resources.assets:981", "type": "GameObject" }
+        { "ref": "resources.assets:954", "type": "GameObject" }
     ],
     "pro/good guys": [
-        { "ref": "resources.assets:11992", "type": "GameObject" }
+        { "ref": "resources.assets:11968", "type": "GameObject" }
     ],
     "pro/goodknife": [
-        { "ref": "resources.assets:8548", "type": "GameObject" }
+        { "ref": "resources.assets:8524", "type": "GameObject" }
     ],
     "pro/goodsnipe": [
-        { "ref": "resources.assets:6835", "type": "GameObject" }
-    ],
-    "sdkgui": [
-        { "ref": "resources.assets:77", "asset": "textures/sdkgui.png", "type": "Texture2D" },
-        { "ref": "resources.assets:318", "asset": "ui/sprites/sdkgui_0.png", "type": "Sprite" },
-        { "ref": "resources.assets:319", "asset": "ui/sprites/sdkgui_1.png", "type": "Sprite" },
-        { "ref": "resources.assets:320", "asset": "ui/sprites/sdkgui_2.png", "type": "Sprite" },
-        { "ref": "resources.assets:321", "asset": "ui/sprites/sdkgui_3.png", "type": "Sprite" },
-        { "ref": "resources.assets:337", "asset": "ui/sprites/sdkgui_4.png", "type": "Sprite" },
-        { "ref": "resources.assets:338", "asset": "ui/sprites/sdkgui_5.png", "type": "Sprite" },
-        { "ref": "resources.assets:339", "asset": "ui/sprites/sdkgui_6.png", "type": "Sprite" },
-        { "ref": "resources.assets:340", "asset": "ui/sprites/sdkgui_7.png", "type": "Sprite" },
-        { "ref": "resources.assets:341", "asset": "ui/sprites/sdkgui_8.png", "type": "Sprite" },
-        { "ref": "resources.assets:322", "asset": "ui/sprites/sdkgui_12.png", "type": "Sprite" },
-        { "ref": "resources.assets:323", "asset": "ui/sprites/sdkgui_13.png", "type": "Sprite" },
-        { "ref": "resources.assets:324", "asset": "ui/sprites/sdkgui_14.png", "type": "Sprite" },
-        { "ref": "resources.assets:325", "asset": "ui/sprites/sdkgui_15.png", "type": "Sprite" },
-        { "ref": "resources.assets:326", "asset": "ui/sprites/sdkgui_16.png", "type": "Sprite" },
-        { "ref": "resources.assets:327", "asset": "ui/sprites/sdkgui_17.png", "type": "Sprite" },
-        { "ref": "resources.assets:328", "asset": "ui/sprites/sdkgui_18.png", "type": "Sprite" },
-        { "ref": "resources.assets:329", "asset": "ui/sprites/sdkgui_19.png", "type": "Sprite" },
-        { "ref": "resources.assets:330", "asset": "ui/sprites/sdkgui_20.png", "type": "Sprite" },
-        { "ref": "resources.assets:331", "asset": "ui/sprites/sdkgui_21.png", "type": "Sprite" },
-        { "ref": "resources.assets:332", "asset": "ui/sprites/sdkgui_22.png", "type": "Sprite" },
-        { "ref": "resources.assets:333", "asset": "ui/sprites/sdkgui_23.png", "type": "Sprite" },
-        { "ref": "resources.assets:334", "asset": "ui/sprites/sdkgui_24.png", "type": "Sprite" },
-        { "ref": "resources.assets:335", "asset": "ui/sprites/sdkgui_25.png", "type": "Sprite" },
-        { "ref": "resources.assets:336", "asset": "ui/sprites/sdkgui_28.png", "type": "Sprite" }
+        { "ref": "resources.assets:6811", "type": "GameObject" }
     ],
     "zombie": [
-        { "ref": "resources.assets:9354", "type": "GameObject" }
+        { "ref": "resources.assets:9329", "type": "GameObject" }
     ],
     "zombie ragdol": [
-        { "ref": "resources.assets:7603", "type": "GameObject" }
+        { "ref": "resources.assets:7578", "type": "GameObject" }
     ]
 }

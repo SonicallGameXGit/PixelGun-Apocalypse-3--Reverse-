@@ -1,10 +1,10 @@
 {
     "file": "resources.assets",
     "resources_path": "pro/free/prefabs/multiplayerprefabs/other/remote",
-    "root": "resources.assets:384",
+    "root": "resources.assets:341",
     "nodes": [
         {
-            "ref": "resources.assets:384",
+            "ref": "resources.assets:341",
             "name": "Remote",
             "active": true,
             "layer": 0,
@@ -12,7 +12,7 @@
             "components": [
                 {
                     "type": "Transform",
-                    "ref": "resources.assets:16269",
+                    "ref": "resources.assets:16205",
                     "data": {
                         "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
                         "m_LocalPosition": { "x": 43.266144, "y": 1.4945083, "z": -54.38601 },
@@ -21,14 +21,14 @@
                 },
                 {
                     "type": "MeshFilter",
-                    "ref": "resources.assets:35386",
+                    "ref": "resources.assets:35380",
                     "data": {
                         "m_Mesh": { "ref": "unity_default_resources:10202" }
                     }
                 },
                 {
                     "type": "BoxCollider",
-                    "ref": "resources.assets:38610",
+                    "ref": "resources.assets:38604",
                     "data": {
                         "m_Material": null,
                         "m_IsTrigger": false,
@@ -39,17 +39,11 @@
                 },
                 {
                     "type": "MeshRenderer",
-                    "ref": "resources.assets:32185",
+                    "ref": "resources.assets:32161",
                     "data": {
                         "m_Enabled": true,
                         "m_CastShadows": 1,
-                        "m_ReceiveShadows": 1,
-                        "m_DynamicOccludee": 1,
-                        "m_MotionVectors": 1,
-                        "m_LightProbeUsage": 0,
-                        "m_ReflectionProbeUsage": 1,
-                        "m_RenderingLayerMask": 4294967295,
-                        "m_RendererPriority": 0,
+                        "m_ReceiveShadows": true,
                         "m_LightmapIndex": 65535,
                         "m_LightmapIndexDynamic": 65535,
                         "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
@@ -57,12 +51,12 @@
                         "m_Materials": [
                             { "ref": "resources.assets:1" }
                         ],
-                        "m_StaticBatchInfo": { "firstSubMesh": 0, "subMeshCount": 0 },
+                        "m_SubsetIndices": [],
                         "m_StaticBatchRoot": null,
+                        "m_UseLightProbes": false,
+                        "m_ReflectionProbeUsage": 1,
                         "m_ProbeAnchor": null,
-                        "m_LightProbeVolumeOverride": null,
                         "m_SortingLayerID": 0,
-                        "m_SortingLayer": 0,
                         "m_SortingOrder": 0,
                         "m_AdditionalVertexStreams": null
                     }

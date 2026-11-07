@@ -1,0 +1,228 @@
+{
+    "file": "resources.assets",
+    "resources_path": null,
+    "root": "resources.assets:361",
+    "nodes": [
+        {
+            "ref": "resources.assets:361",
+            "name": "Glass",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16226",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": -13.545137, "y": 3.591083, "z": 4.1133137 },
+                        "m_LocalScale": { "x": 0.020524204, "y": 0.020524204, "z": 0.020524204 }
+                    }
+                },
+                {
+                    "type": "MeshFilter",
+                    "ref": "resources.assets:35374",
+                    "data": {
+                        "m_Mesh": { "ref": "unity_default_resources:10209" }
+                    }
+                },
+                {
+                    "type": "MeshRenderer",
+                    "ref": "resources.assets:32155",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": true,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "resources.assets:53" }
+                        ],
+                        "m_SubsetIndices": [],
+                        "m_StaticBatchRoot": null,
+                        "m_UseLightProbes": false,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_ProbeAnchor": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingOrder": 0,
+                        "m_AdditionalVertexStreams": null
+                    }
+                },
+                {
+                    "type": "AudioSource",
+                    "ref": "resources.assets:39245",
+                    "data": {
+                        "m_Enabled": 1,
+                        "OutputAudioMixerGroup": null,
+                        "m_audioClip": { "ref": "resources.assets:273", "asset": "audio/ImpactSound.m4a" },
+                        "m_PlayOnAwake": true,
+                        "m_Volume": 1.0,
+                        "m_Pitch": 1.0,
+                        "Loop": false,
+                        "Mute": false,
+                        "Spatialize": false,
+                        "Priority": 128,
+                        "DopplerLevel": 1.0,
+                        "MinDistance": 1.0,
+                        "MaxDistance": 50.0,
+                        "Pan2D": 0.0,
+                        "rolloffMode": 0,
+                        "BypassEffects": false,
+                        "BypassListenerEffects": false,
+                        "BypassReverbZones": false,
+                        "rolloffCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 },
+                                { "time": 1.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "panLevelCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "spreadCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 0.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        },
+                        "reverbZoneMixCustomCurve": {
+                            "m_Curve": [
+                                { "time": 0.0, "value": 1.0, "inSlope": 0.0, "outSlope": 0.0 }
+                            ],
+                            "m_PreInfinity": 2,
+                            "m_PostInfinity": 2,
+                            "m_RotationOrder": 4
+                        }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40965",
+                    "enabled": true,
+                    "script": "WaitForDestroy",
+                    "script_ref": "globalgamemanagers.assets:215",
+                    "fields_complete": true,
+                    "fields": { "lifeTime": 100.0 }
+                }
+            ],
+            "children": ["resources.assets:315"],
+            "parent": null
+        },
+        {
+            "ref": "resources.assets:315",
+            "name": "MachineGun sparks",
+            "active": true,
+            "layer": 0,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16179",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "m_LocalScale": { "x": 48.72296, "y": 48.72296, "z": 48.72296 }
+                    }
+                },
+                {
+                    "type": "EllipsoidParticleEmitter",
+                    "ref": "resources.assets:32061",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_Emit": true,
+                        "minSize": 0.01,
+                        "maxSize": 0.1,
+                        "minEnergy": 0.0,
+                        "maxEnergy": 0.75,
+                        "minEmission": 25.0,
+                        "maxEmission": 50.0,
+                        "worldVelocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "localVelocity": { "x": -0.0, "y": 0.0, "z": 3.0 },
+                        "rndVelocity": { "x": 3.0, "y": 3.0, "z": 3.0 },
+                        "emitterVelocityScale": 0.05,
+                        "tangentVelocity": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "angularVelocity": 0.0,
+                        "rndAngularVelocity": 0.0,
+                        "rndRotation": false,
+                        "Simulate in Worldspace?": false,
+                        "m_OneShot": true,
+                        "m_Ellipsoid": { "x": 0.001, "y": 0.001, "z": 0.001 },
+                        "m_MinEmitterRange": 0.0
+                    }
+                },
+                {
+                    "type": "ParticleAnimator",
+                    "ref": "resources.assets:32043",
+                    "data": {
+                        "Does Animate Color?": false,
+                        "colorAnimation[0]": { "rgba": 16777215 },
+                        "colorAnimation[1]": { "rgba": 16777215 },
+                        "colorAnimation[2]": { "rgba": 16777215 },
+                        "colorAnimation[3]": { "rgba": 4294967295 },
+                        "colorAnimation[4]": { "rgba": 184549375 },
+                        "worldRotationAxis": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "localRotationAxis": { "x": 0.0, "y": 0.0, "z": 0.0 },
+                        "sizeGrow": -0.05,
+                        "rndForce": { "x": 1.0, "y": 1.0, "z": 1.0 },
+                        "force": { "x": 0.0, "y": -6.0, "z": 0.0 },
+                        "damping": 1.0,
+                        "stopSimulation": false,
+                        "autodestruct": false
+                    }
+                },
+                {
+                    "type": "ParticleRenderer",
+                    "ref": "resources.assets:35356",
+                    "data": {
+                        "m_Enabled": true,
+                        "m_CastShadows": 1,
+                        "m_ReceiveShadows": true,
+                        "m_LightmapIndex": 65535,
+                        "m_LightmapIndexDynamic": 65535,
+                        "m_LightmapTilingOffset": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_LightmapTilingOffsetDynamic": { "x": 1.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+                        "m_Materials": [
+                            { "ref": "resources.assets:52" }
+                        ],
+                        "m_SubsetIndices": [],
+                        "m_StaticBatchRoot": null,
+                        "m_UseLightProbes": false,
+                        "m_ReflectionProbeUsage": 1,
+                        "m_ProbeAnchor": null,
+                        "m_SortingLayerID": 0,
+                        "m_SortingOrder": 0,
+                        "m_CameraVelocityScale": 0.0,
+                        "m_StretchParticles": 3,
+                        "m_LengthScale": 2.0,
+                        "m_VelocityScale": 0.1,
+                        "m_MaxParticleSize": 1.0,
+                        "UV Animation": { "x Tile": 1, "y Tile": 1, "cycles": 1.0 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40931",
+                    "enabled": true,
+                    "script": "WaitForDestroy",
+                    "script_ref": "globalgamemanagers.assets:215",
+                    "fields_complete": true,
+                    "fields": { "lifeTime": 0.3 }
+                }
+            ],
+            "children": [],
+            "parent": "resources.assets:361"
+        }
+    ]
+}

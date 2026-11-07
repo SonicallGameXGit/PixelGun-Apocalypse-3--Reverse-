@@ -89,6 +89,21 @@ def parse_mono_header(obj, raw):
             'name': name, 'fields_offset': p}
 
 
+def sprite_image(sprite):
+    """UnityPy's image; for Unity 5.3 tight sprites it cannot read the legacy mesh, so an unpacked
+    sprite falls back to its texture rect (the pixels the tight mesh is cut from)."""
+    try:
+        return sprite.image
+    except AssertionError:
+        rd = sprite.m_RD
+        if rd.settingsRaw & 1 != 0:
+            raise
+        texture = rd.texture.read().image
+        rect = rd.textureRect
+        top = texture.height - (rect.y + rect.height)
+        return texture.crop((round(rect.x), round(top), round(rect.x + rect.width), round(top + rect.height)))
+
+
 resource_cache = {}
 
 
@@ -132,7 +147,7 @@ for obj in env.objects:
                 entry['skipped'] = 'empty runtime-generated texture (dynamic font atlas)'
             elif tname in ('Texture2D', 'Sprite'):
                 os.makedirs(kind_dir, exist_ok=True)
-                img = data.image
+                img = sprite_image(data) if tname == 'Sprite' else data.image
                 entry['size'] = list(img.size)
                 fn = safe_name(tname, name, obj.path_id) + '.png'
                 img.save(os.path.join(kind_dir, fn))

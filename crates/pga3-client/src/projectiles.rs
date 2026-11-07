@@ -14,6 +14,7 @@ use serde_json::Value;
 
 use crate::anim::ClipLibrary;
 use crate::assets::{f32_of, ref_of, tag_name};
+use crate::particles::GRAVITY;
 use crate::physics::{
     Capsule, CollisionWorld, DynamicCollider, InitialOverlap, QueryFilter, sweep_sphere_capsule,
 };
@@ -38,6 +39,10 @@ pub struct ProjectileFields {
     pub time_out: f32,
     pub radius: f32,
     pub center: Vec3,
+    /// `Rigidbody.useGravity` (the Mercenary grenade; the rocket flies straight).
+    pub use_gravity: bool,
+    /// `Rigidbody.drag` (PhysX linear damping).
+    pub drag: f32,
 }
 
 #[derive(Clone, Debug)]
@@ -113,6 +118,7 @@ impl Templates {
                         Behaviour::Bullet(bullet_fields(f))
                     } else if let Some(f) = prefab.script_fields(0, "Projectile") {
                         let sphere = prefab.component(0, "SphereCollider");
+                        let body = prefab.component(0, "Rigidbody");
                         Behaviour::Projectile(ProjectileFields {
                             explosion: ref_of(&f["explosion"]).map(|(r, _)| r.to_string()),
                             destroy_delay: f32_of(&f["destroyDelay"]),
@@ -122,6 +128,10 @@ impl Templates {
                                 let c = &s["m_Center"];
                                 Vec3::new(f32_of(&c["x"]), f32_of(&c["y"]), f32_of(&c["z"]))
                             }),
+                            use_gravity: body
+                                .and_then(|b| b["m_UseGravity"].as_bool())
+                                .unwrap_or(false),
+                            drag: body.map_or(0.0, |b| f32_of(&b["m_Drag"])),
                         })
                     } else {
                         Behaviour::None
@@ -346,6 +356,11 @@ impl Projectiles {
             if let Some(rotation) = look_rotation(*velocity, Vec3::Y) {
                 object.rotation = rotation;
             }
+            // PhysX `bodyCoreComputeUnconstrainedVelocity`: gravity, then linear damping.
+            if fields.use_gravity {
+                *velocity += GRAVITY * dt;
+            }
+            *velocity *= (1.0 - fields.drag * dt).max(0.0);
             let scale = templates.list[object.template].prefab.nodes[0].local.scale;
             let radius = fields.radius * scale.max_element();
             let center = object.position + object.rotation * (fields.center * scale);
@@ -545,14 +560,20 @@ mod tests {
     use crate::assets::{find_assets_dir, load_tags};
 
     const DT: f32 = 1.0 / 60.0;
-    const PISTOL_BULLET: &str = "resources.assets:4166";
-    const ROCKET: &str = "resources.assets:11042";
+    const PISTOL_BULLET: &str = "resources.assets:4141";
+    const ROCKET: &str = "resources.assets:11017";
+    /// The `Mercenarys` launcher's grenade (`GrenadeMissile__12277`).
+    const GRENADE: &str = "resources.assets:12277";
 
     fn templates() -> Templates {
         let assets = find_assets_dir().unwrap();
         let mut clips = ClipLibrary::new(&assets).unwrap();
         let tags = load_tags(&assets).unwrap();
-        let refs = [PISTOL_BULLET.to_string(), ROCKET.to_string()];
+        let refs = [
+            PISTOL_BULLET.to_string(),
+            ROCKET.to_string(),
+            GRENADE.to_string(),
+        ];
         Templates::load(&assets, &refs, tags, &mut clips).unwrap()
     }
 
@@ -796,10 +817,45 @@ mod tests {
         else {
             panic!("{:?}", p.events);
         };
-        assert!(prefab.ends_with("WFXMR_Explosion 1__4274.json"), "{prefab}");
+        assert!(prefab.ends_with("WFXMR_Explosion 1__4249.json"), "{prefab}");
         // Sphere radius 0.79 · 0.7244, centre 0.04 · 0.7244 ahead of the root.
         let expected = 10.0 - 0.79 * 0.724_400_4 - 0.04 * 0.724_400_9;
         assert!((position.z - expected).abs() < 1e-3, "{position}");
+    }
+
+    /// The grenade's `Rigidbody` uses gravity and drag 0.1: per 0.02 s step
+    /// `v = (v + g·dt)·(1 - 0.1·dt)`, then it moves by `v·dt`.
+    #[test]
+    fn grenade_falls_with_gravity_and_drag() {
+        let t = templates();
+        let world = CollisionWorld::new();
+        let mut p = Projectiles::default();
+        let grenade = t.find(GRENADE).unwrap();
+        let Behaviour::Projectile(fields) = &t.list[grenade].behaviour else {
+            panic!("grenade");
+        };
+        assert!(fields.use_gravity && (fields.drag - 0.1).abs() < 1e-6);
+        p.spawn(
+            &t,
+            grenade,
+            Vec3::ZERO,
+            Quat::IDENTITY,
+            Some(Vec3::Z * 40.0),
+        );
+        let mut time = 0.0;
+        p.update(&t, &world, &Targets::default(), DT, time);
+        let mut expected = (Vec3::ZERO, Vec3::Z * 40.0);
+        for _ in 0..50 {
+            time += 0.02;
+            p.fixed_update(&t, &world, &Targets::default(), 0.02, time);
+            expected.1 = (expected.1 + GRAVITY * 0.02) * (1.0 - 0.1 * 0.02);
+            expected.0 += expected.1 * 0.02;
+        }
+        let position = p.objects[0].position;
+        assert!((position - expected.0).length() < 1e-3, "{position}");
+        // About 5 m lower after one second, nose pointing down the arc.
+        assert!((-5.2..-4.6).contains(&position.y), "{position}");
+        assert!((p.objects[0].rotation * Vec3::Z).y < -0.1);
     }
 
     #[test]

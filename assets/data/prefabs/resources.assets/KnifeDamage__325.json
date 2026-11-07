@@ -1,0 +1,47 @@
+{
+    "file": "resources.assets",
+    "resources_path": null,
+    "root": "resources.assets:325",
+    "nodes": [
+        {
+            "ref": "resources.assets:325",
+            "name": "KnifeDamage",
+            "active": true,
+            "layer": 4,
+            "tag": 0,
+            "components": [
+                {
+                    "type": "Transform",
+                    "ref": "resources.assets:16189",
+                    "data": {
+                        "m_LocalRotation": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 },
+                        "m_LocalPosition": { "x": 562.12756, "y": 12.101043, "z": 629.71423 },
+                        "m_LocalScale": { "x": 1.0, "y": 1.0, "z": 1.0 }
+                    }
+                },
+                {
+                    "type": "MonoBehaviour",
+                    "ref": "resources.assets:40936",
+                    "enabled": true,
+                    "script": "Bullet",
+                    "script_ref": "globalgamemanagers.assets:283",
+                    "fields_complete": true,
+                    "fields": {
+                        "speed": 25,
+                        "life": 0.15,
+                        "damage": 300,
+                        "impactForce": 150,
+                        "impactHoles": true,
+                        "doDamage": true,
+                        "impactObjects": [
+                            { "ref": "resources.assets:320" },
+                            { "ref": "resources.assets:326" }
+                        ]
+                    }
+                }
+            ],
+            "children": [],
+            "parent": null
+        }
+    ]
+}

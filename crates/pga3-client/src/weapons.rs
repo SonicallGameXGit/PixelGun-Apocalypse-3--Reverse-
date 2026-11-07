@@ -11,7 +11,7 @@
 use glam::{Mat4, Quat, Vec3, Vec4};
 use serde_json::Value;
 
-use crate::assets::{f32_of, ref_of, tag_number};
+use crate::assets::{f32_of, ref_of};
 use crate::character::WeaponAnimation;
 pub use crate::gui::GuiQuad;
 use crate::physics::CollisionWorld;
@@ -37,9 +37,8 @@ pub struct WeaponInput {
     pub fire_held: bool,
     pub fire_down: bool,
     pub aim_down: bool,
-    /// `GetKeyDown(KeyCode.R)`, `GetKeyDown(KeyCode.O)`.
+    /// `GetKeyDown(KeyCode.R)`.
     pub reload_down: bool,
-    pub auto_fire_toggle_down: bool,
     /// `GetKeyDown(KeyCode.Alpha0 + n)`.
     pub number_down: [bool; 10],
     /// `GetAxis("Mouse ScrollWheel")`.
@@ -185,8 +184,6 @@ pub struct WeaponScript {
     pub node: usize,
     pub name: String,
     pub gun_type: GunType,
-    pub in_sight: bool,
-    pub auto_fire: bool,
     pub aimed: bool,
     pub fire: bool,
     pub can_aim: bool,
@@ -301,17 +298,13 @@ pub struct WeaponManager {
     pub shownowepinroom2: f32,
     pub changewep: i32,
     pub index2: i32,
-    pub text_delay: f32,
     pub can_switch: bool,
-    pub auto_fire: bool,
     /// `SuperWeapons`: `Application.absoluteURL` contains "pacogames" (slot 9 / `[WEP10]`).
     pub super_weapons: bool,
     pub room_name: String,
     pub crosshair: Option<WeaponCrosshair>,
     /// The Main Camera node (`Camera.main`).
     pub main_camera: Option<usize>,
-    /// `FPScontroller.tagsToShoot` as numeric tags.
-    pub tags_to_shoot: Vec<u32>,
     pub random: Random,
     pub events: Vec<WeaponEvent>,
     coroutines: Vec<Coroutine>,
@@ -395,7 +388,7 @@ impl WeaponContext<'_> {
     }
 
     fn set_active(&mut self, node: usize, active: bool) {
-        self.prefab.nodes[node].active_self = active;
+        self.prefab.set_active(node, active);
     }
 }
 
@@ -427,8 +420,6 @@ impl WeaponScript {
                 3 => GunType::Knife,
                 _ => GunType::MachineGun,
             },
-            in_sight: flag(&f["inSight"]),
-            auto_fire: flag(&f["autoFire"]),
             aimed: flag(&f["aimed"]),
             fire: flag(&f["fire"]),
             can_aim: flag(&f["canAim"]),
@@ -583,7 +574,6 @@ struct Queue<'a> {
     events: &'a mut Vec<WeaponEvent>,
     random: &'a mut Random,
     main_camera: Option<usize>,
-    tags_to_shoot: &'a [u32],
 }
 
 impl Queue<'_> {
@@ -619,7 +609,6 @@ impl Queue<'_> {
 impl WeaponScript {
     /// `Update` (`f29942`).
     fn update(&mut self, ctx: &mut WeaponContext, q: &mut Queue) {
-        self.raycast_for_zombies(ctx, q);
         self.aiming(ctx);
         self.rotation_realism(ctx);
         self.smooth_move(ctx);
@@ -636,17 +625,6 @@ impl WeaponScript {
             self.aimed = false;
         }
         self.input_update(ctx, q);
-    }
-
-    /// `RaycastForZombies`: `inSight` = the screen-centre ray hits a collider whose tag is in
-    /// `FPScontroller.tagsToShoot` (["Blood"]).
-    fn raycast_for_zombies(&mut self, ctx: &WeaponContext, q: &Queue) {
-        let origin = ctx.player.camera_position();
-        let forward = ctx.player.camera_rotation() * Vec3::Z;
-        self.in_sight = ctx
-            .world
-            .raycast(origin, forward, f32::INFINITY)
-            .is_some_and(|hit| q.tags_to_shoot.contains(&hit.tag));
     }
 
     /// `Aiming` (`f29943`).
@@ -765,8 +743,7 @@ impl WeaponScript {
         if input.aim_down && self.can_aim && !ctx.player.running {
             self.aimed = !self.aimed;
         }
-        self.fire = (input.fire_held && self.can_fire && !self.single_fire)
-            || (self.auto_fire && self.in_sight);
+        self.fire = input.fire_held && self.can_fire && !self.single_fire;
         let single_shot = input.fire_down && self.can_fire && !self.is_reload && self.single_fire;
         match self.gun_type {
             GunType::MachineGun => {
@@ -1235,19 +1212,15 @@ impl WeaponCrosshair {
         }
     }
 
-    /// `OnGUI` (`f29915`): four boxes around the centre, red while `inSight`.
-    fn on_gui(&self, script: Option<&WeaponScript>, width: f32, height: f32) -> Vec<GuiQuad> {
+    /// `OnGUI` (`f29915`; the CrazyGames build has no red `inSight` colour): four boxes around
+    /// the centre.
+    fn on_gui(&self, width: f32, height: f32) -> Vec<GuiQuad> {
         let Some(texture) = &self.texture else {
             return Vec::new();
         };
         if self.distance > ((height as i32) / 2) as f32 || !self.display {
             return Vec::new();
         }
-        let color = if script.is_some_and(|ws| ws.in_sight) {
-            Vec4::new(1.0, 0.0, 0.0, 1.0)
-        } else {
-            Vec4::ONE
-        };
         let (d, l, w) = (self.distance, self.length, self.width);
         [
             [(width - d) * 0.5 - l, (height - w) * 0.5, l, w],
@@ -1256,7 +1229,7 @@ impl WeaponCrosshair {
             [(width - w) * 0.5, (height + d) * 0.5, w, l],
         ]
         .into_iter()
-        .map(|rect| GuiQuad::texture(texture, rect, color))
+        .map(|rect| GuiQuad::texture(texture, rect, Vec4::ONE))
         .collect()
     }
 }
@@ -1264,17 +1237,14 @@ impl WeaponCrosshair {
 /// `WeaponManager.Awake` (`f29921`): activates every child (their `Awake`s run:
 /// `WeaponAnimation.Awake` plays Idle, `WeaponScript.Awake` caches its `WeaponAnimation`),
 /// deactivates them all again, then `TakeFirstWeapon(allWeapons[index])` activates that weapon
-/// and sends it `selectWeapon`; finally every weapon's `autoFire = !manager.autoFire`.
-pub fn weapon_manager_awake(
-    prefab: &mut PrefabInstance,
-    custom_tags: &[String],
-) -> Option<WeaponManager> {
+/// and sends it `selectWeapon`.
+pub fn weapon_manager_awake(prefab: &mut PrefabInstance) -> Option<WeaponManager> {
     let (node, component) = prefab.find_scripts("WeaponManager").into_iter().next()?;
     let fields = component["fields"].clone();
     let children = prefab.nodes[node].children.clone();
 
     for &child in &children {
-        prefab.nodes[child].active_self = true;
+        prefab.set_active(child, true);
     }
     let mut awoken = Vec::new();
     for &child in &children {
@@ -1313,20 +1283,12 @@ pub fn weapon_manager_awake(
         })
         .collect();
     for &child in &children {
-        prefab.nodes[child].active_self = false;
+        prefab.set_active(child, false);
     }
     for &weapon in &all_weapons {
-        prefab.nodes[weapon].active_self = false;
+        prefab.set_active(weapon, false);
     }
 
-    let root = 0;
-    let tags_to_shoot = prefab
-        .script_fields(root, "FPScontroller")
-        .and_then(|f| f["tagsToShoot"].as_array().cloned())
-        .unwrap_or_default()
-        .iter()
-        .filter_map(|t| tag_number(t.as_str()?, custom_tags))
-        .collect();
     let crosshair = prefab
         .script_fields(node, "WeaponCrosshair")
         .map(WeaponCrosshair::from_fields);
@@ -1342,16 +1304,13 @@ pub fn weapon_manager_awake(
         shownowepinroom2: f32_of(&fields["shownowepinroom2"]),
         changewep: int_of(&fields["changewep"]),
         index2: int_of(&fields["index2"]),
-        // Private fields: the constructor's values (`f29926`).
-        text_delay: 1.0,
+        // Private field: the constructor's value.
         can_switch: false,
-        auto_fire: true,
         // The client is not served from pacogames.com.
         super_weapons: false,
         room_name: ROOM_NAME.to_string(),
         crosshair,
         main_camera: prefab.find("Main Camera"),
-        tags_to_shoot,
         random: Random::new(1),
         events: Vec::new(),
         coroutines: Vec::new(),
@@ -1364,15 +1323,11 @@ pub fn weapon_manager_awake(
                 clip: clip.clone(),
             });
         }
-        prefab.nodes[weapon].active_self = true;
+        prefab.set_active(weapon, true);
         if let Some(script) = &mut scripts[index] {
             script.select_weapon(prefab);
         }
         manager.can_switch = true;
-    }
-    let auto_fire = !manager.auto_fire;
-    for script in scripts.iter_mut().flatten() {
-        script.auto_fire = auto_fire;
     }
     manager.scripts = scripts;
     Some(manager)
@@ -1429,7 +1384,6 @@ impl WeaponManager {
                     events: &mut self.events,
                     random: &mut self.random,
                     main_camera: self.main_camera,
-                    tags_to_shoot: &self.tags_to_shoot,
                 };
                 script.update(ctx, &mut q);
             }
@@ -1444,13 +1398,6 @@ impl WeaponManager {
     /// `WeaponManager.Update` (`f29923`).
     fn manager_update(&mut self, ctx: &mut WeaponContext) {
         let input = *ctx.input;
-        if input.auto_fire_toggle_down {
-            self.auto_fire = !self.auto_fire;
-            for script in self.scripts.iter_mut().flatten() {
-                script.auto_fire = self.auto_fire;
-                self.text_delay = 1.0;
-            }
-        }
         self.selected_weapon = self.all_weapons.get(self.index).copied();
         if self.all_weapons.len() > 1 {
             // Number keys, or `changewep` from last frame's scroll.
@@ -1490,7 +1437,6 @@ impl WeaponManager {
                 self.scroll_down();
             }
         }
-        self.text_delay -= ctx.dt;
     }
 
     /// Scroll up / M: the next slot whose room token is present, as `changewep`.
@@ -1591,7 +1537,6 @@ impl WeaponManager {
                         events: &mut self.events,
                         random: &mut self.random,
                         main_camera: self.main_camera,
-                        tags_to_shoot: &self.tags_to_shoot,
                     };
                     script.resume(routine, ctx, &mut q);
                     self.scripts[slot] = Some(script);
@@ -1646,16 +1591,16 @@ impl WeaponManager {
                     ));
                 }
                 for &node in &scope.objects_to_deactivate {
-                    prefab.nodes[node].active_self = false;
+                    prefab.set_active(node, false);
                 }
             } else {
                 for &node in &scope.objects_to_deactivate {
-                    prefab.nodes[node].active_self = true;
+                    prefab.set_active(node, true);
                 }
             }
         }
         if let Some(crosshair) = &self.crosshair {
-            quads.extend(crosshair.on_gui(self.selected_script(), width, height));
+            quads.extend(crosshair.on_gui(width, height));
         }
         quads
     }
@@ -1665,7 +1610,7 @@ impl WeaponManager {
 mod tests {
     use super::*;
     use crate::anim::ClipLibrary;
-    use crate::assets::{find_assets_dir, load_tags};
+    use crate::assets::find_assets_dir;
     use crate::prefab::resource_prefab_index;
     use glam::EulerRot;
 
@@ -1680,12 +1625,15 @@ mod tests {
     }
 
     fn rig() -> Rig {
+        rig_of("german")
+    }
+
+    fn rig_of(kind: &str) -> Rig {
         let assets = find_assets_dir().unwrap();
         let mut clips = ClipLibrary::new(&assets).unwrap();
-        let mut prefab = PrefabInstance::load(&assets, "german", &mut clips).unwrap();
-        let tags = load_tags(&assets).unwrap();
-        let manager = weapon_manager_awake(&mut prefab, &tags).unwrap();
-        let mut player = Player::from_prefab(&assets, "german").unwrap();
+        let mut prefab = PrefabInstance::load(&assets, kind, &mut clips).unwrap();
+        let manager = weapon_manager_awake(&mut prefab).unwrap();
+        let mut player = Player::from_prefab(&assets, kind).unwrap();
         player.spawn(Vec3::ZERO, Quat::IDENTITY);
         Rig {
             prefab,
@@ -1765,27 +1713,34 @@ mod tests {
             names,
             ["Machete", "Pistol", "M242", "ShotGun", "Sniper", "Launcher"]
         );
-        // The constructor sets autoFire; Awake gives weapons autoFire = !manager.autoFire.
-        assert!(rig.manager.auto_fire && !rig.script(0).auto_fire);
-        assert_eq!(rig.manager.text_delay, 1.0);
-        assert_eq!(rig.manager.tags_to_shoot, [20001]);
         assert!(rig.active(0) && !rig.active(1));
-        // Bullet refs (component refs too) find their Resources prefab.
+        // The shotgun's `smoke` is a legacy `ParticleEmitter` in the CrazyGames build.
         let assets = find_assets_dir().unwrap();
+        let smoke = rig.script(3).shot_gun.smoke.unwrap();
+        let mut meshes = crate::effects::MeshCache::new(&assets);
+        let emitter = crate::effects::NodeParticles::of_node(&rig.prefab, smoke, &mut meshes, 1);
+        let Some(crate::effects::NodeParticles::Legacy(emitter)) = emitter else {
+            panic!("{emitter:?}");
+        };
+        assert_eq!(
+            (emitter.def.min_emission, emitter.def.max_energy),
+            (4.0, 2.0)
+        );
+        // Bullet refs (component refs too) find their Resources prefab.
         let index = resource_prefab_index(&assets).unwrap();
         let path = |r: &Option<String>| index[r.as_ref().unwrap()].clone();
         let prefix = "prefabs/resources.assets/";
         assert_eq!(
             path(&rig.script(0).knife.bullet),
-            format!("{prefix}KnifeDamage__383.json")
+            format!("{prefix}KnifeDamage__325.json")
         );
         assert_eq!(
             path(&rig.script(1).machine_gun.bullet),
-            format!("{prefix}Bullet__4166.json")
+            format!("{prefix}Bullet__4141.json")
         );
         assert_eq!(
             path(&rig.script(5).grenade_launcher.projectile),
-            format!("{prefix}Roket cube__11042.json")
+            format!("{prefix}Roket cube__11017.json")
         );
     }
 
@@ -1905,6 +1860,37 @@ mod tests {
         assert_eq!(rig.manager.changewep, 1);
     }
 
+    /// The `Mercenarys` sniper (CrazyGames) has its own model, bullet (`Bullet__323`) and
+    /// sound; its muzzle flash's auto-playing `Default Take` snaps the flash to scale 1 and
+    /// Euler(-90, 0, 0) whenever the flash is activated.
+    #[test]
+    fn mercenary_sniper_flash_replays_its_clip() {
+        let mut rig = rig_of("mercenarys");
+        rig.select(5);
+        let sniper = rig.script(4);
+        assert_eq!(
+            sniper.machine_gun.fire_sound.as_deref(),
+            Some("audio/SniperFire.m4a")
+        );
+        let flash = sniper.machine_gun.muzzle_flash.unwrap();
+        assert_eq!(rig.prefab.nodes[flash].name, "MuzzleFlash (1)");
+        let fire = WeaponInput {
+            fire_held: true,
+            fire_down: true,
+            ..Default::default()
+        };
+        let events = rig.frame(&fire);
+        assert_eq!(spawns(&events).len(), 1);
+        assert!(rig.prefab.active_in_hierarchy(flash));
+        let local = rig.prefab.nodes[flash].local;
+        assert!(
+            (local.scale - Vec3::ONE).abs().max_element() < 1e-5,
+            "{local:?}"
+        );
+        let expected = Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2);
+        assert!(local.rotation.dot(expected).abs() > 0.9999, "{local:?}");
+    }
+
     #[test]
     fn pistol_fires_at_fire_rate_and_reloads() {
         let mut rig = rig();
@@ -2005,12 +1991,14 @@ mod tests {
         rig.frames(120, &WeaponInput::default());
         let quads = rig.manager.on_gui(&mut rig.prefab, 1280.0, 720.0);
         assert_eq!(quads.len(), 4);
-        // defaultDistance 20, length 10, width 1.
+        // CrazyGames data: defaultDistance 20, length 10, width 4, `Crosshair 16x15`, always white.
         assert!(
-            (quads[0].rect[0] - 620.0).abs() < 0.05 && quads[0].rect[1] == 359.5,
+            (quads[0].rect[0] - 620.0).abs() < 0.05 && quads[0].rect[1] == 358.0,
             "{:?}",
             quads[0]
         );
+        assert_eq!(quads[0].texture, "textures/Crosshair 16x15.png");
+        assert!(quads.iter().all(|q| q.color == Vec4::ONE));
         rig.select(5);
         let aim = WeaponInput {
             aim_down: true,

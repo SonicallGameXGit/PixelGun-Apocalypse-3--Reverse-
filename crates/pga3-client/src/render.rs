@@ -206,6 +206,8 @@ struct ParticleState {
     tint_scale: f32,
     /// None = the scene's fog colour.
     fog_target: Option<Vec3>,
+    /// False for shaders compiled without fog variants.
+    fog: bool,
 }
 
 fn particle_state(shader: ParticleShader) -> ParticleState {
@@ -219,7 +221,9 @@ fn particle_state(shader: ParticleShader) -> ParticleState {
             1.0,
             Some(Vec3::ZERO),
         ),
-        ParticleShader::AlphaBlended => (glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA, 0, 2.0, None),
+        ParticleShader::AlphaBlended | ParticleShader::AlphaBlendedNoFog => {
+            (glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA, 0, 2.0, None)
+        }
         ParticleShader::WfxAdditiveAlpha8 => (glow::SRC_ALPHA, glow::ONE, 2, 2.0, Some(Vec3::ZERO)),
         ParticleShader::WfxMultiplyAlpha8 => (glow::ZERO, glow::SRC_COLOR, 3, 1.0, Some(Vec3::ONE)),
     };
@@ -229,6 +233,7 @@ fn particle_state(shader: ParticleShader) -> ParticleState {
         mode,
         tint_scale,
         fog_target,
+        fog: shader != ParticleShader::AlphaBlendedNoFog,
     }
 }
 
@@ -1364,6 +1369,8 @@ impl SceneRenderer {
             gl.uniform_1_i32(p.u("u_mode"), state.mode);
             gl.uniform_4_f32(p.u("u_tint"), tint.x, tint.y, tint.z, tint.w);
             gl.uniform_3_f32(p.u("u_fog_target"), fog.x, fog.y, fog.z);
+            let fog_mode = if state.fog { self.fog_mode } else { 0 };
+            gl.uniform_1_i32(p.u("u_fog_mode"), fog_mode);
         }
     }
 

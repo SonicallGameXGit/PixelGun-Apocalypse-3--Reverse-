@@ -115,18 +115,6 @@ pub fn load_tags(assets: &Path) -> Result<Vec<String>> {
         .collect())
 }
 
-/// The numeric tag of a tag name (inverse of `tag_name`).
-pub fn tag_number(name: &str, custom: &[String]) -> Option<u32> {
-    (0..8)
-        .find(|&t| tag_name(t, custom) == name && (t == 0 || name != "Untagged"))
-        .or_else(|| {
-            custom
-                .iter()
-                .position(|t| t == name)
-                .map(|i| FIRST_CUSTOM_TAG + i as u32)
-        })
-}
-
 /// `GameObject.tag` of a numeric tag: Unity's built-in tags, then `custom[tag - 20000]`.
 pub fn tag_name(tag: u32, custom: &[String]) -> &str {
     match tag {
@@ -177,6 +165,9 @@ pub enum ParticleShader {
     /// `Legacy Shaders/Particles/Alpha Blended`: `2 · colour · _TintColor · tex` (alpha
     /// clamped); `Blend SrcAlpha OneMinusSrcAlpha`, fog to the fog colour.
     AlphaBlended,
+    /// `Hidden/Particles/Alpha Blended +100` (the shotgun smoke's `Smoke2`): the same program
+    /// without fog variants or soft particles, queue Transparent+100.
+    AlphaBlendedNoFog,
     /// `WFX/Additive Alpha8`: `2 · colour · _TintColor · (2 · tex.a · colour.a)`;
     /// `Blend SrcAlpha One`, fog to black.
     WfxAdditiveAlpha8,
@@ -191,6 +182,7 @@ impl ParticleShader {
             self,
             ParticleShader::Additive
                 | ParticleShader::AlphaBlended
+                | ParticleShader::AlphaBlendedNoFog
                 | ParticleShader::WfxAdditiveAlpha8
         )
     }
@@ -235,11 +227,16 @@ fn shader_kind(name: &str) -> ShaderKind {
         "Particles/Additive" | "Legacy Shaders/Particles/Additive" => {
             ShaderKind::Particle(ParticleShader::Additive)
         }
-        "Legacy Shaders/Particles/Additive (Soft)" => {
+        // Unity 5.3 names (CrazyGames build); 2017.1+ moved them under "Legacy Shaders/". Same
+        // programs (docs/crazygames-build.md, "Assets").
+        "Particles/Additive (Soft)" | "Legacy Shaders/Particles/Additive (Soft)" => {
             ShaderKind::Particle(ParticleShader::SoftAdditive)
         }
-        "Legacy Shaders/Particles/Alpha Blended" => {
+        "Particles/Alpha Blended" | "Legacy Shaders/Particles/Alpha Blended" => {
             ShaderKind::Particle(ParticleShader::AlphaBlended)
+        }
+        "Hidden/Particles/Alpha Blended +100" => {
+            ShaderKind::Particle(ParticleShader::AlphaBlendedNoFog)
         }
         "WFX/Additive Alpha8" => ShaderKind::Particle(ParticleShader::WfxAdditiveAlpha8),
         "WFX/Multiply Alpha8" => ShaderKind::Particle(ParticleShader::WfxMultiplyAlpha8),

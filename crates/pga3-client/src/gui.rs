@@ -108,7 +108,7 @@ pub struct GuiSkin {
     pub label: GuiStyle,
 }
 
-/// Loads a `GUISkin` by object ref (`resources.assets:40959`) from
+/// Loads a `GUISkin` by object ref (`resources.assets:40923`) from
 /// `assets/data/scriptable/UnityEngine.GUISkin/`.
 pub fn load_skin(assets: &Path, reference: &str) -> Result<GuiSkin> {
     let dir = assets.join("data/scriptable/UnityEngine.GUISkin");
@@ -777,7 +777,7 @@ mod tests {
     #[test]
     fn skins_and_font_load() {
         let assets = find_assets_dir().unwrap();
-        let skin = load_skin(&assets, "resources.assets:40959").unwrap();
+        let skin = load_skin(&assets, "resources.assets:40923").unwrap();
         assert_eq!(skin.box_style.font_size, 22);
         assert_eq!(skin.box_style.alignment, 4);
         assert_eq!(skin.box_style.border, [6.0; 4]);
