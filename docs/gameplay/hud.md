@@ -19,16 +19,27 @@ Client: `gui.rs` (IMGUI subset, font, skins), `hud.rs` (`AmmoDisplay`, `WeaponMa
   - Built-in metrics: `m_FontSize` 13, line spacing 14.94873, ascent 11.768555.
   - Bold is synthetic.
   - Glyphs are rasterised with `fontdue` into a 1024² atlas.
-- **Rich text:** `<b>`, `<i>`, `<size=N>` and `<color=...>` are supported. A tag with an invalid value is shown as literal text (**inferred**).
+- **Rich text** (**observed**, Unity's native text generator: `f19944` collects tags, `f20035` lexes them, `f20036` reads values, `f11465` parses colours, `f20038` checks nesting):
+  - Tag names `b`, `i`, `color`, `size`, `material`, `quad` (also `x`, `y`, `width`, `height`, quad attributes) match ignoring ASCII case. The name must be followed by `>`, by `=` (opening tags), or by a space (`quad`). Anything else is text.
+  - A value runs from `=` to the next `>`; a value of 3+ characters in matching `'`/`"` loses the quotes.
+  - Colours: `#rrggbb`, `#rrggbbaa`, or one of 23 names (the HTML subset plus `transparent`, from the native table). **An unknown name still makes a valid tag, with the colour white** (the parser leaves `0xFFFFFFFF`).
+  - `size`: leading whitespace is skipped, then the number (an atoi-like parse is inferred); a size ≤ 0 is assumed to keep the enclosing size.
+  - All tags are collected first. If they do not nest (every opening tag closed in order), **no tag applies** and the whole string is drawn literally. A stray `x`/`y`/`width`/`height` counts as an unmatched closing tag.
+  - `material` and `quad` are hidden and have no visible effect here (the `quad` placeholder is not drawn; assumed).
 
 ## Draw order (client)
 
 1. `PlayerDamage` (depth 10): the bloody screen and HP.
-2. `RagdollController` label, while dead.
-3. Crosshair or scope.
-4. `AmmoDisplay`.
-5. `WeaponManager` texts.
-6. Spawn-protection label.
+2. `DrawPlayerName` (depth 2): TDM teammates' names (`docs/gameplay/remote-players.md`).
+3. `RagdollController` label, while dead.
+4. Crosshair or scope.
+5. `AmmoDisplay`.
+6. `WeaponManager` texts.
+7. Spawn-protection label.
+8. The other players' `PlayerDamage.OnGUI`: the hit marker.
+9. `WhoKilledWho`: the kill feed (also while dead).
+
+The kill feed, the name labels and the hit marker are specified in `docs/gameplay/remote-players.md`.
 
 Unity's order between scripts with the same depth is not established (`docs/unknowns.md`).
 
@@ -83,5 +94,5 @@ Constructor values: `autoFire = true`. `Awake` therefore sets every weapon's `au
 ## Spawn protection (`PlayerNetworkController.OnGUI`, `f37905`)
 
 - While the owner is spawn-protected, a default-skin label is drawn at `(5, H-38, W-5, 50)` with the string literal `"<size=32><color=yelow>>SPAWN PROTECTION ACTIVE</color></size>"`.
-- `yelow` is not a valid colour, so the `<color>` tags are shown as text at size 32 (**inferred**, to be compared with the original).
+- `yelow` is not a colour name, but the tag is still valid with the colour white (see Rich text), so the label reads `>SPAWN PROTECTION ACTIVE` (the stray `>` is in the original string) in white at size 32 (**observed** from the native parser).
 - Protection lasts 5 s from the constructor (`PlayerNetworkController.Update`, `f37896`).

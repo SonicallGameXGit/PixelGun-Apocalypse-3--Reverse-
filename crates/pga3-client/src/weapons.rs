@@ -63,6 +63,23 @@ pub enum WeaponEvent {
     /// `GetComponent<AudioSource>().clip = clip; .Play()` (asset path) on the WeaponManager's or
     /// a weapon's own AudioSource. `Play` restarts that source.
     Sound { source: SoundSource, clip: String },
+    /// `WeaponSync_Catcher.Fire` (`f61824`): the `PlayerNetworkController.sync*` call that sends
+    /// the `SyncWeaponsRPC` to the other players' copies of this player.
+    SyncFire(SyncFire),
+}
+
+/// The `PlayerNetworkController` method `WeaponSync_Catcher.Fire` calls, by `GunType`, with the
+/// value it passes (the RPC carries the method name and the value as a float).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum SyncFire {
+    /// `syncMachineGun(weapScript.errorAngle)`.
+    MachineGun(f32),
+    /// `syncShotGun(ShotGun.fractions)`.
+    ShotGun(f32),
+    /// `syncGrenadeLauncher(grenadeLauncher.initialSpeed)`.
+    GrenadeLauncher(f32),
+    /// `syncKnife()`.
+    Knife,
 }
 
 /// Which AudioSource a weapon sound plays on.
@@ -202,6 +219,8 @@ pub struct WeaponScript {
     pub default_bobbing_amount: f32,
     pub weapon_animation: Option<WeaponAnimation>,
     pub scope: Option<SniperScope>,
+    /// The weapon GameObject carries a `WeaponSync_Catcher` (`wsc`, +208).
+    pub sync_catcher: bool,
     /// `Start` has run (on the first frame the GameObject is active).
     pub started: bool,
 }
@@ -492,6 +511,7 @@ impl WeaponScript {
             default_bobbing_amount: 0.0,
             weapon_animation: None,
             scope,
+            sync_catcher: prefab.scripts(node, "WeaponSync_Catcher").next().is_some(),
             started: false,
         }
     }
@@ -858,6 +878,22 @@ impl WeaponScript {
         }
     }
 
+    /// `if (wsc) wsc.Fire()`: the `sync*` RPC by `GunType`.
+    fn sync_fire(&self, q: &mut Queue) {
+        if !self.sync_catcher {
+            return;
+        }
+        let sync = match self.gun_type {
+            GunType::MachineGun => SyncFire::MachineGun(self.error_angle),
+            GunType::ShotGun => SyncFire::ShotGun(self.shot_gun.fractions as f32),
+            GunType::GrenadeLauncher => {
+                SyncFire::GrenadeLauncher(self.grenade_launcher.initial_speed as f32)
+            }
+            GunType::Knife => SyncFire::Knife,
+        };
+        q.events.push(WeaponEvent::SyncFire(sync));
+    }
+
     /// Recoil kick: `mouseLook.rotationY += recoilPower`.
     fn kick(&self, ctx: &mut WeaponContext) {
         ctx.player.rotation_y += self.camera_recoil.recoil_power;
@@ -907,6 +943,7 @@ impl WeaponScript {
             self.kick(ctx);
             self.machine_gun_camera_recoil(q);
         }
+        self.sync_fire(q);
         if self.machine_gun.clips > 0 && self.machine_gun.bullets_left == 0 {
             self.no_bullets = true;
             q.wait(1.0, Routine::MachineGunEmpty);
@@ -959,6 +996,7 @@ impl WeaponScript {
         q.sound(&self.shot_gun.fire_sound);
         self.shot_gun.bullets_left -= 1;
         self.fire_animation(ctx);
+        self.sync_fire(q);
         // shotGunSmokeEffect up to its yield.
         if self.shot_gun.smoke.is_some() {
             self.shot_gun.smoke_playing = true;
@@ -1005,6 +1043,7 @@ impl WeaponScript {
         let Some(fire_point) = self.fire_point else {
             return;
         };
+        self.sync_fire(q);
         if let Some(projectile) = &self.grenade_launcher.projectile {
             // velocity = transform.TransformDirection(0, 0, initialSpeed) of the weapon.
             let speed = self.grenade_launcher.initial_speed as f32;
@@ -1054,6 +1093,7 @@ impl WeaponScript {
         if let Some(animation) = &self.weapon_animation {
             animation.fire(ctx.prefab);
         }
+        self.sync_fire(q);
         q.wait(self.knife.delay_time, Routine::KnifeHit);
     }
 

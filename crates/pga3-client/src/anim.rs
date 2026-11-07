@@ -45,6 +45,14 @@ pub struct Trs {
     pub scale: Vec3,
 }
 
+impl Trs {
+    pub const IDENTITY: Trs = Trs {
+        position: Vec3::ZERO,
+        rotation: Quat::IDENTITY,
+        scale: Vec3::ONE,
+    };
+}
+
 #[derive(Clone, Copy, Debug)]
 struct Key {
     time: f32,
@@ -291,6 +299,8 @@ pub struct AnimationState {
     fade_length: f32,
     /// +32: animation clock at the last update (set when the state is enabled).
     last_update: f64,
+    /// `AddMixingTransform`: the nodes (sorted) this state may animate; `None` = all.
+    mixing: Option<Vec<usize>>,
 }
 
 impl AnimationState {
@@ -473,6 +483,7 @@ impl Animation {
                 auto_fade_started: false,
                 fade_length: 0.0,
                 last_update: 0.0,
+                mixing: None,
             };
             state.wrapped_time = state.wrap(0.0);
             states.push(state);
@@ -528,6 +539,18 @@ impl Animation {
     pub fn set_speed(&mut self, name: &str, speed: f32) {
         if let Some(state) = self.state_mut(name) {
             state.speed = speed;
+        }
+    }
+
+    /// `AnimationState.AddMixingTransform(transform, recursive = true)`: `nodes` is the
+    /// transform and every node below it. Once a state has a mixing transform it only animates
+    /// the nodes added this way.
+    pub fn add_mixing_transform(&mut self, name: &str, nodes: &[usize]) {
+        if let Some(state) = self.state_mut(name) {
+            let set = state.mixing.get_or_insert_with(Vec::new);
+            set.extend_from_slice(nodes);
+            set.sort_unstable();
+            set.dedup();
         }
     }
 
@@ -611,7 +634,13 @@ impl Animation {
     }
 
     /// Writes the weighted pose of every enabled state into the bound nodes. Properties no
-    /// enabled state animates keep their value; weights are normalised per property.
+    /// enabled state animates keep their value.
+    ///
+    /// Layers (Unity's documented legacy blending): higher layers take their weight first; a
+    /// layer whose summed weight on a property exceeds what is left is scaled down to it, and
+    /// lower layers share the remainder. The accumulated result is normalised per property, so
+    /// a single layer (or weights summing below 1) blends as a plain weighted average.
+    /// A state with mixing transforms only touches those nodes.
     pub fn sample(&self, locals: &mut [Trs]) {
         #[derive(Clone, Copy, Default)]
         struct Accumulator {
@@ -622,39 +651,103 @@ impl Animation {
             scale: Vec3,
             scale_weight: f32,
         }
+        /// Weight already taken by higher layers, per (node, channel).
+        #[derive(Clone, Copy, Default)]
+        struct Used {
+            position: f32,
+            rotation: f32,
+            scale: f32,
+        }
         let mut accumulators: HashMap<usize, Accumulator> = HashMap::new();
-        for state in self.states.iter().filter(|s| s.enabled && s.weight > 0.0) {
-            let w = state.weight;
-            for (curve, binding) in state.clip.curves.iter().zip(&state.bindings) {
-                let Some(node) = *binding else {
-                    continue;
+        let mut used: HashMap<usize, Used> = HashMap::new();
+        let active: Vec<&AnimationState> = self
+            .states
+            .iter()
+            .filter(|s| s.enabled && s.weight > 0.0)
+            .collect();
+        let mut layers: Vec<i32> = active.iter().map(|s| s.layer).collect();
+        layers.sort_unstable_by(|a, b| b.cmp(a));
+        layers.dedup();
+        let bound = |state: &AnimationState, binding: Option<usize>| -> Option<usize> {
+            let node = binding?;
+            if node >= locals.len() {
+                return None;
+            }
+            match &state.mixing {
+                Some(set) if set.binary_search(&node).is_err() => None,
+                _ => Some(node),
+            }
+        };
+        for layer in layers {
+            let states: Vec<&AnimationState> = active
+                .iter()
+                .copied()
+                .filter(|s| s.layer == layer)
+                .collect();
+            // This layer's summed weight per property.
+            let mut sums: HashMap<(usize, u8), f32> = HashMap::new();
+            for state in &states {
+                for (curve, binding) in state.clip.curves.iter().zip(&state.bindings) {
+                    if let Some(node) = bound(state, *binding) {
+                        *sums.entry((node, curve.channel as u8)).or_default() += state.weight;
+                    }
+                }
+            }
+            for state in &states {
+                for (curve, binding) in state.clip.curves.iter().zip(&state.bindings) {
+                    let Some(node) = bound(state, *binding) else {
+                        continue;
+                    };
+                    let taken = used.get(&node).copied().unwrap_or_default();
+                    let taken = match curve.channel {
+                        Channel::Position => taken.position,
+                        Channel::Rotation => taken.rotation,
+                        Channel::Scale => taken.scale,
+                    };
+                    let remaining = (1.0 - taken).max(0.0);
+                    let sum = sums[&(node, curve.channel as u8)];
+                    let w = if sum > remaining && sum > 0.0 {
+                        state.weight * remaining / sum
+                    } else {
+                        state.weight
+                    };
+                    if w <= 0.0 {
+                        continue;
+                    }
+                    let value = curve.curve.evaluate(state.wrapped_time);
+                    let acc = accumulators.entry(node).or_default();
+                    match curve.channel {
+                        Channel::Position => {
+                            acc.position += value.truncate() * w;
+                            acc.position_weight += w;
+                        }
+                        Channel::Scale => {
+                            acc.scale += value.truncate() * w;
+                            acc.scale_weight += w;
+                        }
+                        Channel::Rotation => {
+                            // Unity normalises a quaternion curve's evaluated value.
+                            let q = value.normalize_or_zero();
+                            let aligned = if acc.rotation_weight > 0.0 && acc.rotation.dot(q) < 0.0
+                            {
+                                -q
+                            } else {
+                                q
+                            };
+                            acc.rotation += aligned * w;
+                            acc.rotation_weight += w;
+                        }
+                    }
+                }
+            }
+            for ((node, channel), sum) in sums {
+                let entry = used.entry(node).or_default();
+                let slot = match channel {
+                    c if c == Channel::Position as u8 => &mut entry.position,
+                    c if c == Channel::Rotation as u8 => &mut entry.rotation,
+                    _ => &mut entry.scale,
                 };
-                if node >= locals.len() {
-                    continue;
-                }
-                let value = curve.curve.evaluate(state.wrapped_time);
-                let acc = accumulators.entry(node).or_default();
-                match curve.channel {
-                    Channel::Position => {
-                        acc.position += value.truncate() * w;
-                        acc.position_weight += w;
-                    }
-                    Channel::Scale => {
-                        acc.scale += value.truncate() * w;
-                        acc.scale_weight += w;
-                    }
-                    Channel::Rotation => {
-                        // Unity normalises a quaternion curve's evaluated value.
-                        let q = value.normalize_or_zero();
-                        let aligned = if acc.rotation_weight > 0.0 && acc.rotation.dot(q) < 0.0 {
-                            -q
-                        } else {
-                            q
-                        };
-                        acc.rotation += aligned * w;
-                        acc.rotation_weight += w;
-                    }
-                }
+                *slot = (*slot + sum).min(1.0);
             }
         }
         for (node, acc) in accumulators {
@@ -796,6 +889,53 @@ mod tests {
         let mut anim = animation(WrapMode::Default);
         anim.set_wrap_mode(WrapMode::Loop);
         assert!(anim.states.iter().all(|s| s.wrap_mode == WrapMode::Loop));
+    }
+
+    #[test]
+    fn higher_layer_takes_the_weight_of_its_mixing_transforms() {
+        // Two nodes: 0 (root) and 1 (its child); "A" moves both to 1 at t = 1, "B" to 0.
+        let curves = |value: f32| {
+            ["", "child"]
+                .iter()
+                .map(|path| ClipCurve {
+                    path: path.to_string(),
+                    channel: Channel::Position,
+                    curve: Curve {
+                        keys: vec![key(0.0, value, 0.0), key(1.0, value, 0.0)],
+                    },
+                })
+                .collect::<Vec<_>>()
+        };
+        let a = Rc::new(Clip {
+            name: "A".to_string(),
+            range: (0.0, 1.0),
+            wrap_mode: WrapMode::Loop,
+            curves: curves(1.0),
+        });
+        let b = Rc::new(Clip {
+            name: "B".to_string(),
+            range: (0.0, 1.0),
+            wrap_mode: WrapMode::Loop,
+            curves: curves(2.0),
+        });
+        let mut anim = Animation::new(0, WrapMode::Loop, false, None, &[a, b], |path| match path {
+            "" => Some(0),
+            "child" => Some(1),
+            _ => None,
+        });
+        let mut locals = vec![identity()[0]; 2];
+        anim.state_mut("A").unwrap().layer = 1;
+        anim.state_mut("B").unwrap().layer = 4;
+        anim.add_mixing_transform("B", &[1]);
+        anim.play("A");
+        anim.play("B");
+        anim.update(&mut locals);
+        assert_eq!(locals[0].position.x, 1.0, "root: only A");
+        assert_eq!(locals[1].position.x, 2.0, "child: B takes all the weight");
+        // Half-weight B leaves half for A on the child.
+        anim.state_mut("B").unwrap().weight = 0.5;
+        anim.sample(&mut locals);
+        assert!((locals[1].position.x - 1.5).abs() < 1e-6);
     }
 
     #[test]

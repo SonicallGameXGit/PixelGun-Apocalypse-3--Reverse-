@@ -258,37 +258,35 @@ struct Run {
     color: Option<Vec4>,
 }
 
-/// Unity's rich-text colour names.
+/// Unity's rich-text colour names (compared ignoring ASCII case), from the native table the
+/// colour parser (`f11465`) indexes.
 fn named_color(name: &str) -> Option<Vec4> {
-    let hex = match name {
-        "aqua" | "cyan" => 0x00ffff,
-        "black" => 0x000000,
-        "blue" => 0x0000ff,
-        "brown" => 0xa52a2a,
-        "darkblue" => 0x0000a0,
-        "fuchsia" | "magenta" => 0xff00ff,
-        "green" => 0x008000,
-        "grey" => 0x808080,
-        "lightblue" => 0xadd8e6,
-        "lime" => 0x00ff00,
-        "maroon" => 0x800000,
-        "navy" => 0x000080,
-        "olive" => 0x808000,
-        "orange" => 0xffa500,
-        "purple" => 0x800080,
-        "red" => 0xff0000,
-        "silver" => 0xc0c0c0,
-        "teal" => 0x008080,
-        "white" => 0xffffff,
-        "yellow" => 0xffff00,
+    let rgba: u32 = match name.to_ascii_lowercase().as_str() {
+        "red" => 0xff0000ff,
+        "cyan" | "aqua" => 0x00ffffff,
+        "blue" => 0x0000ffff,
+        "darkblue" => 0x0000a0ff,
+        "lightblue" => 0xadd8e6ff,
+        "purple" => 0x800080ff,
+        "yellow" => 0xffff00ff,
+        "lime" => 0x00ff00ff,
+        "fuchsia" | "magenta" => 0xff00ffff,
+        "white" => 0xffffffff,
+        "silver" => 0xc0c0c0ff,
+        "grey" => 0x808080ff,
+        "black" => 0x000000ff,
+        "orange" => 0xffa500ff,
+        "brown" => 0xa52a2aff,
+        "maroon" => 0x800000ff,
+        "green" => 0x008000ff,
+        "olive" => 0x808000ff,
+        "navy" => 0x000080ff,
+        "teal" => 0x008080ff,
+        "transparent" => 0x00000000,
         _ => return None,
     };
-    Some(Vec4::new(
-        ((hex >> 16) & 255) as f32 / 255.0,
-        ((hex >> 8) & 255) as f32 / 255.0,
-        (hex & 255) as f32 / 255.0,
-        1.0,
-    ))
+    let channel = |shift: u32| ((rgba >> shift) & 255) as f32 / 255.0;
+    Some(Vec4::new(channel(24), channel(16), channel(8), channel(0)))
 }
 
 fn parse_color(value: &str) -> Option<Vec4> {
@@ -309,102 +307,211 @@ fn parse_color(value: &str) -> Option<Vec4> {
     named_color(value)
 }
 
+/// The `<size=...>` value: leading whitespace skipped (observed, `f7515`), then an optional
+/// sign and the leading digits (inferred); anything else is 0.
+fn parse_size(value: &str) -> i32 {
+    let text = value.trim_start_matches([' ', '\t', '\n', '\r', '\u{b}', '\u{c}']);
+    let (sign, digits) = match text.strip_prefix('-') {
+        Some(rest) => (-1, rest),
+        None => (1, text.strip_prefix('+').unwrap_or(text)),
+    };
+    let end = digits
+        .find(|c: char| !c.is_ascii_digit())
+        .unwrap_or(digits.len());
+    digits[..end].parse::<i32>().map_or(0, |n| sign * n)
+}
+
 #[derive(Clone, Debug)]
 enum Tag {
     Bold,
     Italic,
     Size(i32),
     Color(Vec4),
+    /// `material` and `quad`: accepted and hidden, no visible effect in `OnGUI` text.
+    Other,
 }
 
-/// Splits rich text into runs. Tags that are not recognised (or have an invalid value, such as
-/// `<color=yelow>`) are text, as in Unity.
-fn parse_rich(text: &str, rich: bool, size: i32, bold: bool) -> Vec<Run> {
-    let mut runs: Vec<Run> = Vec::new();
-    let mut stack: Vec<(String, Tag)> = Vec::new();
-    let state = |stack: &[(String, Tag)]| {
-        let mut run = Run {
-            text: String::new(),
-            size,
-            bold,
-            color: None,
+/// Unity's rich-text tag names in its lexer's order (`f20035`, the table at 121500).
+const RICH_TAGS: [&str; 10] = [
+    "b", "i", "color", "size", "material", "quad", "x", "y", "width", "height",
+];
+const QUAD: usize = 5;
+
+/// `f20035`: the tag starting with the `<` at `at`, as (kind, closing, index after the name).
+/// The name matches ignoring ASCII case and must be followed by `>`, by `=` (opening tags) or,
+/// for `quad`, by a space.
+fn lex_tag(chars: &[char], at: usize) -> Option<(usize, bool, usize)> {
+    if chars.get(at) != Some(&'<') || at + 1 >= chars.len() {
+        return None;
+    }
+    let closing = chars[at + 1] == '/';
+    let start = if closing { at + 2 } else { at + 1 };
+    for (kind, name) in RICH_TAGS.iter().enumerate() {
+        let matches = name
+            .chars()
+            .enumerate()
+            .all(|(k, c)| chars.get(start + k).map(char::to_ascii_lowercase) == Some(c));
+        if !matches {
+            continue;
+        }
+        let after = start + name.len();
+        let Some(&next) = chars.get(after) else {
+            continue;
         };
-        for (_, tag) in stack {
+        if next == '>' || (!closing && next == '=') || (kind == QUAD && next == ' ') {
+            return Some((kind, closing, after));
+        }
+    }
+    None
+}
+
+/// `f20036`: the value after `=` up to the `>` (or the end of the text); `pos` ends on the `>`.
+/// A value of 3+ characters enclosed in matching `'` or `"` loses them.
+fn read_tag_value(chars: &[char], pos: &mut usize) -> String {
+    let mut value = String::new();
+    if chars.get(*pos) == Some(&'=') {
+        *pos += 1;
+        while *pos < chars.len() && chars[*pos] != '>' {
+            value.push(chars[*pos]);
+            *pos += 1;
+        }
+    }
+    let inner: Vec<char> = value.chars().collect();
+    if inner.len() > 2 && inner[0] == inner[inner.len() - 1] && matches!(inner[0], '\'' | '"') {
+        return inner[1..inner.len() - 1].iter().collect();
+    }
+    value
+}
+
+/// One tag `f19944` recorded: the characters `start..=end`, its kind and its effect (`None` for
+/// a closing tag).
+struct TagSpan {
+    start: usize,
+    end: usize,
+    kind: usize,
+    tag: Option<Tag>,
+}
+
+/// `f20038`: tags must nest. `x`, `y`, `width` and `height` outside a `quad` count as closing
+/// tags that match nothing.
+fn tags_nest(spans: &[TagSpan]) -> bool {
+    let mut stack = Vec::new();
+    for span in spans {
+        match (&span.tag, span.kind) {
+            // A `quad` records its own closing entry.
+            (Some(_), QUAD) => {}
+            (Some(_), kind) => stack.push(kind),
+            (None, kind) => {
+                if kind > QUAD || stack.pop() != Some(kind) {
+                    return false;
+                }
+            }
+        }
+    }
+    stack.is_empty()
+}
+
+/// Splits rich text into runs the way Unity's text generator does (`f19944`): every tag is
+/// collected first; if they do not nest, none of them applies and the whole text is shown.
+/// A colour name Unity does not know (`<color=yelow>` in the spawn-protection label) still makes
+/// a valid tag, with the colour white.
+fn parse_rich(text: &str, rich: bool, size: i32, bold: bool) -> Vec<Run> {
+    let base = Run {
+        text: String::new(),
+        size,
+        bold,
+        color: None,
+    };
+    if !rich {
+        return vec![Run {
+            text: text.to_string(),
+            ..base
+        }];
+    }
+    let chars: Vec<char> = text.chars().collect();
+    let mut spans = Vec::new();
+    let mut pos = 0;
+    while pos < chars.len() {
+        if let Some((kind, closing, mut end)) = lex_tag(&chars, pos) {
+            let tag = if closing {
+                None
+            } else {
+                match kind {
+                    0 => Some(Tag::Bold),
+                    1 => Some(Tag::Italic),
+                    2 => {
+                        let value = read_tag_value(&chars, &mut end);
+                        Some(Tag::Color(parse_color(&value).unwrap_or(Vec4::ONE)))
+                    }
+                    3 => Some(Tag::Size(parse_size(&read_tag_value(&chars, &mut end)))),
+                    4 => {
+                        read_tag_value(&chars, &mut end);
+                        Some(Tag::Other)
+                    }
+                    QUAD => {
+                        // Its attributes (`f20037`) run to the `>`.
+                        while end < chars.len() && chars[end] != '>' {
+                            end += 1;
+                        }
+                        Some(Tag::Other)
+                    }
+                    _ => None,
+                }
+            };
+            spans.push(TagSpan {
+                start: pos,
+                end,
+                kind,
+                tag,
+            });
+            pos = end;
+        }
+        pos += 1;
+    }
+    if !tags_nest(&spans) {
+        spans.clear();
+    }
+    let mut runs: Vec<Run> = Vec::new();
+    let mut stack: Vec<Tag> = Vec::new();
+    let push = |runs: &mut Vec<Run>, stack: &[Tag], c: char| {
+        let mut run = base.clone();
+        for tag in stack {
             match tag {
                 Tag::Bold => run.bold = true,
-                Tag::Italic => {}
-                Tag::Size(s) => run.size = *s,
+                // Assumed: a size of 0 or less keeps the enclosing size.
+                Tag::Size(s) if *s > 0 => run.size = *s,
                 Tag::Color(c) => run.color = Some(*c),
+                Tag::Size(_) | Tag::Italic | Tag::Other => {}
             }
         }
-        run
-    };
-    let push = |runs: &mut Vec<Run>, stack: &[(String, Tag)], s: &str| {
-        if s.is_empty() {
-            return;
-        }
-        let template = state(stack);
         match runs.last_mut() {
             Some(last)
-                if last.size == template.size
-                    && last.bold == template.bold
-                    && last.color == template.color =>
+                if last.size == run.size && last.bold == run.bold && last.color == run.color =>
             {
-                last.text.push_str(s)
+                last.text.push(c)
             }
-            _ => runs.push(Run {
-                text: s.to_string(),
-                ..template
-            }),
+            _ => {
+                run.text.push(c);
+                runs.push(run);
+            }
         }
     };
-    let mut rest = text;
-    while !rest.is_empty() {
-        let Some(open) = rest.find('<').filter(|_| rich) else {
-            push(&mut runs, &stack, rest);
-            break;
-        };
-        push(&mut runs, &stack, &rest[..open]);
-        let after = &rest[open..];
-        let Some(close) = after.find('>') else {
-            push(&mut runs, &stack, after);
-            break;
-        };
-        let inner = &after[1..close];
-        let consumed = if let Some(name) = inner.strip_prefix('/') {
-            match stack.last() {
-                Some((top, _)) if top == name => {
+    let mut next = spans.iter().peekable();
+    let mut i = 0;
+    while i < chars.len() {
+        if let Some(span) = next.next_if(|s| s.start == i) {
+            match (&span.tag, span.kind) {
+                (Some(_), QUAD) => {}
+                (Some(tag), _) => stack.push(tag.clone()),
+                (None, _) => {
                     stack.pop();
-                    true
                 }
-                _ => false,
             }
-        } else {
-            let (name, value) = match inner.split_once('=') {
-                Some((n, v)) => (n, Some(v)),
-                None => (inner, None),
-            };
-            let tag = match (name, value) {
-                ("b", None) => Some(Tag::Bold),
-                ("i", None) => Some(Tag::Italic),
-                ("size", Some(v)) => v.parse().ok().map(Tag::Size),
-                ("color", Some(v)) => parse_color(v).map(Tag::Color),
-                _ => None,
-            };
-            match tag {
-                Some(tag) => {
-                    stack.push((name.to_string(), tag));
-                    true
-                }
-                None => false,
-            }
-        };
-        if consumed {
-            rest = &after[close + 1..];
-        } else {
-            push(&mut runs, &stack, &after[..1]);
-            rest = &after[1..];
+            i = span.end + 1;
+            continue;
         }
+        push(&mut runs, &stack, chars[i]);
+        i += 1;
     }
     runs
 }
@@ -646,11 +753,23 @@ mod tests {
         assert_eq!(runs.len(), 2);
         assert_eq!((runs[0].size, runs[0].color), (32, named_color("red")));
         assert_eq!((runs[1].text.as_str(), runs[1].size), ("B", 13));
-        // An unknown colour name keeps the tag (and its closing tag) as text.
+        // An unknown colour name is still a tag, coloured white (Unity's f11465 leaves -1).
         let runs = parse_rich("<size=32><color=yelow>>X</color></size>", true, 13, false);
-        let text: String = runs.iter().map(|r| r.text.as_str()).collect();
-        assert_eq!(text, "<color=yelow>>X</color>");
-        assert!(runs.iter().all(|r| r.size == 32));
+        assert_eq!(runs.len(), 1);
+        assert_eq!(runs[0].text, ">X");
+        assert_eq!((runs[0].size, runs[0].color), (32, Some(Vec4::ONE)));
+        // Tags that do not nest: none applies.
+        let text = "<b>x<i>y</b></i>";
+        assert_eq!(parse_rich(text, true, 13, false)[0].text, text);
+        assert_eq!(parse_rich("<b>open", true, 13, false)[0].text, "<b>open");
+        // Names ignore case; quoted values lose their quotes; unknown tags are text.
+        let runs = parse_rich("<COLOR=\"Red\">a</Color><u>b</u>", true, 13, false);
+        assert_eq!(
+            (runs[0].text.as_str(), runs[0].color),
+            ("a", named_color("red"))
+        );
+        assert_eq!(runs[1].text, "<u>b</u>");
+        assert_eq!(named_color("transparent"), Some(Vec4::ZERO));
         // Rich text off: everything is text.
         assert_eq!(parse_rich("<b>x</b>", false, 13, false)[0].text, "<b>x</b>");
     }

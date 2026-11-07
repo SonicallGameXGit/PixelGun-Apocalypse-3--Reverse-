@@ -301,7 +301,7 @@ Coroutines of a weapon are dropped when its GameObject is deactivated.
 
 ## Not implemented
 
-- Network sync (`WeaponSync`), third-person weapon visuals, and damage to other players (`HitBox` receivers exist only on remote players, `docs/gameplay/damage.md`).
+- Sending `SyncWeaponsRPC` over the network. `WeaponSync_Catcher.Fire` is ported as `WeaponEvent::SyncFire` (machine gun after the recoil, shotgun after the fire animation, launcher at the start of the shot, knife after its animation). The receiving side (`WeaponSync`, third-person weapons, damage to other players' `HitBox`es) is in `docs/gameplay/remote-players.md`. A remote knife never plays: `syncKnife` takes no parameter, so the one-argument `SendMessage` never calls it.
 
 Sounds, particles, trails, the explosion, `AmmoDisplay` and the `WeaponManager.OnGUI` texts are covered in `docs/gameplay/audio.md`, `docs/gameplay/particles.md` and `docs/gameplay/hud.md`.
 

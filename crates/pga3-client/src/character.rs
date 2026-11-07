@@ -127,11 +127,33 @@ pub struct CharacterAnimation {
     pub animation_sync_helper: String,
     /// `animationType`: "Walking", "Running", "Crouch" or "Prone".
     pub animation_type: String,
+    /// `animationForHands`: the hand pose clip for the selected weapon, or "Null" while prone
+    /// (set by `ThirdPersonWeaponControl`, synced; the remote copies play it on layer 4).
+    pub animation_for_hands: String,
+    /// `activeWeapon`: `weaponManager.SelectedWeapon.weaponName` (synced; the remote copies
+    /// show the third-person weapon of that name).
+    pub active_weapon: String,
+    /// `twoHandedWeapons` / `pistols` / `knivesNades`: weapon nodes (WeaponScript refs).
+    pub two_handed_weapons: Vec<usize>,
+    pub pistols: Vec<usize>,
+    pub knives_nades: Vec<usize>,
+    /// The `gunIdle` / `pistolIdle` / `knifeIdle` slots as clip names.
+    pub gun_idle: Option<String>,
+    pub pistol_idle: Option<String>,
+    pub knife_idle: Option<String>,
 }
 
-/// `CharacterAnimation.animations` fields as clip names. The remaining slots (`pistolIdle`,
-/// `knifeIdle`, `gunIdle`) are not referenced by any ported method; `configureAnimations` leaves
-/// them (and `jumpPose`) at their default wrap mode.
+/// What `CharacterAnimation.LateUpdate` reads from the `WeaponManager`: the selected weapon's
+/// node and `weaponName` (`None` while `SelectedWeapon` is null).
+#[derive(Clone, Copy, Debug, Default)]
+pub struct SelectedWeapon<'a> {
+    pub node: Option<usize>,
+    pub name: &'a str,
+}
+
+/// `CharacterAnimation.animations` fields as clip names (the hand idles `pistolIdle`,
+/// `knifeIdle`, `gunIdle` are kept on `CharacterAnimation`); `configureAnimations` leaves
+/// those and `jumpPose` at their default wrap mode.
 #[derive(Clone, Debug, Default)]
 pub struct CharacterClips {
     pub reload: Option<String>,
@@ -158,15 +180,17 @@ pub struct CharacterClips {
 }
 
 impl CharacterAnimation {
-    /// Finds the component, resolves its clip slots and runs `Start` → `configureAnimations`.
+    /// Finds the component, resolves its clip slots and runs `Start` → `configureAnimations`
+    /// (its `ThirdPersonWeaponControl` call finds no `SelectedWeapon` yet).
     pub fn start(
         prefab: &mut PrefabInstance,
         library: &mut ClipLibrary,
     ) -> Option<CharacterAnimation> {
+        // The active one (the prefabs also carry a disabled copy on an inactive body).
         let (node, component) = prefab
             .find_scripts("CharacterAnimation")
             .into_iter()
-            .next()?;
+            .find(|(n, _)| prefab.active_in_hierarchy(*n))?;
         let slots = component["fields"]["Animations"].clone();
         // Each slot holds a clip ref; `CrossFade(clip.name)` addresses the state by clip name.
         let mut clip_name = |field: &str| -> Option<String> {
@@ -224,6 +248,21 @@ impl CharacterAnimation {
             &clips.prone_back,
         ];
         let names: Vec<String> = looping.into_iter().flatten().cloned().collect();
+        let gun_idle = clip_name("gunIdle");
+        let pistol_idle = clip_name("pistolIdle");
+        let knife_idle = clip_name("knifeIdle");
+        let fields = &component["fields"];
+        let list = |field: &str| -> Vec<usize> {
+            fields[field]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|r| prefab.node_of_ref(r))
+                .collect()
+        };
+        let two_handed_weapons = list("twoHandedWeapons");
+        let pistols = list("pistols");
+        let knives_nades = list("knivesNades");
         if let Some(animation) = prefab.animation_on(node) {
             for name in names {
                 animation.set_state_wrap_mode(&name, WrapMode::Loop);
@@ -235,7 +274,40 @@ impl CharacterAnimation {
             action: Action::Stand,
             animation_sync_helper: String::new(),
             animation_type: String::new(),
+            animation_for_hands: String::new(),
+            active_weapon: String::new(),
+            two_handed_weapons,
+            pistols,
+            knives_nades,
+            gun_idle,
+            pistol_idle,
+            knife_idle,
         })
+    }
+
+    /// `ThirdPersonWeaponControl` (`f65554`): `animationForHands` = "Null" while prone, else the
+    /// hand idle of the list holding `SelectedWeapon` (unchanged when it is in none).
+    pub fn third_person_weapon_control(&mut self, selected: Option<usize>) {
+        if self.action == Action::Prone {
+            self.animation_for_hands = "Null".to_string();
+            return;
+        }
+        let Some(node) = selected else {
+            return;
+        };
+        let clip = if self.two_handed_weapons.contains(&node) {
+            &self.gun_idle
+        } else if self.pistols.contains(&node) {
+            &self.pistol_idle
+        } else if self.knives_nades.contains(&node) {
+            &self.knife_idle
+        } else {
+            return;
+        };
+        // `clip.name` of a null clip would throw; the slots are all set in the prefabs.
+        if let Some(name) = clip {
+            self.animation_for_hands = name.clone();
+        }
     }
 
     fn cross_fade(&mut self, prefab: &mut PrefabInstance, clip: &Option<String>) {
@@ -249,7 +321,15 @@ impl CharacterAnimation {
     }
 
     /// `LateUpdate` (decompiled `CharacterAnimation$$LateUpdate`).
-    pub fn late_update(&mut self, prefab: &mut PrefabInstance, i: &CharacterInput) {
+    pub fn late_update(
+        &mut self,
+        prefab: &mut PrefabInstance,
+        i: &CharacterInput,
+        selected: SelectedWeapon,
+    ) {
+        if selected.node.is_some() {
+            self.active_weapon = selected.name.to_string();
+        }
         self.action = match (i.crouch, i.prone) {
             (false, false) => Action::Stand,
             (false, true) => Action::Prone,
@@ -319,5 +399,6 @@ impl CharacterAnimation {
                 }
             }
         }
+        self.third_person_weapon_control(selected.node);
     }
 }

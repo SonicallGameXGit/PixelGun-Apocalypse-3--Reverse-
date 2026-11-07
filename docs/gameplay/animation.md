@@ -67,8 +67,10 @@ Flags: 1 = fading, 2 = enabled, 4 = stop when faded, 32 = automatic fade-out sta
 - Weights are normalised per animated property.
 - Quaternions are sign-aligned before summing, then normalised.
 - Properties no enabled state animates keep their current value.
+- **Layers** (the remote copy plays movement on layer 1 and the hands clip on layer 4): layers are visited from the highest down. Per property, a layer takes as much of the remaining weight (starting at 1) as its states' summed weight, scaled down to the remainder when the sum exceeds it; lower layers share what is left. This follows Unity's documented legacy layering.
+- **Mixing transforms** (`AddMixingTransform(t)`, recursive): a state then animates only `t`'s subtree. The remote copy restricts the hands clip to both shoulders, so the arms take the layer-4 pose and the rest of the body keeps the layer-1 movement clip.
 
-These rules reproduce single-state playback and cross-fades exactly. Multi-layer additive cases do not occur in the ported scripts.
+These rules reproduce single-state playback and cross-fades exactly. Additive blending does not occur in the ported scripts.
 
 **Not ported:** `m_CullingType` (BasedOnRenderers); the client always animates.
 
@@ -170,12 +172,14 @@ No first-person `Animation` loops: `Idle` is played once in `Awake` and `wrapMod
   - The keys are `CF2Input.GetKey(KeyCode.W/A/S/D/R)`: letter keys only, not the arrows.
   - The flags are `FPScontroller` fields: Running 0x19, Walking 0x1A, crouch 0x38, prone 0x46, grounded 0x5C.
 
-`ThirdPersonWeaponControl` (`f65554`) is not ported.
+**`ThirdPersonWeaponControl`** (`f65554`, called at the end of LateUpdate): `animationForHands` = `Null` when prone, otherwise the idle of the list holding the selected weapon (`twoHandedWeapons` → `gunIdle`, `pistols` → `pistolIdle`, `knivesNades` → `knifeIdle`); `activeWeapon` = the selected weapon's name. The owner only serializes these; the copy plays them (`docs/gameplay/remote-players.md`).
+
+**`HeadLookController`**: `segments` is empty in both player prefabs, so its `LateUpdate` changes nothing (not ported; `docs/gameplay/remote-players.md`).
 
 **`PlayerNetworkController.Awake`** (`f37893`):
 
 - `localObjectsToDeactivate` = Base_mesh, Root_jnt, Terrorist_02_mesh: the owner's body is invisible, and only the first-person rig under `Weapon Camera` is seen.
-- `remoteObjectsToDeactivate` = LookObject, SpawnObject, Base_mesh.
+- `remoteObjectsToDeactivate` = LookObject, SpawnObject, Base_mesh (the root-level one, node 483). The remote branch is ported in `remote.rs` (`docs/gameplay/remote-players.md`).
 
 ## Cameras (observed, `german` prefab)
 
@@ -203,7 +207,5 @@ Fly mode keeps simulating the player with no input, so the third-person body see
 
 These are tracked in `docs/unknowns.md`:
 
-- Which team body mesh a remote player shows.
-- The exact blending normalisation for weights summing to less than 1.
-- `HeadLookController` and remote animation playback (`PlayerNetworkController`).
+- The exact blending normalisation for weights summing to less than 1, and the layer rules (from Unity's documentation, not decoded).
 - `Legacy Shaders/Particles/Alpha Blended`: prefab renderers using it are skipped for now (`Mobile/Particles/Additive` is ported for the muzzle flashes).

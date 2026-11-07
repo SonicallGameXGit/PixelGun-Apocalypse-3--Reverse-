@@ -1,7 +1,9 @@
 //! Objects the weapons instantiate from `Resources` prefabs (spec: `docs/gameplay/weapons.md`):
 //! `Bullet` (raycast-stepped bullets and the knife's damage probe) and `Projectile` (the
 //! launcher's rocket, a continuous-collision `Rigidbody`). Impact and explosion prefabs are
-//! reported as events and played by `effects.rs`, which also draws the trails.
+//! reported as events and played by `effects.rs`, which also draws the trails. Besides the static
+//! map, both hit the other players: their hit boxes (bullets) and character capsules (rockets),
+//! passed in as `Targets` (spec: `docs/gameplay/remote-players.md`).
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -12,7 +14,9 @@ use serde_json::Value;
 
 use crate::anim::ClipLibrary;
 use crate::assets::{f32_of, ref_of, tag_name};
-use crate::physics::{Capsule, CollisionWorld, InitialOverlap, QueryFilter};
+use crate::physics::{
+    Capsule, CollisionWorld, DynamicCollider, InitialOverlap, QueryFilter, sweep_sphere_capsule,
+};
 use crate::prefab::{PrefabInstance, resource_prefab_index};
 use crate::unity::{from_to_rotation, look_rotation};
 
@@ -54,6 +58,7 @@ pub struct Template {
 }
 
 /// Every prefab a weapon field refers to, loaded once.
+#[derive(Default)]
 pub struct Templates {
     pub list: Vec<Template>,
     by_ref: HashMap<String, usize>,
@@ -147,18 +152,64 @@ impl Templates {
     }
 }
 
+/// A collider of another player that bullets and rockets can hit.
+#[derive(Clone, Copy, Debug)]
+pub struct Target {
+    /// Index of the player (into the caller's list).
+    pub owner: usize,
+    /// Node of the collider's GameObject in that player's prefab instance.
+    pub node: usize,
+    pub collider: DynamicCollider,
+}
+
+/// The moving colliders of the frame: hit boxes (layer Default, hit by the bullets' raycast)
+/// and the players' `CharacterController` capsules (layer Ignore Raycast, which the raycast
+/// skips but the rockets' rigidbody collides with).
+#[derive(Default)]
+pub struct Targets {
+    pub hit_boxes: Vec<Target>,
+    /// (owner, capsule).
+    pub capsules: Vec<(usize, Capsule)>,
+}
+
+/// Flags a spawner sets right after `Instantiate`.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct SpawnFlags {
+    /// `Bullet.doDamage`: true from `WeaponScript`, false from `WeaponSync` (remote shots).
+    pub do_damage: bool,
+    /// `Projectile.isRemote` (copied to the explosion's `ExplosionDamage.isRemote`).
+    pub is_remote: bool,
+    /// `Physics.IgnoreCollision` with this player's colliders (the remote shooter's own).
+    pub ignore_owner: Option<usize>,
+}
+
+impl SpawnFlags {
+    pub const LOCAL: SpawnFlags = SpawnFlags {
+        do_damage: true,
+        is_remote: false,
+        ignore_owner: None,
+    };
+}
+
 /// Something a spawned object did.
 #[derive(Clone, Debug, PartialEq)]
 pub enum ProjectileEvent {
-    /// `Instantiate` of an impact or explosion prefab (played by `effects.rs`).
+    /// `Instantiate` of an impact or explosion prefab (played by `effects.rs`); `is_remote` is
+    /// the `ExplosionDamage.isRemote` a projectile's `Kill` sets on its explosion.
     Effect {
         prefab: String,
         position: Vec3,
         rotation: Quat,
+        is_remote: bool,
     },
-    /// `SendMessageUpwards("ApplyDamage", damage)` on the hit collider. Only `HitBox` (on remote
-    /// players) receives it, so locally nothing does.
-    Damage { amount: i32, point: Vec3, tag: u32 },
+    /// `SendMessageUpwards("ApplyDamage", damage)` on the hit collider. Only `HitBox`es (on the
+    /// other players' copies) receive it: `target` is the (owner, node) of a hit box hit.
+    Damage {
+        amount: i32,
+        point: Vec3,
+        tag: u32,
+        target: Option<(usize, usize)>,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -176,6 +227,8 @@ enum State {
         velocity: Vec3,
         kill_at: f32,
         killed: bool,
+        is_remote: bool,
+        ignore_owner: Option<usize>,
     },
     Inert,
 }
@@ -200,8 +253,9 @@ pub struct Projectiles {
 }
 
 impl Projectiles {
-    /// `Object.Instantiate(template, position, rotation)`; `velocity` is set on the
-    /// `Rigidbody` right after (projectiles).
+    /// `Object.Instantiate(template, position, rotation)` by the local weapons; `velocity` is set
+    /// on the `Rigidbody` right after (projectiles).
+    #[cfg_attr(not(test), allow(dead_code))]
     pub fn spawn(
         &mut self,
         templates: &Templates,
@@ -210,11 +264,30 @@ impl Projectiles {
         rotation: Quat,
         velocity: Option<Vec3>,
     ) {
+        self.spawn_with(
+            templates,
+            template,
+            position,
+            rotation,
+            velocity,
+            SpawnFlags::LOCAL,
+        );
+    }
+
+    /// `spawn` with the flags its spawner sets.
+    pub fn spawn_with(
+        &mut self,
+        templates: &Templates,
+        template: usize,
+        position: Vec3,
+        rotation: Quat,
+        velocity: Option<Vec3>,
+        flags: SpawnFlags,
+    ) {
         let state = match &templates.list[template].behaviour {
             Behaviour::Bullet(_) => State::Bullet {
                 started: false,
-                // The weapons set `doDamage = true` on every bullet they spawn.
-                do_damage: true,
+                do_damage: flags.do_damage,
                 velocity: Vec3::ZERO,
                 new_pos: position,
                 old_pos: position,
@@ -225,6 +298,8 @@ impl Projectiles {
                 velocity: velocity.unwrap_or(Vec3::ZERO),
                 kill_at: f32::INFINITY,
                 killed: false,
+                is_remote: flags.is_remote,
+                ignore_owner: flags.ignore_owner,
             },
             Behaviour::None => State::Inert,
         };
@@ -246,6 +321,7 @@ impl Projectiles {
         &mut self,
         templates: &Templates,
         world: &CollisionWorld,
+        targets: &Targets,
         dt: f32,
         time: f32,
     ) {
@@ -257,6 +333,8 @@ impl Projectiles {
                 started,
                 velocity,
                 killed,
+                is_remote,
+                ignore_owner,
                 ..
             } = &mut object.state
             else {
@@ -282,20 +360,31 @@ impl Projectiles {
                 radius,
             };
             // Rigidbody contacts ignore triggers.
-            let hit = world.sweep_capsule(
+            let mut hit = world.sweep_capsule(
                 &sphere,
                 direction,
                 distance,
                 QueryFilter::CONTROLLER,
                 InitialOverlap::Block,
             );
+            for (owner, capsule) in &targets.capsules {
+                if Some(*owner) == *ignore_owner {
+                    continue;
+                }
+                if let Some(h) = sweep_sphere_capsule(center, radius, direction, distance, capsule)
+                    && hit.is_none_or(|best| h.distance < best.distance)
+                {
+                    hit = Some(h);
+                }
+            }
+            let is_remote = *is_remote;
             match hit {
                 Some(hit) => {
                     object.position += direction * hit.distance;
                     // OnCollisionEnter: face the contact normal, then Kill.
                     object.rotation = from_to_rotation(Vec3::Y, hit.normal);
                     *killed = true;
-                    kill(object, fields, templates, &mut self.events, time);
+                    kill(object, fields, templates, &mut self.events, time, is_remote);
                 }
                 None => object.position += direction * distance,
             }
@@ -304,7 +393,14 @@ impl Projectiles {
 
     /// `Start` of the objects spawned last frame, then `Update` (`Bullet`) and the `Invoke`d
     /// `Projectile.Kill` time-outs.
-    pub fn update(&mut self, templates: &Templates, world: &CollisionWorld, dt: f32, time: f32) {
+    pub fn update(
+        &mut self,
+        templates: &Templates,
+        world: &CollisionWorld,
+        targets: &Targets,
+        dt: f32,
+        time: f32,
+    ) {
         for object in &mut self.objects {
             let template = &templates.list[object.template];
             match (&template.behaviour, &mut object.state) {
@@ -333,7 +429,20 @@ impl Projectiles {
                     }
                     *new_pos += *velocity * dt;
                     let direction = *new_pos - *old_pos;
-                    if let Some(hit) = world.raycast(*old_pos, direction, direction.length()) {
+                    let length = direction.length();
+                    let mut hit = world
+                        .raycast(*old_pos, direction, length)
+                        .map(|h| (h, None));
+                    for target in &targets.hit_boxes {
+                        if let Some(h) = target.collider.raycast(*old_pos, direction, length)
+                            && hit
+                                .as_ref()
+                                .is_none_or(|(best, _)| h.distance < best.distance)
+                        {
+                            hit = Some((h, Some((target.owner, target.node))));
+                        }
+                    }
+                    if let Some((hit, target)) = hit {
                         *new_pos = hit.point;
                         *has_hit = true;
                         let rotation = from_to_rotation(Vec3::Y, hit.normal);
@@ -347,6 +456,7 @@ impl Projectiles {
                                     prefab: templates.list[i].path.clone(),
                                     position: hit.point,
                                     rotation,
+                                    is_remote: false,
                                 });
                             }
                         }
@@ -356,6 +466,7 @@ impl Projectiles {
                                 amount: fields.damage,
                                 point: hit.point,
                                 tag: hit.tag,
+                                target,
                             });
                         }
                     }
@@ -368,6 +479,7 @@ impl Projectiles {
                         started,
                         kill_at,
                         killed,
+                        is_remote,
                         ..
                     },
                 ) => {
@@ -377,7 +489,8 @@ impl Projectiles {
                         *kill_at = time + fields.time_out;
                     } else if !*killed && time >= *kill_at {
                         *killed = true;
-                        kill(object, fields, templates, &mut self.events, time);
+                        let is_remote = *is_remote;
+                        kill(object, fields, templates, &mut self.events, time, is_remote);
                     }
                 }
                 _ => {}
@@ -405,19 +518,22 @@ impl Projectiles {
     }
 }
 
-/// `Projectile.Kill`: instantiate the explosion, destroy after `destroyDelay`.
+/// `Projectile.Kill`: instantiate the explosion (its `ExplosionDamage.isRemote = isRemote`),
+/// destroy after `destroyDelay`.
 fn kill(
     object: &mut Spawned,
     fields: &ProjectileFields,
     templates: &Templates,
     events: &mut Vec<ProjectileEvent>,
     time: f32,
+    is_remote: bool,
 ) {
     if let Some(explosion) = fields.explosion.as_ref().and_then(|r| templates.find(r)) {
         events.push(ProjectileEvent::Effect {
             prefab: templates.list[explosion].path.clone(),
             position: object.position,
             rotation: object.rotation,
+            is_remote,
         });
     }
     object.destroy_at = time + fields.destroy_delay;
@@ -485,7 +601,7 @@ mod tests {
         while !p.objects.is_empty() {
             time += DT;
             frames += 1;
-            p.update(&t, &world, DT, time);
+            p.update(&t, &world, &Targets::default(), DT, time);
             p.end_frame(time);
             assert!(frames < 100);
         }
@@ -515,6 +631,122 @@ mod tests {
     }
 
     #[test]
+    fn bullet_hits_a_hit_box_before_the_wall() {
+        use crate::physics::HitShape;
+        let t = templates();
+        let world = wall();
+        let targets = Targets {
+            hit_boxes: vec![Target {
+                owner: 3,
+                node: 441,
+                collider: DynamicCollider {
+                    world: Mat4::from_translation(Vec3::new(0.0, 0.0, 5.0)),
+                    shape: HitShape::Box {
+                        center: Vec3::ZERO,
+                        size: Vec3::ONE,
+                    },
+                    tag: 20001,
+                },
+            }],
+            capsules: Vec::new(),
+        };
+        let mut p = Projectiles::default();
+        p.spawn(
+            &t,
+            t.find(PISTOL_BULLET).unwrap(),
+            Vec3::ZERO,
+            Quat::IDENTITY,
+            None,
+        );
+        let mut time = 0.0;
+        while !p.objects.is_empty() {
+            time += DT;
+            p.update(&t, &world, &targets, DT, time);
+            p.end_frame(time);
+        }
+        let blood = t.list.iter().find(|t| t.name == "Blood").unwrap();
+        assert!(p.events.iter().any(|e| matches!(
+            e,
+            ProjectileEvent::Effect { prefab, position, .. }
+                if *prefab == blood.path && (position.z - 4.5).abs() < 1e-4
+        )));
+        assert!(p.events.iter().any(|e| matches!(
+            e,
+            ProjectileEvent::Damage {
+                amount: 40,
+                target: Some((3, 441)),
+                ..
+            }
+        )));
+        // A remote shot (doDamage = false) only spawns the impact.
+        let mut p = Projectiles::default();
+        let flags = SpawnFlags {
+            do_damage: false,
+            ..SpawnFlags::LOCAL
+        };
+        let bullet = t.find(PISTOL_BULLET).unwrap();
+        p.spawn_with(&t, bullet, Vec3::ZERO, Quat::IDENTITY, None, flags);
+        while !p.objects.is_empty() {
+            time += DT;
+            p.update(&t, &world, &targets, DT, time);
+            p.end_frame(time);
+        }
+        assert!(
+            !p.events
+                .iter()
+                .any(|e| matches!(e, ProjectileEvent::Damage { .. }))
+        );
+    }
+
+    #[test]
+    fn remote_rocket_ignores_its_shooter_and_hits_other_players() {
+        let t = templates();
+        let world = CollisionWorld::new();
+        let capsule = |z: f32| Capsule {
+            p0: Vec3::new(0.0, -0.5, z),
+            p1: Vec3::new(0.0, 0.5, z),
+            radius: 0.36,
+        };
+        let targets = Targets {
+            hit_boxes: Vec::new(),
+            capsules: vec![(0, capsule(0.5)), (1, capsule(6.0))],
+        };
+        let mut p = Projectiles::default();
+        let flags = SpawnFlags {
+            do_damage: false,
+            is_remote: true,
+            ignore_owner: Some(0),
+        };
+        let rocket = t.find(ROCKET).unwrap();
+        p.spawn_with(
+            &t,
+            rocket,
+            Vec3::ZERO,
+            Quat::IDENTITY,
+            Some(Vec3::Z * 20.0),
+            flags,
+        );
+        let mut time = 0.0;
+        p.update(&t, &world, &targets, DT, time);
+        while !p.objects.is_empty() {
+            time += 0.02;
+            p.fixed_update(&t, &world, &targets, 0.02, time);
+            p.end_frame(time);
+            assert!(time < 2.0);
+        }
+        let Some(ProjectileEvent::Effect {
+            position,
+            is_remote,
+            ..
+        }) = p.events.first()
+        else {
+            panic!("{:?}", p.events);
+        };
+        assert!(*is_remote);
+        assert!(position.z > 4.0 && position.z < 6.0, "{position}");
+    }
+
+    #[test]
     fn bullet_expires_after_life() {
         let t = templates();
         let world = CollisionWorld::new();
@@ -529,13 +761,13 @@ mod tests {
         let mut time = 0.0;
         while time < 9.9 {
             time += 0.1;
-            p.update(&t, &world, 0.1, time);
+            p.update(&t, &world, &Targets::default(), 0.1, time);
             p.end_frame(time);
         }
         assert_eq!(p.objects.len(), 1);
         for _ in 0..3 {
             time += 0.1;
-            p.update(&t, &world, 0.1, time);
+            p.update(&t, &world, &Targets::default(), 0.1, time);
             p.end_frame(time);
         }
         assert!(p.objects.is_empty() && p.events.is_empty());
@@ -549,12 +781,12 @@ mod tests {
         let rocket = t.find(ROCKET).unwrap();
         p.spawn(&t, rocket, Vec3::ZERO, Quat::IDENTITY, Some(Vec3::Z * 20.0));
         let mut time = 0.0;
-        p.update(&t, &world, DT, time);
+        p.update(&t, &world, &Targets::default(), DT, time);
         let mut steps = 0;
         while !p.objects.is_empty() {
             time += 0.02;
             steps += 1;
-            p.fixed_update(&t, &world, 0.02, time);
+            p.fixed_update(&t, &world, &Targets::default(), 0.02, time);
             p.end_frame(time);
             assert!(steps < 100);
         }
@@ -583,10 +815,10 @@ mod tests {
             Some(Vec3::Z),
         );
         let mut time = 0.0;
-        p.update(&t, &world, DT, time);
+        p.update(&t, &world, &Targets::default(), DT, time);
         while time < 20.05 {
             time += 0.1;
-            p.update(&t, &world, 0.1, time);
+            p.update(&t, &world, &Targets::default(), 0.1, time);
             p.end_frame(time);
         }
         assert!(p.objects.is_empty());

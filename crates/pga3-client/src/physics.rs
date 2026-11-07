@@ -1217,9 +1217,334 @@ impl CharacterController {
     }
 }
 
+/// Shape of a primitive collider in its GameObject's local space (`BoxCollider` /
+/// `SphereCollider`), for the colliders that move with an animated body (players' hit boxes).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum HitShape {
+    Box { center: Vec3, size: Vec3 },
+    Sphere { center: Vec3, radius: f32 },
+}
+
+/// A primitive collider at its current world transform.
+#[derive(Clone, Copy, Debug)]
+pub struct DynamicCollider {
+    pub world: Mat4,
+    pub shape: HitShape,
+    /// Tag of the collider's GameObject.
+    pub tag: u32,
+}
+
+impl DynamicCollider {
+    /// World centre and radius of a sphere (PhysX scales the radius by the largest axis scale).
+    fn sphere(&self, center: Vec3, radius: f32) -> (Vec3, f32) {
+        let scale = Vec3::new(
+            self.world.x_axis.truncate().length(),
+            self.world.y_axis.truncate().length(),
+            self.world.z_axis.truncate().length(),
+        );
+        (
+            self.world.transform_point3(center),
+            radius * scale.max_element(),
+        )
+    }
+
+    /// `Physics.Raycast` against this collider: the first entry point within `max_distance`.
+    /// A ray starting inside the shape does not hit it (PhysX primitives).
+    pub fn raycast(&self, origin: Vec3, direction: Vec3, max_distance: f32) -> Option<RayHit> {
+        let direction = direction.normalize_or_zero();
+        if direction == Vec3::ZERO || max_distance <= 0.0 {
+            return None;
+        }
+        match self.shape {
+            HitShape::Box { center, size } => {
+                let inverse = self.world.inverse();
+                let o = inverse.transform_point3(origin) - center;
+                let d = inverse.transform_vector3(direction * max_distance);
+                let half = size * 0.5;
+                if o.abs().cmple(half).all() {
+                    return None;
+                }
+                // Slab test in local space; t runs over [0, 1] along the segment.
+                let mut t_enter = 0.0f32;
+                let mut t_exit = 1.0f32;
+                let mut axis = 0;
+                for i in 0..3 {
+                    if d[i].abs() < 1e-12 {
+                        if o[i].abs() > half[i] {
+                            return None;
+                        }
+                        continue;
+                    }
+                    let a = (-half[i] - o[i]) / d[i];
+                    let b = (half[i] - o[i]) / d[i];
+                    let (near, far) = if a < b { (a, b) } else { (b, a) };
+                    if near > t_enter {
+                        t_enter = near;
+                        axis = i;
+                    }
+                    t_exit = t_exit.min(far);
+                    if t_enter > t_exit {
+                        return None;
+                    }
+                }
+                let mut local_normal = Vec3::ZERO;
+                local_normal[axis] = -d[axis].signum();
+                // Normals transform with the inverse transpose.
+                let normal = inverse
+                    .transpose()
+                    .transform_vector3(local_normal)
+                    .normalize_or_zero();
+                let distance = t_enter * max_distance;
+                Some(RayHit {
+                    distance,
+                    point: origin + direction * distance,
+                    normal,
+                    tag: self.tag,
+                })
+            }
+            HitShape::Sphere { center, radius } => {
+                let (c, r) = self.sphere(center, radius);
+                let m = origin - c;
+                let c_term = m.length_squared() - r * r;
+                if c_term <= 0.0 {
+                    return None;
+                }
+                let b = m.dot(direction);
+                let discriminant = b * b - c_term;
+                if b > 0.0 || discriminant < 0.0 {
+                    return None;
+                }
+                let distance = -b - discriminant.sqrt();
+                if distance > max_distance {
+                    return None;
+                }
+                let point = origin + direction * distance;
+                Some(RayHit {
+                    distance,
+                    point,
+                    normal: (point - c).normalize_or_zero(),
+                    tag: self.tag,
+                })
+            }
+        }
+    }
+
+    /// `Collider.bounds` (world axis-aligned box): (min, max).
+    pub fn bounds(&self) -> (Vec3, Vec3) {
+        match self.shape {
+            HitShape::Box { center, size } => {
+                let half = size * 0.5;
+                let mut min = Vec3::splat(f32::INFINITY);
+                let mut max = Vec3::splat(f32::NEG_INFINITY);
+                for corner in 0..8 {
+                    let sign = Vec3::new(
+                        if corner & 1 == 0 { -1.0 } else { 1.0 },
+                        if corner & 2 == 0 { -1.0 } else { 1.0 },
+                        if corner & 4 == 0 { -1.0 } else { 1.0 },
+                    );
+                    let p = self.world.transform_point3(center + half * sign);
+                    min = min.min(p);
+                    max = max.max(p);
+                }
+                (min, max)
+            }
+            HitShape::Sphere { center, radius } => {
+                let (c, r) = self.sphere(center, radius);
+                (c - Vec3::splat(r), c + Vec3::splat(r))
+            }
+        }
+    }
+
+    /// `Collider.ClosestPointOnBounds(point)`.
+    pub fn closest_point_on_bounds(&self, point: Vec3) -> Vec3 {
+        let (min, max) = self.bounds();
+        point.clamp(min, max)
+    }
+
+    /// Whether `Physics.OverlapSphere(center, radius)` reports this collider.
+    pub fn overlaps_sphere(&self, center: Vec3, radius: f32) -> bool {
+        match self.shape {
+            HitShape::Box { center: c, size } => {
+                // Closest point of the oriented box, along its (scaled) world axes.
+                let world_center = self.world.transform_point3(c);
+                let relative = center - world_center;
+                let mut closest = world_center;
+                for (i, axis) in [self.world.x_axis, self.world.y_axis, self.world.z_axis]
+                    .iter()
+                    .enumerate()
+                {
+                    let axis = axis.truncate();
+                    let length = axis.length();
+                    if length <= 0.0 {
+                        continue;
+                    }
+                    let unit = axis / length;
+                    let extent = size[i] * 0.5 * length;
+                    closest += unit * relative.dot(unit).clamp(-extent, extent);
+                }
+                closest.distance_squared(center) <= radius * radius
+            }
+            HitShape::Sphere {
+                center: c,
+                radius: r,
+            } => {
+                let (c, r) = self.sphere(c, r);
+                c.distance(center) <= r + radius
+            }
+        }
+    }
+}
+
+/// A sphere moving from `center` along the unit `direction` for `distance` against a capsule:
+/// the travelled distance and the contact normal (pointing from the capsule). Starting inside
+/// reports a hit at 0.
+pub fn sweep_sphere_capsule(
+    center: Vec3,
+    radius: f32,
+    direction: Vec3,
+    distance: f32,
+    capsule: &Capsule,
+) -> Option<SweepHit> {
+    let r = radius + capsule.radius;
+    let closest_on_axis = |p: Vec3| {
+        let axis = capsule.p1 - capsule.p0;
+        let length_squared = axis.length_squared();
+        let t = if length_squared > 0.0 {
+            ((p - capsule.p0).dot(axis) / length_squared).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        capsule.p0 + axis * t
+    };
+    let start_axis = closest_on_axis(center);
+    if center.distance_squared(start_axis) <= r * r {
+        return Some(SweepHit {
+            distance: 0.0,
+            normal: (center - start_axis).normalize_or(-direction),
+            point: center,
+        });
+    }
+    // Ray against the infinite cylinder, then the two end spheres; keep the nearest.
+    let mut best: Option<f32> = None;
+    let mut consider = |t: f32| {
+        if (0.0..=distance).contains(&t) && best.is_none_or(|b| t < b) {
+            best = Some(t);
+        }
+    };
+    let axis = capsule.p1 - capsule.p0;
+    let length = axis.length();
+    if length > 0.0 {
+        let a_dir = axis / length;
+        let m = center - capsule.p0;
+        let d_perp = direction - a_dir * direction.dot(a_dir);
+        let m_perp = m - a_dir * m.dot(a_dir);
+        let a = d_perp.length_squared();
+        let b = m_perp.dot(d_perp);
+        let c = m_perp.length_squared() - r * r;
+        let discriminant = b * b - a * c;
+        if a > 1e-12 && discriminant >= 0.0 {
+            let t = (-b - discriminant.sqrt()) / a;
+            let along = (m + direction * t).dot(a_dir);
+            if (0.0..=length).contains(&along) {
+                consider(t);
+            }
+        }
+    }
+    for end in [capsule.p0, capsule.p1] {
+        let m = center - end;
+        let b = m.dot(direction);
+        let c = m.length_squared() - r * r;
+        let discriminant = b * b - c;
+        if discriminant >= 0.0 {
+            consider(-b - discriminant.sqrt());
+        }
+    }
+    let t = best?;
+    let at = center + direction * t;
+    let normal = (at - closest_on_axis(at)).normalize_or(-direction);
+    Some(SweepHit {
+        distance: t,
+        normal,
+        point: at - normal * radius,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn dynamic_box_and_sphere_raycasts() {
+        let unit_box = DynamicCollider {
+            world: Mat4::from_rotation_translation(
+                Quat::from_rotation_y(0.3),
+                Vec3::new(0.0, 0.0, 5.0),
+            ),
+            shape: HitShape::Box {
+                center: Vec3::ZERO,
+                size: Vec3::ONE,
+            },
+            tag: 7,
+        };
+        let hit = unit_box.raycast(Vec3::ZERO, Vec3::Z, 10.0).unwrap();
+        // The rotated box's front face at x = 0 lies 0.5 / cos(0.3) in front of its centre.
+        assert!(
+            (hit.distance - (5.0 - 0.5 / 0.3f32.cos())).abs() < 1e-4,
+            "{hit:?}"
+        );
+        assert!(hit.normal.z < -0.9 && hit.tag == 7);
+        assert!(
+            unit_box.raycast(Vec3::ZERO, Vec3::Z, 4.0).is_none(),
+            "too short"
+        );
+        assert!(
+            unit_box
+                .raycast(Vec3::new(0.0, 0.0, 5.0), Vec3::Z, 10.0)
+                .is_none(),
+            "starting inside"
+        );
+        let scaled_sphere = DynamicCollider {
+            world: Mat4::from_scale_rotation_translation(
+                Vec3::new(1.0, 2.0, 1.0),
+                Quat::IDENTITY,
+                Vec3::new(0.0, 0.0, 5.0),
+            ),
+            shape: HitShape::Sphere {
+                center: Vec3::ZERO,
+                radius: 0.5,
+            },
+            tag: 0,
+        };
+        let hit = scaled_sphere.raycast(Vec3::ZERO, Vec3::Z, 10.0).unwrap();
+        assert!((hit.distance - 4.0).abs() < 1e-5, "radius scaled by 2");
+        assert_eq!(
+            scaled_sphere.closest_point_on_bounds(Vec3::ZERO),
+            Vec3::new(0.0, 0.0, 4.0)
+        );
+        assert!(unit_box.overlaps_sphere(Vec3::new(0.0, 0.0, 3.9), 0.6));
+        assert!(!unit_box.overlaps_sphere(Vec3::new(0.0, 0.0, 3.0), 0.6));
+    }
+
+    #[test]
+    fn sphere_sweeps_against_capsule() {
+        let capsule = Capsule {
+            p0: Vec3::new(0.0, 0.5, 5.0),
+            p1: Vec3::new(0.0, 1.5, 5.0),
+            radius: 0.5,
+        };
+        let hit =
+            sweep_sphere_capsule(Vec3::new(0.0, 1.0, 0.0), 0.25, Vec3::Z, 10.0, &capsule).unwrap();
+        assert!((hit.distance - 4.25).abs() < 1e-5, "{hit:?}");
+        assert!(hit.normal.z < -0.99);
+        // Over the top: hits the upper end sphere.
+        let hit =
+            sweep_sphere_capsule(Vec3::new(0.0, 2.2, 0.0), 0.25, Vec3::Z, 10.0, &capsule).unwrap();
+        let expected = 5.0 - (0.75f32 * 0.75 - 0.7 * 0.7).sqrt();
+        assert!((hit.distance - expected).abs() < 1e-4, "{hit:?}");
+        assert!(
+            sweep_sphere_capsule(Vec3::new(2.0, 1.0, 0.0), 0.25, Vec3::Z, 10.0, &capsule).is_none()
+        );
+    }
 
     const FLOOR_LAYER: u32 = 0;
 

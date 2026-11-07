@@ -2,9 +2,9 @@
 //! `PlayerDamage` (`f37876`..`f37890`), `PlayerNetworkController`'s spawn protection
 //! (`f37896`, `f37905`) and the death prefab's `RagdollController` (`f29667`..`f29672`).
 //!
-//! Damage arrives as the `DoDamage` RPC, which `PhotonTargets.All` also runs locally at once. The
-//! only local source is fall damage (`ApplyFallDamage`): bullets and explosions send
-//! `ApplyDamage`, which only `HitBox`es receive, and the owner's hit boxes are destroyed in
+//! Damage arrives as the `DoDamage` RPC, which `PhotonTargets.All` also runs locally at once:
+//! from fall damage (`ApplyFallDamage`) or from another player's copy of this player, whose
+//! `HitBox`es got `ApplyDamage` (`remote.rs`). The owner's own hit boxes are destroyed in
 //! `Awake`.
 
 use glam::{Quat, Vec3, Vec4};
@@ -26,7 +26,6 @@ pub enum DamageEvent {
 
 pub struct PlayerDamage {
     pub current_hp: f32,
-    pub disable_damage: bool,
     pub we_killed: bool,
     /// Hit marker alpha (drawn for remote players only).
     pub fade_value: f32,
@@ -54,7 +53,6 @@ impl PlayerDamage {
         let reference = |name: &str| ref_of(&fields[name]).map(|(r, _)| r.to_string());
         PlayerDamage {
             current_hp: hp,
-            disable_damage: fields["disableDamage"].as_bool().unwrap_or(false),
             we_killed: false,
             fade_value: 0.0,
             fade_value_b: 0.0,
@@ -105,24 +103,14 @@ impl PlayerDamage {
         self.do_damage(damage, spawn_protected, time)
     }
 
-    /// `TotalDamage(damage)`: the bloody-screen flash and the `DoDamage` RPC unless damage is
-    /// disabled. Called by `HitBox.ApplyDamage` on remote players' hit boxes (network milestone).
-    #[allow(dead_code)]
-    pub fn total_damage(
+    /// `DoDamage(damage, damager)` on the owner's instance (the RPC from any copy). The caller
+    /// handles `damager == PhotonNetwork.player` (`PlayerFellDown`) on `Died`.
+    pub fn do_damage(
         &mut self,
         damage: f32,
         spawn_protected: bool,
         time: f32,
     ) -> Option<DamageEvent> {
-        if self.disable_damage {
-            return None;
-        }
-        self.fade_value = 2.0;
-        self.do_damage(damage, spawn_protected, time)
-    }
-
-    /// `DoDamage(damage, damager)` on the owner's instance.
-    fn do_damage(&mut self, damage: f32, spawn_protected: bool, time: f32) -> Option<DamageEvent> {
         if spawn_protected || self.we_killed {
             return None;
         }
@@ -187,7 +175,7 @@ impl Default for SpawnProtection {
 }
 
 /// The label `PlayerNetworkController.OnGUI` shows while protected. `yelow` is not a colour
-/// name, so Unity keeps that tag as text.
+/// name; Unity still accepts the tag, with the colour white (`gui::parse_rich`).
 pub const SPAWN_PROTECTION_TEXT: &str =
     "<size=32><color=yelow>>SPAWN PROTECTION ACTIVE</color></size>";
 

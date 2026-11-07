@@ -31,8 +31,7 @@ pub struct ExplosionFields {
 }
 
 /// `ExplosionDamage.Start`: damage to a collider whose bounds' closest point is `distance` from
-/// the explosion (sent to `HitBox`es, which only remote players have: network milestone).
-#[allow(dead_code)]
+/// the explosion (sent to `HitBox`es, which only the other players' copies have).
 pub fn explosion_damage(fields: &ExplosionFields, distance: f32) -> f32 {
     (1.0 - (distance / fields.radius).clamp(0.0, 1.0)) * fields.damage
 }
@@ -181,6 +180,8 @@ pub struct Effect {
     /// `ExplosionDamage.Start` after its `WaitForSeconds(0.5)`: `Play()`.
     explosion_play_at: Option<f32>,
     active: bool,
+    /// `ExplosionDamage.isRemote` set after `Instantiate` (by a remote player's projectile).
+    pub is_remote: bool,
 }
 
 impl Effect {
@@ -223,7 +224,8 @@ impl Effects {
     }
 
     /// `Object.Instantiate` of an effect prefab: `Awake` / `OnEnable` run here (play-on-awake
-    /// systems and sources start, `WaitForDestroy` schedules the destroy).
+    /// systems and sources start, `WaitForDestroy` schedules the destroy). Returns the instance
+    /// so the spawner can set its fields.
     #[allow(clippy::too_many_arguments)]
     pub fn spawn(
         &mut self,
@@ -235,10 +237,8 @@ impl Effects {
         time: f32,
         audio: &mut Audio,
         meshes: &mut MeshCache,
-    ) {
-        let Some(def) = self.def(templates, template, meshes) else {
-            return;
-        };
+    ) -> Option<&mut Effect> {
+        let def = self.def(templates, template, meshes)?;
         let mut effect = Effect {
             def: def.clone(),
             position,
@@ -254,6 +254,7 @@ impl Effects {
             cfx_check_at: time + 0.5,
             explosion_play_at: None,
             active: true,
+            is_remote: false,
         };
         for (_, system) in &def.systems {
             self.seed = self.seed.wrapping_add(0x9E37_79B9);
@@ -266,6 +267,7 @@ impl Effects {
             effect.sources.push(audio.add_source(settings.clone(), at));
         }
         self.instances.push(effect);
+        self.instances.last_mut()
     }
 
     /// Creates the instances of newly spawned projectiles (their trail / flying sound) and
@@ -317,8 +319,9 @@ impl Effects {
         for effect in &mut self.instances {
             if !effect.started {
                 effect.started = true;
-                if let Some(fields) = effect.def.explosion {
+                if let Some(mut fields) = effect.def.explosion {
                     // ExplosionDamage.Start up to its yield.
+                    fields.is_remote |= effect.is_remote;
                     self.events.push(EffectEvent::Explosion {
                         position: effect.position,
                         fields,
@@ -519,8 +522,20 @@ mod tests {
         let mut time = 0.0;
         for _ in 0..10 {
             time += 0.02;
-            projectiles.update(&t, &world, 0.02, time);
-            projectiles.fixed_update(&t, &world, 0.02, time);
+            projectiles.update(
+                &t,
+                &world,
+                &crate::projectiles::Targets::default(),
+                0.02,
+                time,
+            );
+            projectiles.fixed_update(
+                &t,
+                &world,
+                &crate::projectiles::Targets::default(),
+                0.02,
+                time,
+            );
             effects.sync_projectiles(&t, &projectiles, time, &mut audio, &mut meshes);
             effects.update(0.02, time, &world, &mut audio);
         }

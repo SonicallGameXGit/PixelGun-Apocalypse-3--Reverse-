@@ -5,7 +5,7 @@ Client: `damage.rs` (`PlayerDamage`, spawn protection, `RagdollController`), dri
 ## Where damage comes from
 
 - Bullets (`Bullet`) and explosions (`ExplosionDamage`) call `SendMessage("ApplyDamage", ...)` on what they hit. Only `HitBox.ApplyDamage` receives it, and it forwards the damage as the `DoDamage` RPC (**observed**).
-- The owner's `HitBox`es are destroyed in `PlayerNetworkController.Awake`, so only **remote** players can be hit. Bullets and rockets therefore damage nothing locally until networking (Photon) exists.
+- The owner's `HitBox`es are destroyed in `PlayerNetworkController.Awake`, so only **remote** players can be hit. This client's bullets and explosions damage the other players' copies (`docs/gameplay/remote-players.md`). The owner then receives the `DoDamage` RPC, which runs `DoDamage` below. Until networking exists, only the `--dummy` client sends and receives these RPCs.
 - **Fall damage** is the only local source:
   - `FPScontroller` calls `PlayerDamage.ApplyFallDamage(dmg)` (`f37878`, values in `docs/gameplay/movement.md`);
   - that sends `DoDamage` to `PhotonTargets.All`, which PUN runs locally at once.
@@ -49,10 +49,8 @@ Client: `damage.rs` (`PlayerDamage`, spawn protection, `RagdollController`), dri
 - Each call decrements the timer. At 0 it calls `clearCamera` and then `RoomMultiplayerMenu.SpawnPlayer`.
 - `OnGUI`: label `"Respawn in: " + timer` at `(W/2-75, H/2-15, 150, 30)`.
 
-## Respawn (stand-in)
+## Death on the owner, respawn
 
-`SpawnPlayer` picks a random spawn point of the player's team and instantiates a fresh player prefab through PUN. The client has no rooms or teams yet, so it uses this stand-in:
-- it instantiates a fresh copy of the local player prefab (new `PlayerDamage`, weapons, spawn protection) at a random spawn point of the current map;
-- the per-death `PlayerPrefs` statistics are skipped.
-
-The real selection depends on the room and team state (`docs/unknowns.md`).
+- Deaths + 1 (the player property); a death from the player's own fall also sends `networkAddMessage(name, "", "fell down", "")`.
+- `RoomMultiplayerMenu.SpawnPlayer(team)` instantiates a fresh player prefab of the team at one of its spawn points (rules in `docs/gameplay/remote-players.md`). The client instantiates a fresh copy (new `PlayerDamage`, weapons, spawn protection).
+- The per-death `PlayerPrefs` statistics (persistent counters) are not kept.

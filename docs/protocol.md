@@ -56,9 +56,35 @@ PUN sends an RPC as its **index** in this list when the name is present. Order m
 - PUN Classic connects with `AppVersion = gameVersion + "_" + versionPUN`, so the expected value is **`"PGA3 v1_1.91"`** (**inferred** from standard PUN 1.91 behaviour; verify in wasm or capture). Photon only matches clients with identical AppId + AppVersion + region.
 - Regions offered by `ServerChose`: `us`, `eu`, `au`, `asia`, `jp`, `ru`.
 
+## Player object (decompiled)
+
+Details and the receiving side: `docs/gameplay/remote-players.md`.
+
+- **`PlayerNetworkController.OnPhotonSerializeView`** (`f37894`), every 100 ms (`sendIntervalOnSerialize`). The order is:
+  1. position `Vector3`
+  2. rotation `Quaternion`
+  3. name `string`
+  4. lookTarget position `Vector3`
+  5. lookTarget rotation `Quaternion`
+  6. `TeamName` `string`
+  7. movement clip `string`
+  8. hands clip `string`
+  9. active weapon `string`
+  10. `animationType` `string`
+  11. `IsSpawnProtected` `bool`
+- **RPCs** (sent at most every 50 ms by PUN's `sendInterval`):
+
+| RPC | target | parameters |
+|---|---|---|
+| `SyncWeaponsRPC` | Others | `string functionName`, one value: float error angle, or int `fractions` / `initialSpeed` (boxed) |
+| `DoDamage` | All | `float damage`, damager `PhotonPlayer` |
+| `networkAddMessage` (`WhoKilledWho`) | All | `string killer, killed, middleText, teamName` |
+
+- Room property `GameMode` (`DM` / `TDM`); player custom properties `TeamName`, `Kills`, `Deaths`; room properties `Team1Score` / `Team2Score`.
+
 ## Open
 
-- Exact connect flow (`ServerChose` / `ConnectMenu` / `RoomMultiplayerMenu`): room properties, custom player properties, lobby usage.
-- Per-object serialization (`OnPhotonSerializeView` in `PlayerNetworkController`, `WeaponSync`, …) and RPC parameter types.
+- Exact connect flow (`ServerChose` / `ConnectMenu` / `RoomMultiplayerMenu`): lobby usage, how the properties above are created.
+- Serialization of the other networked objects, and the wire encoding of the values above (PUN's Protocol16 types are standard, but the exact `object[]` layout of each RPC must be confirmed by capture).
 - GameArter (`Garter`) backend calls: auth, progress, ranks. Possibly required to play.
 - Confirm all of the above with a runtime capture of the original game.

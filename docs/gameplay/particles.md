@@ -72,6 +72,6 @@ Decompiled order of events (**observed** in the code; the visible result is **in
 
 **Result:** no particles are drawn, and the 2D explosion sound (`Pixel Explosion - roket.m4a`) is cut off at 0.5 s when its GameObject is destroyed. The client reproduces this. If the original shows an explosion, the order of the 0.5 s coroutine resumes is the thing to re-check (both coroutines wait `WaitForSeconds(0.5)`; Unity resumes them in start order).
 
-Explosion damage only reaches `HitBox` receivers, which only remote players have (`docs/gameplay/damage.md`). The formula is implemented (`effects::explosion_damage`) but has nothing to hit until networking exists.
+Explosion damage only reaches `HitBox` receivers, which only remote players have (`docs/gameplay/damage.md`). The client applies `effects::explosion_damage` to every overlapped hit box of the other players' copies, each through the `SendMessageUpwards` chain (`docs/gameplay/remote-players.md`). An explosion of a remote rocket (`isRemote`) damages nothing.
 
 Tests: the `Metal__357` impact plays its sounds and is destroyed after 0.5 s; the explosion never draws and is destroyed at 0.5 s; the rocket trail follows and dies with the rocket; curves, gradients, bursts and shapes.

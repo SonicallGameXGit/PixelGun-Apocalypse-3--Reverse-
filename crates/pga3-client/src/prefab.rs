@@ -23,6 +23,8 @@ pub struct Node {
     pub local: Trs,
     pub active_self: bool,
     pub layer: u32,
+    /// `GameObject.tag` (TagManager number: 0-6 built-in, 20000+ custom).
+    pub tag: u32,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -137,6 +139,21 @@ impl Trs {
 }
 
 impl PrefabInstance {
+    /// An instance with no nodes (a placeholder).
+    pub fn empty() -> PrefabInstance {
+        PrefabInstance {
+            nodes: Vec::new(),
+            renderers: Vec::new(),
+            animations: Vec::new(),
+            world: Vec::new(),
+            world_override: Vec::new(),
+            skipped_renderers: 0,
+            json: Value::Null,
+            node_by_ref: HashMap::new(),
+            component_by_ref: HashMap::new(),
+        }
+    }
+
     /// Loads `data/prefabs/resources/<name>.json` and builds its animations from `clips`.
     pub fn load(assets: &Path, name: &str, clips: &mut ClipLibrary) -> Result<PrefabInstance> {
         PrefabInstance::load_file(assets, &format!("prefabs/resources/{name}.json"), clips)
@@ -174,6 +191,7 @@ impl PrefabInstance {
                 local: local_trs(node),
                 active_self: node["active"].as_bool().unwrap_or(true),
                 layer: node["layer"].as_u64().unwrap_or(0) as u32,
+                tag: node["tag"].as_u64().unwrap_or(0) as u32,
             });
         }
 
@@ -292,6 +310,15 @@ impl PrefabInstance {
             .map(|c| &c["data"])
     }
 
+    /// The data of the component `reference` on a node, if it has that type.
+    pub fn component_by_ref(&self, node: usize, reference: &str, kind: &str) -> Option<&Value> {
+        self.json["nodes"][node]["components"]
+            .as_array()?
+            .iter()
+            .find(|c| c["ref"] == reference && c["type"] == kind)
+            .map(|c| &c["data"])
+    }
+
     /// Every built-in component of this type on a node (a node can carry several AudioSources).
     pub fn components<'a>(&'a self, node: usize, kind: &'a str) -> impl Iterator<Item = &'a Value> {
         self.json["nodes"][node]["components"]
@@ -318,6 +345,17 @@ impl PrefabInstance {
 
     pub fn find(&self, name: &str) -> Option<usize> {
         self.nodes.iter().position(|n| n.name == name)
+    }
+
+    /// `node` and every node below it (depth-first, `node` first).
+    pub fn subtree(&self, node: usize) -> Vec<usize> {
+        let mut out = Vec::new();
+        let mut stack = vec![node];
+        while let Some(current) = stack.pop() {
+            out.push(current);
+            stack.extend(self.nodes[current].children.iter().rev());
+        }
+        out
     }
 
     pub fn active_in_hierarchy(&self, node: usize) -> bool {
