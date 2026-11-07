@@ -42,11 +42,29 @@ research/tools/venv/bin/python -I tools/extract/export_shaders.py "$PWD/$B/unpac
 research/tools/venv/bin/python -I tools/extract/export_skins.py "$PWD/$B/unpacked" "$PWD/assets"
 ```
 
+## The CrazyGames build (Unity 5.3.5, asm.js)
+
+```bash
+C=research/crazygames-build
+# download pixelgunapocalypse3.2.{datagz,jsgz,memgz} and UnityLoader.js (URLs: docs/crazygames-build.md) into $C, then:
+mkdir -p $C/raw
+for f in data js mem; do gzip -dc $C/pixelgunapocalypse3.2.${f}gz > $C/raw/pixelgunapocalypse3.2.$f; done
+python3 -I tools/extract/unpack_emscripten_package.py $C/UnityLoader.js $C/raw/pixelgunapocalypse3.2.data $C/unpacked
+# IL2CPP dump: Il2CppDumper reads the static memory as a wasm data section; it finds only the
+# CodeRegistration itself, so both addresses are entered (manual mode, from docs/crazygames-build.md)
+python3 -I tools/re/asmjs_mem_to_wasm.py $C/raw/pixelgunapocalypse3.2.mem $C/raw/memory.wasm
+printf '12eadc\ne40fc\n' | dotnet research/tools/Il2CppDumper/Il2CppDumper/bin/Release/net10.0/Il2CppDumper.dll \
+    $C/raw/memory.wasm $C/unpacked/Il2CppData/Metadata/global-metadata.dat research/crazygames-il2cpp-dump
+```
+
+The asset steps (3, 4 and 6–8 above) have not been run on this build yet.
+
 ## Scripts
 
 | Script | Purpose |
 |--------|---------|
 | `unpack_webdata.py` | `UnityWebData1.0` container → files |
+| `unpack_emscripten_package.py` | Unity 5.3 `.data` (Emscripten file package, table in `UnityLoader.js`) → files |
 | `extract_assets.py` | every object → raw/decoded files + `inventory.json` (research/extracted) |
 | `publish_assets.py` | curated game-owned files → `assets/` + `assets/manifest.json` |
 | `export_world.py` | `assets/data/` JSON (see `docs/assets.md` for the format) |

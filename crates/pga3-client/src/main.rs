@@ -12,7 +12,10 @@
 //! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch [--walk]] [--fly] [--stats]
 //! [--weapon KEY] [--fire] [--aim] [--screenshot out.png [--wait SECONDS]]
 //! [--mode DM|TDM] [--team 1|2] [--name NAME]
-//! [--dummy [--dummy-team 1|2] [--dummy-spawn N] [--dummy-weapon SLOT] [--dummy-fire]]`
+//! [--dummy [--dummy-team 1|2] [--dummy-spawn N] [--dummy-weapon SLOT] [--dummy-fire]]
+//! [--online [--region eu] [--room TEXT | --create]] [--list-rooms [--region eu]]`
+//! (`--online` joins the most populated room of the live CrazyGames build on the original Photon
+//! servers, or `--room`'s, or creates one on the given map; the room's map is loaded.)
 //! (`--weapon` presses that number key on the first frame, `--fire` holds the fire button and
 //! clicks every 30 frames: for screenshots of the weapons. `--team 1` is "German-ZM", which plays
 //! the `mercenarys` prefab, `--team 2` (default) "Mercenary" with `german`.)
@@ -32,7 +35,9 @@ mod footsteps;
 mod gfx;
 mod gui;
 mod hud;
+mod net;
 mod obj;
+mod online;
 mod particles;
 mod physics;
 mod player;
@@ -82,6 +87,7 @@ use effects::{EffectEvent, Effects, MeshCache, explosion_damage};
 use footsteps::FpsSoundController;
 use gui::{Gui, GuiFont, GuiSkin};
 use hud::{AmmoDisplay, DefaultSkin};
+use online::{NetIn, Online, OnlineOptions};
 use particles::ParticleSystem;
 use physics::CollisionWorld;
 use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
@@ -135,6 +141,14 @@ struct Args {
     dummy_spawn: Option<usize>,
     dummy_weapon: usize,
     dummy_fire: bool,
+    /// Play on the original servers (the CrazyGames build's Photon application).
+    online: bool,
+    region: String,
+    room: Option<String>,
+    /// Print the region's rooms and exit.
+    list_rooms: bool,
+    /// With `--online`: create a new room on the scene instead of joining one.
+    create: bool,
 }
 
 fn parse_args() -> Result<Args> {
@@ -158,6 +172,11 @@ fn parse_args() -> Result<Args> {
         dummy_spawn: None,
         dummy_weapon: 2,
         dummy_fire: false,
+        online: false,
+        region: "eu".to_string(),
+        room: None,
+        list_rooms: false,
+        create: false,
     };
     let team = |text: String| -> Result<u8> {
         match text.as_str() {
@@ -211,6 +230,11 @@ fn parse_args() -> Result<Args> {
                 args.dummy_weapon = iter.next().context("--dummy-weapon SLOT")?.parse()?
             }
             "--dummy-fire" => args.dummy_fire = true,
+            "--online" => args.online = true,
+            "--list-rooms" => args.list_rooms = true,
+            "--create" => args.create = true,
+            "--region" => args.region = iter.next().context("--region us|eu|asia|jp|au|ru")?,
+            "--room" => args.room = Some(iter.next().context("--room TEXT")?),
             other if other.starts_with("--") => bail!("unknown option {other}"),
             scene => args.scene = scene.to_string(),
         }
@@ -353,6 +377,8 @@ struct Running {
     remotes: Vec<RemotePlayer>,
     /// Simulated other clients (`--dummy`).
     dummies: Vec<DummyOwner>,
+    /// The connection to the original servers (`--online`).
+    online: Option<Online>,
     room: Room,
     /// This client's player properties.
     props: PlayerProps,
@@ -408,6 +434,7 @@ struct Running {
 
 struct App {
     args: Args,
+    online: Option<Online>,
     running: Option<Running>,
     error: Option<anyhow::Error>,
 }
@@ -420,7 +447,11 @@ fn team_name(room: &Room, team: u8) -> String {
     }
 }
 
-fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
+fn create(
+    event_loop: &ActiveEventLoop,
+    args: &Args,
+    mut online: Option<Online>,
+) -> Result<Running> {
     let attributes = Window::default_attributes()
         .with_title(format!("Pixel Gun Apocalypse 3 — {}", args.scene))
         .with_inner_size(LogicalSize::new(1280.0, 720.0));
@@ -478,8 +509,12 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
     let mut clips = ClipLibrary::new(&assets)?;
     let kinds = load_kinds(&gl, &assets, &mut renderer, &mut clips)?;
     let mut room = Room::new(&scene, &args.mode);
+    if let Some(online) = &online {
+        room.team1_score = online.room_int("Team1Score").unwrap_or(0);
+        room.team2_score = online.room_int("Team2Score").unwrap_or(0);
+    }
     let props = PlayerProps {
-        actor: LOCAL_ACTOR,
+        actor: online.as_ref().map_or(LOCAL_ACTOR, Online::actor),
         name: args.name.clone(),
         team: team_name(&room, args.team),
         kills: 0,
@@ -488,6 +523,9 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
     // WhoKilledWho.Start (PlayerJoinedRoom), then the team menu's PlayerJoinedTeam.
     room.add_message(&props.name, "", "connected", "");
     room.add_message(&props.name, "", &format!("joined {}", props.team), "");
+    if let Some(online) = &mut online {
+        online.joined(&props.name);
+    }
     // SpawnPlayer(team): the spawn point and the prefab of the team.
     let (team_spawn, team_1) = room.spawn_point(&props.team);
     let kind = if team_1 { 0 } else { 1 };
@@ -608,6 +646,7 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
         mirror: None,
         remotes: Vec::new(),
         dummies,
+        online,
         room,
         props,
         serialize_at: 0.0,
@@ -649,6 +688,11 @@ fn create(event_loop: &ActiveEventLoop, args: &Args) -> Result<Running> {
     };
     running.sync_local_avatar();
     running.create_mirror();
+    running.instantiate_online();
+    if let Some(online) = &running.online {
+        let name = running.props.name.clone();
+        online.send_message(&name, "", &format!("joined {}", running.props.team), "");
+    }
     for index in 0..running.dummies.len() {
         running.spawn_dummy(index);
     }
@@ -1176,9 +1220,12 @@ impl Running {
                             self.audio.play(id, &clip);
                         }
                     }
-                    // `SyncWeaponsRPC` to the others: no other client has a copy of this player
-                    // until the network exists.
-                    WeaponEvent::SyncFire(_) => {}
+                    // `SyncWeaponsRPC` to the others.
+                    WeaponEvent::SyncFire(sync) => {
+                        if let Some(online) = &self.online {
+                            online.sync_fire(sync);
+                        }
+                    }
                 }
             }
             if let Some(ammo) = &mut local.scripts.ammo {
@@ -1243,6 +1290,9 @@ impl Running {
                 if damage.run_coroutines(time) == Some(DamageEvent::Destroyed) {
                     // `PhotonNetwork.Destroy(gameObject)`.
                     scripts.destroyed = true;
+                    if let Some(online) = &mut self.online {
+                        online.destroy();
+                    }
                     scripts.remove_sources(&mut self.audio);
                     self.mirror = None;
                 }
@@ -1314,7 +1364,7 @@ impl Running {
                     .as_mut()
                     .and_then(|d| d.apply_fall_damage(amount, protected, time));
                 if let Some(DamageEvent::Died { .. }) = died {
-                    self.die(world_time);
+                    self.die(world_time, true);
                 }
             }
         }
@@ -1333,7 +1383,8 @@ impl Running {
         let mut deaths = Vec::new();
         let mut sent = Vec::new();
         for hit_box in remote.hit_box_chain(node) {
-            let (total, death) = remote.apply_damage(hit_box, amount, LOCAL_ACTOR, LOCAL_ACTOR);
+            let local = self.props.actor;
+            let (total, death) = remote.apply_damage(hit_box, amount, local, local);
             sent.extend(total);
             deaths.extend(death);
         }
@@ -1341,8 +1392,12 @@ impl Running {
             self.remote_died(owner, death, time);
         }
         for total in sent {
+            if let Some(online) = &self.online {
+                online.do_damage(actor, total);
+            }
             if let Some(index) = self.dummies.iter().position(|d| d.props.actor == actor) {
-                let events = self.dummies[index].receive_do_damage(total, LOCAL_ACTOR, time);
+                let local = self.props.actor;
+                let events = self.dummies[index].receive_do_damage(total, local, time);
                 self.owner_events(index, events, time);
             }
         }
@@ -1365,11 +1420,31 @@ impl Running {
         }
         if death.killed_by_local {
             self.room.kill_notification(&mut self.props, &death.name);
+            if let Some(online) = &mut self.online {
+                // AddKillNotification: the feed message to all, Kills + 1, the team's score.
+                online.send_message(&self.props.name, &death.name, "killed", &self.props.team);
+                online.set_score("Kills", self.props.kills);
+                if self.props.team == self.room.team_1.name {
+                    online.set_team_score("Team1Score", self.room.team1_score);
+                } else if self.props.team == self.room.team_2.name {
+                    online.set_team_score("Team2Score", self.room.team2_score);
+                }
+            }
         }
     }
 
-    /// The simulated clients' frames and what they send.
+    /// The simulated clients' frames and what they send, then what the servers delivered.
     fn network_frame(&mut self, dt: f32, time: f32) {
+        let incoming = match &mut self.online {
+            Some(online) => online.update(time),
+            None => Vec::new(),
+        };
+        for event in incoming {
+            if std::env::var_os("PGA3_NET_DEBUG").is_some() {
+                eprintln!("net: {event:?}");
+            }
+            self.net_event(event, time);
+        }
         for index in 0..self.dummies.len() {
             let (events, respawn) =
                 self.dummies[index].update(&self.world, &self.scene.ladders, dt, time);
@@ -1462,7 +1537,8 @@ impl Running {
                     // An RPC to all: the sender runs it at once, then this client's copy.
                     let more = self.dummies[index].receive_do_damage(amount, actor, time);
                     if let Some(r) = remote
-                        && let Some(death) = self.remotes[r].do_damage(amount, actor, LOCAL_ACTOR)
+                        && let Some(death) =
+                            self.remotes[r].do_damage(amount, actor, self.props.actor)
                     {
                         self.remote_died(r, death, time);
                     }
@@ -1510,6 +1586,110 @@ impl Running {
         }
     }
 
+    /// `SpawnPlayer` on the network: `TeamName`, then `PhotonNetwork.Instantiate` of the team's
+    /// player prefab at the spawn point.
+    fn instantiate_online(&mut self) {
+        let team_1 = self.local.kind == 0;
+        let (position, rotation) = (self.player.position, self.player.rotation);
+        if let Some(online) = &mut self.online {
+            online.choose_team(&self.props.team);
+            online.spawn(team_1, position, rotation);
+        }
+    }
+
+    /// What the original servers delivered: the other players' objects, RPCs and scores.
+    fn net_event(&mut self, event: NetIn, time: f32) {
+        let remote = |remotes: &[RemotePlayer], actor: ActorId| {
+            remotes.iter().position(|r| r.actor == actor)
+        };
+        match event {
+            NetIn::Instantiate {
+                actor,
+                team_1_prefab,
+                position,
+                rotation,
+            } => {
+                if let Some(old) = remote(&self.remotes, actor) {
+                    self.remove_remote(old);
+                }
+                let kind = if team_1_prefab { 0 } else { 1 };
+                self.remotes.push(RemotePlayer::new(
+                    &self.kinds[kind].pristine,
+                    kind,
+                    actor,
+                    position,
+                    rotation,
+                    Some(&mut self.audio),
+                ));
+            }
+            NetIn::State { actor, state } => {
+                if let Some(r) = remote(&self.remotes, actor) {
+                    self.remotes[r].receive(&state);
+                }
+            }
+            NetIn::SyncWeapons { actor, sync } => {
+                if let Some(r) = remote(&self.remotes, actor) {
+                    let events = self.remotes[r].sync_weapons_rpc(sync, time, r);
+                    self.sync_events(events);
+                }
+            }
+            NetIn::DoDamage {
+                target,
+                amount,
+                damager,
+            } => {
+                if target == self.props.actor {
+                    self.local_do_damage(amount, damager, time);
+                } else if let Some(r) = remote(&self.remotes, target)
+                    && let Some(death) =
+                        self.remotes[r].do_damage(amount, damager, self.props.actor)
+                {
+                    self.remote_died(r, death, time);
+                }
+            }
+            NetIn::Message {
+                killer,
+                killed,
+                middle,
+                team,
+            } => self.room.add_message(&killer, &killed, &middle, &team),
+            NetIn::Destroy { actor } => {
+                if let Some(r) = remote(&self.remotes, actor) {
+                    self.remove_remote(r);
+                }
+            }
+            NetIn::RoomScores { team1, team2 } => {
+                if let Some(score) = team1 {
+                    self.room.team1_score = score;
+                }
+                if let Some(score) = team2 {
+                    self.room.team2_score = score;
+                }
+            }
+            NetIn::Disconnected(reason) => {
+                eprintln!("online: disconnected: {reason}");
+                self.online = None;
+            }
+        }
+    }
+
+    /// `PlayerDamage.DoDamage` on this client's player, sent by another client's hit.
+    fn local_do_damage(&mut self, amount: f32, damager: ActorId, time: f32) {
+        if self.local.scripts.destroyed {
+            return;
+        }
+        let player_time = self.player.time;
+        let scripts = &mut self.local.scripts;
+        let protected = scripts.protection.protected;
+        let died = scripts
+            .damage
+            .as_mut()
+            .and_then(|d| d.do_damage(amount, protected, player_time));
+        if let Some(DamageEvent::Died { .. }) = died {
+            self.die(time, damager == self.props.actor);
+        }
+    }
+
     /// `PhotonNetwork.Destroy` of another player's object (its AudioSources go with it).
     fn remove_remote(&mut self, index: usize) {
         let remote = self.remotes.remove(index);
@@ -1521,7 +1701,10 @@ impl Running {
     /// `DoDamage` at `currentHp < 0` on the owner: the player's children are deactivated, the
     /// death prefab is instantiated at its transform and sent `RespawnAfter`, Deaths + 1, and
     /// (the damage being its own fall) `PlayerFellDown`.
-    fn die(&mut self, time: f32) {
+    fn die(&mut self, time: f32, fell: bool) {
+        if std::env::var_os("PGA3_NET_DEBUG").is_some() {
+            eprintln!("net: local player died (fell: {fell}) at {time:.2}");
+        }
         let children = self.local.prefab.nodes[0].children.clone();
         for child in children {
             self.local.prefab.nodes[child].active_self = false;
@@ -1538,8 +1721,16 @@ impl Running {
             self.ragdolls.push(ragdoll);
         }
         self.props.deaths += 1;
-        let name = self.props.name.clone();
-        self.room.add_message(&name, "", "fell down", "");
+        if let Some(online) = &self.online {
+            online.set_score("Deaths", self.props.deaths);
+        }
+        if fell {
+            let name = self.props.name.clone();
+            self.room.add_message(&name, "", "fell down", "");
+            if let Some(online) = &self.online {
+                online.send_message(&name, "", "fell down", "");
+            }
+        }
     }
 
     /// The death prefabs' `InvokeRepeating` countdown (the owner's `SpawnPlayer` respawns) and
@@ -1597,6 +1788,7 @@ impl Running {
         self.local.projectiles = projectiles;
         self.sync_local_avatar();
         self.create_mirror();
+        self.instantiate_online();
     }
 
     /// The local prefab's transforms from the player state.
@@ -1617,7 +1809,7 @@ impl Running {
         let mut mirror = RemotePlayer::new(
             &self.kinds[kind].pristine,
             kind,
-            LOCAL_ACTOR,
+            self.props.actor,
             self.player.position,
             self.player.rotation,
             None,
@@ -1695,6 +1887,9 @@ impl Running {
         if !self.local.scripts.destroyed && self.time >= self.serialize_at {
             self.serialize_at = self.time + SERIALIZE_INTERVAL;
             let state = self.local_state();
+            if let Some(online) = &mut self.online {
+                online.send_state(&state);
+            }
             if let Some(mirror) = &mut self.mirror {
                 mirror.receive(&state);
             }
@@ -1998,7 +2193,7 @@ impl App {
 impl ApplicationHandler for App {
     fn resumed(&mut self, event_loop: &ActiveEventLoop) {
         if self.running.is_none() {
-            match create(event_loop, &self.args) {
+            match create(event_loop, &self.args, self.online.take()) {
                 Ok(running) => self.running = Some(running),
                 Err(error) => self.fail(event_loop, error),
             }
@@ -2228,10 +2423,38 @@ impl ApplicationHandler for App {
 }
 
 fn main() -> Result<()> {
-    let args = parse_args()?;
+    let mut args = parse_args()?;
     let event_loop = EventLoop::new()?;
+    if args.list_rooms {
+        return online::list_rooms(net::pun::CRAZYGAMES, &args.region, &args.name);
+    }
+    let mut online = None;
+    if args.online {
+        let assets = assets::find_assets_dir()?;
+        let options = OnlineOptions {
+            region: args.region.clone(),
+            name: args.name.clone(),
+            room: args.room.clone(),
+            map: args.scene.clone(),
+            create: args.create,
+            mode: if args.mode == "DM" {
+                "TDM".to_string()
+            } else {
+                args.mode.clone()
+            },
+        };
+        let session = Online::join(net::pun::CRAZYGAMES, &options, &assets)?;
+        if let Some(map) = session.map() {
+            args.scene = map.to_string();
+        }
+        if let Some(mode) = session.game_mode() {
+            args.mode = mode.to_string();
+        }
+        online = Some(session);
+    }
     let mut app = App {
         args,
+        online,
         running: None,
         error: None,
     };

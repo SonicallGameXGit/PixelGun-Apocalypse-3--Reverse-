@@ -2,7 +2,7 @@
 
 Client: `remote.rs` (another player's copy), `room.rs` (`RoomMultiplayerMenu` teams/spawns, `WhoKilledWho`, the `--dummy` test client), wired in `main.rs`.
 
-Every player exists once per client. The owner runs the `PhotonView.isMine` branch of the scripts; every other client runs the remote branch on a **copy**, driven only by the serialized stream and the RPCs. This page is that remote side. Its inputs are what the Photon milestone will carry; until then, `--dummy` simulates a second client.
+Every player exists once per client. The owner runs the `PhotonView.isMine` branch of the scripts; every other client runs the remote branch on a **copy**, driven only by the serialized stream and the RPCs. This page is that remote side. Its inputs come from Photon with `--online` (`online.rs`, `docs/protocol.md` "Playing online"), or from the in-process `--dummy` client.
 
 Evidence: decompiled with `tools/re/` (function numbers below are wasm2c indices), field data in `assets/data/prefabs/resources/{german,mercenarys}.json`. **Observed** = read from code or data; **assumed** = marked as such.
 

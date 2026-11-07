@@ -10,6 +10,8 @@ An argument that is a number selects that wasm function index; otherwise every m
 contains the substring is printed. Calls `w2c_<module>_f<N>` are shortened to `f<N>` and annotated
 with `/*Method$$Name*/`; memory accesses are shortened to `i32[addr + off]` (`--raw` keeps the
 original text); `--fold` additionally folds stack temporaries into expressions. Builds `<pga3.c>.idx` (byte offsets of each function) on first use.
+`--meta <script.json>` and `--strings <stringliteral.json>` annotate loads of metadata addresses
+(`i32[3161544u]/*PhotonNetwork_TypeInfo*/`) and string literals (`i32[3243444u]/*"text"*/`).
 """
 import json
 import os
@@ -158,8 +160,32 @@ def read_function(c_path, offset):
     return lines
 
 
+ADDRESS_LOAD = re.compile(r'(i32\[(\d+)u\])')
+
+
+def load_labels(args):
+    """Address -> label from `--meta script.json` and `--strings stringliteral.json`; removes them from args."""
+    labels = {}
+    for flag in ('--meta', '--strings'):
+        while flag in args:
+            at = args.index(flag)
+            path = args[at + 1]
+            del args[at:at + 2]
+            data = json.load(open(path, encoding='utf-8'))
+            if flag == '--meta':
+                for entry in data['ScriptMetadata']:
+                    labels[entry['Address']] = entry['Name']
+            else:
+                for entry in data:
+                    value = entry['value']
+                    text = value if len(value) <= 80 else value[:77] + '...'
+                    labels[int(entry['address'], 16)] = json.dumps(text, ensure_ascii=False).replace('*/', '*\\/')
+    return labels
+
+
 def main():
     args = sys.argv[1:]
+    labels = load_labels(args)
     raw = '--raw' in args
     do_fold = '--fold' in args and not raw
     c_path, names_path, *queries = [a for a in args if a not in ('--raw', '--fold')]
@@ -192,6 +218,11 @@ def main():
                  if raw or not any(n in line for n in NOISE)]
         if do_fold:
             lines = fold(lines)
+        if labels:
+            def label(match):
+                text = labels.get(int(match.group(2)))
+                return f'{match.group(1)}/*{text}*/' if text is not None else match.group(1)
+            lines = [ADDRESS_LOAD.sub(label, line) for line in lines]
         print('\n'.join(lines))
         print()
 
