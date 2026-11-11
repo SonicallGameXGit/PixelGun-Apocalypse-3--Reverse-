@@ -214,3 +214,13 @@ pub fn read_framebuffer(gl: &glow::Context, width: u32, height: u32) -> Vec<u8> 
     }
     flipped
 }
+
+/// Clears the default framebuffer to `color` (the menu cameras' solid backgrounds).
+pub fn clear(gl: &glow::Context, color: [f32; 3], width: u32, height: u32) {
+    unsafe {
+        gl.viewport(0, 0, width as i32, height as i32);
+        gl.disable(glow::SCISSOR_TEST);
+        gl.clear_color(color[0], color[1], color[2], 1.0);
+        gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
+    }
+}

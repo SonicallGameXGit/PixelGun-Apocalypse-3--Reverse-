@@ -97,3 +97,5 @@ Method names come from Il2CppDumper, run on the static memory wrapped as a wasm 
   - then, on the **master client**, room properties `RefTime = (float)PhotonNetwork.time`, `Team1Score = 0`, `Team2Score = 0`, one call each;
   - every other client unboxes `RefTime` as a float, so a room without it throws in `Awake` and the client shows no menu.
   - `PhotonNetwork.time` = `(uint)ServerTimeInMilliSeconds / 1000.0`.
+
+Menu scenes and scripts (`Main`, `ConnectMenu`, `ServerChose`, the in-room menu) are specified in `docs/gameplay/menu.md`.

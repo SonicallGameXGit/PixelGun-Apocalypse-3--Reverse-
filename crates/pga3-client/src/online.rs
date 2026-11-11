@@ -237,6 +237,11 @@ impl Online {
         let events = wait_for(&mut client, timeout, "joining the room", |_, e| {
             matches!(e, ClientEvent::Joined { .. })
         })?;
+        Ok(Online::from_events(client, events))
+    }
+
+    /// Wraps a client that has just received `Joined` (the menu drives the connection itself).
+    pub fn from_events(client: Client, events: Vec<ClientEvent>) -> Online {
         let mut online = Online {
             client,
             room_props: Value::Hashtable(Vec::new()),
@@ -277,7 +282,7 @@ impl Online {
             online.names.len(),
             online.map().unwrap_or("?")
         );
-        Ok(online)
+        online
     }
 
     pub fn actor(&self) -> ActorId {
@@ -614,7 +619,7 @@ impl Online {
 
 /// A room as `ConnectMenu` creates it (defaults: TDM, 20 minutes, all weapons). The CrazyGames
 /// build lists `MapName`, `RoundDuration`, `GameMode`, `Password` in the lobby (recorded room).
-fn new_room(map: &str, mode: &str) -> NewRoom {
+pub fn new_room(map: &str, mode: &str) -> NewRoom {
     let number = 111
         + (std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)

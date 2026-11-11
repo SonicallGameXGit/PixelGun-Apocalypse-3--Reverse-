@@ -35,7 +35,9 @@ mod footsteps;
 mod gfx;
 mod gui;
 mod hud;
+mod layout;
 mod legacy_particles;
+mod menu;
 mod net;
 mod obj;
 mod online;
@@ -51,16 +53,18 @@ mod room;
 mod scene;
 mod skin;
 mod trail;
+mod ui;
 mod unity;
 mod weapons;
 
 use std::num::NonZeroU32;
 use std::path::PathBuf;
+use std::rc::Rc;
 use std::time::Instant;
 
 use anyhow::{Context, Result, bail};
 use assets::ref_of;
-use glam::{EulerRot, Quat, Vec3};
+use glam::{EulerRot, Quat, Vec2, Vec3};
 use glutin::config::{ConfigTemplateBuilder, GlConfig};
 use glutin::context::{
     ContextApi, ContextAttributesBuilder, GlProfile, NotCurrentGlContext, PossiblyCurrentContext,
@@ -146,6 +150,35 @@ struct Args {
     list_rooms: bool,
     /// With `--online`: create a new room on the scene instead of joining one.
     create: bool,
+    /// Start in the menu at this screen (`--menu boot|main|connecting|lobby|create|loading`).
+    menu: Option<String>,
+    /// Sample rooms in the lobby while offline.
+    demo_rooms: bool,
+    /// The menu connects and creates a room on its own (tests).
+    menu_auto: bool,
+    /// Open the in-game Tab menu on start (screenshots).
+    pause: bool,
+    /// A scene was named: skip the menu.
+    scene_given: bool,
+}
+
+impl Args {
+    /// The menu runs unless something asks for a game directly (a scene, `--online`, the
+    /// offline test options).
+    fn use_menu(&self) -> bool {
+        if self.menu.is_some() || self.menu_auto {
+            return true;
+        }
+        !(self.scene_given
+            || self.dummy
+            || self.online
+            || self.camera.is_some()
+            || self.spawn.is_some()
+            || self.fly
+            || self.weapon.is_some()
+            || self.fire
+            || self.aim)
+    }
 }
 
 fn parse_args() -> Result<Args> {
@@ -174,6 +207,11 @@ fn parse_args() -> Result<Args> {
         room: None,
         list_rooms: false,
         create: false,
+        menu: None,
+        demo_rooms: false,
+        menu_auto: false,
+        pause: false,
+        scene_given: false,
     };
     let team = |text: String| -> Result<u8> {
         match text.as_str() {
@@ -230,10 +268,17 @@ fn parse_args() -> Result<Args> {
             "--online" => args.online = true,
             "--list-rooms" => args.list_rooms = true,
             "--create" => args.create = true,
+            "--menu" => args.menu = Some(iter.next().context("--menu SCREEN")?),
+            "--demo-rooms" => args.demo_rooms = true,
+            "--menu-auto" => args.menu_auto = true,
+            "--pause" => args.pause = true,
             "--region" => args.region = iter.next().context("--region us|eu|asia|jp|au|ru")?,
             "--room" => args.room = Some(iter.next().context("--room TEXT")?),
             other if other.starts_with("--") => bail!("unknown option {other}"),
-            scene => args.scene = scene.to_string(),
+            scene => {
+                args.scene = scene.to_string();
+                args.scene_given = true;
+            }
         }
     }
     Ok(args)
@@ -422,16 +467,51 @@ struct Running {
     stats_frames: u32,
     stats_max: f32,
     stats_cpu: f32,
-    gl: glow::Context,
-    surface: Surface<WindowSurface>,
-    context: PossiblyCurrentContext,
-    window: Window,
+    /// Started from the menu: Tab opens the pause menu with "Leave Room".
+    from_menu: bool,
+    paused: bool,
+    /// The room's name for the pause menu.
+    room_title: String,
+    cursor: Vec2,
+    pause_press: Option<bool>,
+    /// The lobby skin of the pause menu's buttons.
+    menu_skin: Option<gui::NamedSkin>,
+    gl: Rc<glow::Context>,
+    window: Rc<Window>,
 }
 
+/// The window, its GL context and surface. Field order is drop order (the window last).
+struct Platform {
+    gl: Rc<glow::Context>,
+    surface: Surface<WindowSurface>,
+    context: PossiblyCurrentContext,
+    window: Rc<Window>,
+}
+
+/// The menu with what draws it (the `Main` scene's renderer).
+struct MenuScreen {
+    menu: menu::Menu,
+    renderer: SceneRenderer,
+    input: menu::MenuInput,
+    mouse: Vec2,
+    last_frame: Instant,
+    started: Instant,
+    frames: u32,
+}
+
+enum Screen {
+    Menu(Box<MenuScreen>),
+    Game(Box<Running>),
+}
+
+/// Field order is drop order: the screens release their GL objects before the platform.
 struct App {
     args: Args,
     online: Option<Online>,
-    running: Option<Running>,
+    screen: Option<Screen>,
+    /// The menu while a game runs, for the way back.
+    stash: Option<Box<MenuScreen>>,
+    platform: Option<Platform>,
     error: Option<anyhow::Error>,
 }
 
@@ -443,13 +523,14 @@ fn team_name(room: &Room, team: u8) -> String {
     }
 }
 
-fn create(
-    event_loop: &ActiveEventLoop,
-    args: &Args,
-    mut online: Option<Online>,
-) -> Result<Running> {
+fn create_platform(event_loop: &ActiveEventLoop, args: &Args) -> Result<Platform> {
+    let title = if args.use_menu() {
+        "Pixel Gun Apocalypse 3".to_string()
+    } else {
+        format!("Pixel Gun Apocalypse 3 — {}", args.scene)
+    };
     let attributes = Window::default_attributes()
-        .with_title(format!("Pixel Gun Apocalypse 3 — {}", args.scene))
+        .with_title(title)
         .with_inner_size(LogicalSize::new(1280.0, 720.0));
     let template = ConfigTemplateBuilder::new().with_depth_size(24);
     let (window, config) = DisplayBuilder::new()
@@ -490,6 +571,40 @@ fn create(
     let gl =
         unsafe { glow::Context::from_loader_function_cstr(|name| display.get_proc_address(name)) };
 
+    Ok(Platform {
+        gl: Rc::new(gl),
+        surface,
+        context,
+        window: Rc::new(window),
+    })
+}
+
+fn create_menu(platform: &Platform, args: &Args) -> Result<MenuScreen> {
+    let assets = assets::find_assets_dir()?;
+    let scene = scene::load_scene(&assets, "Main")?;
+    let renderer = SceneRenderer::new(&platform.gl, &assets, &scene)?;
+    let mut menu = menu::Menu::new(&assets, args.demo_rooms, &args.name, &args.region)?;
+    menu.screenshot = args.screenshot.is_some();
+    menu.auto = args.menu_auto;
+    if let Some(screen) = &args.menu
+        && !menu.show(screen)
+    {
+        bail!("--menu SCREEN is boot, main, connecting, lobby, create or loading");
+    }
+    Ok(MenuScreen {
+        menu,
+        renderer,
+        input: menu::MenuInput::default(),
+        mouse: Vec2::ZERO,
+        last_frame: Instant::now(),
+        started: Instant::now(),
+        frames: 0,
+    })
+}
+
+fn create(platform: &Platform, args: &Args, mut online: Option<Online>) -> Result<Running> {
+    let gl = platform.gl.clone();
+    let window = platform.window.clone();
     let assets = assets::find_assets_dir()?;
     let loading = Instant::now();
     let scene = scene::load_scene(&assets, &args.scene)?;
@@ -630,11 +745,16 @@ fn create(
         dummies.push(DummyOwner::new(props, args.dummy_fire));
     }
 
+    let menu_skin = gui::load_named_skin(&assets, "sharedassets0.assets:141").ok();
     let mut running = Running {
         window,
-        surface,
-        context,
         gl,
+        from_menu: false,
+        paused: false,
+        room_title: String::new(),
+        cursor: Vec2::ZERO,
+        pause_press: None,
+        menu_skin,
         scene,
         renderer,
         kinds,
@@ -2171,6 +2291,20 @@ impl Running {
         if let Some(skin) = &self.feed_skin {
             self.room.feed_gui(gui, font, skin, w);
         }
+        if self.paused
+            && let Some(skin) = &self.menu_skin
+        {
+            let pressed = self.pause_press.is_some();
+            menu::pause_gui(
+                gui,
+                font,
+                skin,
+                (w, h),
+                self.cursor,
+                pressed,
+                &self.room_title,
+            );
+        }
     }
 }
 
@@ -2179,52 +2313,179 @@ impl App {
         self.error = Some(error);
         event_loop.exit();
     }
-}
 
-impl ApplicationHandler for App {
-    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
-        if self.running.is_none() {
-            match create(event_loop, &self.args, self.online.take()) {
-                Ok(running) => self.running = Some(running),
-                Err(error) => self.fail(event_loop, error),
+    /// `LoadMap` finished: starts the game the menu chose.
+    fn launch(&mut self, event_loop: &ActiveEventLoop, launch: menu::Launch) {
+        self.args.scene = launch.map;
+        if launch.online.is_some() || launch.mode == "TDM" || launch.mode == "DM" {
+            self.args.mode = launch.mode;
+        }
+        self.args.name = launch.name;
+        self.args.region = launch.region;
+        let Some(platform) = &self.platform else {
+            return;
+        };
+        match create(platform, &self.args, launch.online) {
+            Ok(mut running) => {
+                running.from_menu = true;
+                running.room_title = launch.room_name;
+                let menu = self.screen.take();
+                if let Some(Screen::Menu(menu)) = menu {
+                    self.stash = Some(menu);
+                }
+                self.screen = Some(Screen::Game(Box::new(running)));
             }
+            Err(error) => self.fail(event_loop, error),
         }
     }
 
-    fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
-        let Some(app) = self.running.as_mut() else {
+    /// "Leave Room": the game ends and the lobby comes back (`OnLeftRoom` loads `Main`).
+    fn leave_room(&mut self) {
+        if let Some(Screen::Game(game)) = &mut self.screen {
+            game.set_grab(false);
+        }
+        self.screen = None;
+        if let Some(mut menu) = self.stash.take() {
+            menu.menu.return_from_game(&self.args.region);
+            menu.last_frame = Instant::now();
+            self.screen = Some(Screen::Menu(menu));
+        }
+    }
+
+    fn menu_event(&mut self, event_loop: &ActiveEventLoop, event: WindowEvent) {
+        let Some(Screen::Menu(screen)) = self.screen.as_mut() else {
             return;
         };
         match event {
-            WindowEvent::CloseRequested => event_loop.exit(),
-            WindowEvent::Resized(size) => {
-                if let (Some(w), Some(h)) =
-                    (NonZeroU32::new(size.width), NonZeroU32::new(size.height))
-                {
-                    app.surface.resize(&app.context, w, h);
+            WindowEvent::CursorMoved { position, .. } => {
+                screen.mouse = Vec2::new(position.x as f32, position.y as f32);
+            }
+            WindowEvent::MouseInput {
+                state,
+                button: MouseButton::Left,
+                ..
+            } => {
+                if state == ElementState::Pressed {
+                    screen.input.down = true;
+                } else {
+                    screen.input.up = true;
                 }
             }
+            WindowEvent::MouseWheel { delta, .. } => {
+                screen.input.wheel += match delta {
+                    MouseScrollDelta::LineDelta(_, y) => y,
+                    MouseScrollDelta::PixelDelta(p) => p.y as f32 / 40.0,
+                };
+            }
+            WindowEvent::KeyboardInput { event, .. } if event.state == ElementState::Pressed => {
+                match event.physical_key {
+                    PhysicalKey::Code(KeyCode::Backspace) => screen.input.backspace = true,
+                    PhysicalKey::Code(KeyCode::Enter | KeyCode::NumpadEnter) => {
+                        screen.input.enter = true
+                    }
+                    PhysicalKey::Code(KeyCode::Tab) => screen.input.tab = true,
+                    PhysicalKey::Code(KeyCode::Escape) => event_loop.exit(),
+                    _ => {}
+                }
+                if let Some(text) = &event.text {
+                    screen.input.chars.extend(text.chars());
+                }
+            }
+            WindowEvent::RedrawRequested => {
+                let Some(platform) = &self.platform else {
+                    return;
+                };
+                let now = Instant::now();
+                let dt = (now - screen.last_frame).as_secs_f32().min(0.1);
+                screen.last_frame = now;
+                let size = platform.window.inner_size();
+                let size_f = (size.width as f32, size.height as f32);
+                screen.input.mouse = screen.mouse;
+                let mut launch = screen.menu.update(dt, &screen.input, size_f);
+                if launch.is_none() {
+                    launch = screen.menu.offline_launch();
+                }
+                screen.input = menu::MenuInput::default();
+                let (clear, quads) = screen.menu.frame(size_f);
+                gfx::clear(&platform.gl, clear, size.width, size.height);
+                screen.renderer.draw_gui(
+                    &platform.gl,
+                    &quads,
+                    Some(&screen.menu.font),
+                    size.width,
+                    size.height,
+                );
+                screen.frames += 1;
+                let ready =
+                    screen.frames >= 3 && screen.started.elapsed().as_secs_f32() >= self.args.wait;
+                if let (Some(path), true) = (&self.args.screenshot, ready) {
+                    save_screenshot(platform, path);
+                    event_loop.exit();
+                }
+                platform.window.pre_present_notify();
+                if let Err(error) = platform.surface.swap_buffers(&platform.context) {
+                    eprintln!("swap_buffers: {error}");
+                }
+                if let Some(launch) = launch {
+                    self.launch(event_loop, launch);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn game_event(&mut self, event_loop: &ActiveEventLoop, event: WindowEvent) {
+        let Some(Screen::Game(app)) = self.screen.as_mut() else {
+            return;
+        };
+        let Some(platform) = &self.platform else {
+            return;
+        };
+        let mut leave = false;
+        match event {
             WindowEvent::Focused(false) => {
                 app.set_grab(false);
                 app.input.fire_held = false;
             }
+            WindowEvent::CursorMoved { position, .. } => {
+                app.cursor = Vec2::new(position.x as f32, position.y as f32);
+            }
             WindowEvent::MouseInput { state, button, .. } => {
                 let pressed = state == ElementState::Pressed;
-                let i = &mut app.input;
-                if !i.grabbed {
-                    // The first click only captures the cursor.
-                    if pressed && button == MouseButton::Left {
-                        app.set_grab(true);
+                if app.paused {
+                    if button == MouseButton::Left {
+                        let size = app.window.inner_size();
+                        let size = (size.width as f32, size.height as f32);
+                        if pressed {
+                            app.pause_press = menu::pause_hit(size, app.cursor);
+                        } else {
+                            let hit = menu::pause_hit(size, app.cursor);
+                            if hit.is_some() && hit == app.pause_press.take() {
+                                if hit == Some(true) {
+                                    app.paused = false;
+                                } else {
+                                    leave = true;
+                                }
+                            }
+                        }
                     }
-                    return;
-                }
-                match button {
-                    MouseButton::Left => {
-                        i.fire_held = pressed;
-                        i.fire_pressed |= pressed;
+                } else {
+                    let i = &mut app.input;
+                    if !i.grabbed {
+                        // The first click only captures the cursor.
+                        if pressed && button == MouseButton::Left {
+                            app.set_grab(true);
+                        }
+                    } else {
+                        match button {
+                            MouseButton::Left => {
+                                i.fire_held = pressed;
+                                i.fire_pressed |= pressed;
+                            }
+                            MouseButton::Right => i.aim_pressed |= pressed,
+                            _ => {}
+                        }
                     }
-                    MouseButton::Right => i.aim_pressed |= pressed,
-                    _ => {}
                 }
             }
             WindowEvent::MouseWheel { delta, .. } if app.input.grabbed => {
@@ -2248,6 +2509,21 @@ impl ApplicationHandler for App {
             } => {
                 let pressed = state == ElementState::Pressed;
                 let down = pressed && !repeat;
+                if code == KeyCode::Tab && down && app.from_menu {
+                    // RoomMultiplayerMenu: Tab toggles the menu.
+                    app.paused = !app.paused;
+                    if app.paused {
+                        app.set_grab(false);
+                        app.input.fire_held = false;
+                    }
+                    return;
+                }
+                if app.paused {
+                    if code == KeyCode::Escape && pressed {
+                        app.paused = false;
+                    }
+                    return;
+                }
                 let i = &mut app.input;
                 match code {
                     KeyCode::KeyW => i.key_w = pressed,
@@ -2288,7 +2564,7 @@ impl ApplicationHandler for App {
                     KeyCode::ControlLeft => i.prone_pressed |= down,
                     KeyCode::ShiftLeft => i.run = pressed,
                     KeyCode::ShiftRight => i.fast = pressed,
-                    KeyCode::KeyF if down => {
+                    KeyCode::KeyF if down && !app.from_menu => {
                         app.mode = match app.mode {
                             Mode::Walk => Mode::Fly,
                             Mode::Fly => {
@@ -2316,7 +2592,7 @@ impl ApplicationHandler for App {
                     KeyCode::Escape if pressed => {
                         if app.input.grabbed {
                             app.set_grab(false);
-                        } else {
+                        } else if !app.from_menu {
                             event_loop.exit();
                         }
                     }
@@ -2340,6 +2616,14 @@ impl ApplicationHandler for App {
                     app.input.fire_held = true;
                     // Single-fire weapons need clicks.
                     app.input.fire_pressed |= app.frames % 30 == 0;
+                }
+                if app.paused {
+                    // The game keeps running (the network does) but gets no input.
+                    let keep = app.input.grabbed;
+                    app.input = Input {
+                        grabbed: keep,
+                        ..Input::default()
+                    };
                 }
                 app.update(dt);
                 app.render();
@@ -2367,32 +2651,93 @@ impl ApplicationHandler for App {
                 let ready =
                     app.frames >= 3 && app.started.elapsed().as_secs_f32() >= self.args.wait;
                 if let (Some(path), true) = (&self.args.screenshot, ready) {
-                    let size = app.window.inner_size();
-                    let pixels = gfx::read_framebuffer(&app.gl, size.width, size.height);
-                    let result = image::save_buffer(
-                        path,
-                        &pixels,
-                        size.width,
-                        size.height,
-                        image::ColorType::Rgba8,
-                    );
-                    match result {
-                        Ok(()) => println!("screenshot saved to {}", path.display()),
-                        Err(error) => eprintln!("screenshot failed: {error}"),
-                    }
+                    save_screenshot(platform, path);
                     event_loop.exit();
                 }
                 app.window.pre_present_notify();
-                if let Err(error) = app.surface.swap_buffers(&app.context) {
+                if let Err(error) = platform.surface.swap_buffers(&platform.context) {
                     eprintln!("swap_buffers: {error}");
                 }
             }
             _ => {}
         }
+        if leave {
+            self.leave_room();
+        }
+    }
+}
+
+fn save_screenshot(platform: &Platform, path: &std::path::Path) {
+    let size = platform.window.inner_size();
+    let pixels = gfx::read_framebuffer(&platform.gl, size.width, size.height);
+    let result = image::save_buffer(
+        path,
+        &pixels,
+        size.width,
+        size.height,
+        image::ColorType::Rgba8,
+    );
+    match result {
+        Ok(()) => println!("screenshot saved to {}", path.display()),
+        Err(error) => eprintln!("screenshot failed: {error}"),
+    }
+}
+
+impl ApplicationHandler for App {
+    fn resumed(&mut self, event_loop: &ActiveEventLoop) {
+        if self.platform.is_some() {
+            return;
+        }
+        let platform = match create_platform(event_loop, &self.args) {
+            Ok(platform) => platform,
+            Err(error) => return self.fail(event_loop, error),
+        };
+        let screen = if self.args.use_menu() {
+            create_menu(&platform, &self.args).map(|m| Screen::Menu(Box::new(m)))
+        } else {
+            create(&platform, &self.args, self.online.take()).map(|mut g| {
+                if self.args.pause {
+                    g.from_menu = true;
+                    g.paused = true;
+                    g.room_title = "Room 4721: TDM".to_string();
+                }
+                Screen::Game(Box::new(g))
+            })
+        };
+        match screen {
+            Ok(screen) => self.screen = Some(screen),
+            Err(error) => self.fail(event_loop, error),
+        }
+        self.platform = Some(platform);
+    }
+
+    fn window_event(&mut self, event_loop: &ActiveEventLoop, _id: WindowId, event: WindowEvent) {
+        match &event {
+            WindowEvent::CloseRequested => {
+                event_loop.exit();
+                return;
+            }
+            WindowEvent::Resized(size) => {
+                if let (Some(platform), Some(w), Some(h)) = (
+                    &self.platform,
+                    NonZeroU32::new(size.width),
+                    NonZeroU32::new(size.height),
+                ) {
+                    platform.surface.resize(&platform.context, w, h);
+                }
+            }
+            _ => {}
+        }
+        match self.screen {
+            Some(Screen::Menu(_)) => self.menu_event(event_loop, event),
+            Some(Screen::Game(_)) => self.game_event(event_loop, event),
+            None => {}
+        }
     }
 
     fn device_event(&mut self, _event_loop: &ActiveEventLoop, _id: DeviceId, event: DeviceEvent) {
-        if let (Some(app), DeviceEvent::MouseMotion { delta }) = (self.running.as_mut(), event)
+        if let (Some(Screen::Game(app)), DeviceEvent::MouseMotion { delta }) =
+            (self.screen.as_mut(), event)
             && app.input.grabbed
         {
             app.input.mouse_delta.0 += delta.0;
@@ -2402,12 +2747,13 @@ impl ApplicationHandler for App {
 
     fn exiting(&mut self, _event_loop: &ActiveEventLoop) {
         // Release GL resources while the window still exists.
-        self.running = None;
+        self.screen = None;
+        self.stash = None;
     }
 
     fn about_to_wait(&mut self, _event_loop: &ActiveEventLoop) {
-        if let Some(app) = &self.running {
-            app.window.request_redraw();
+        if let Some(platform) = &self.platform {
+            platform.window.request_redraw();
         }
     }
 }
@@ -2445,7 +2791,9 @@ fn main() -> Result<()> {
     let mut app = App {
         args,
         online,
-        running: None,
+        screen: None,
+        stash: None,
+        platform: None,
         error: None,
     };
     event_loop.run_app(&mut app)?;

@@ -25,3 +25,4 @@ Planned:
 - `gameplay/`: modes, progression, balance tables, zombies, remote players.
 
 Tooling for reading the original code (wasm2c, or asm.js for the CrazyGames build, + IL2CPP names): `tools/re/README.md`.
+- `gameplay/menu.md`: boot, server window, lobby, room creation, loading fade and the in-room Tab menu of the CrazyGames build, with the client's implementation.

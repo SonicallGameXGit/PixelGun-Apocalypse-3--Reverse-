@@ -46,6 +46,9 @@ Client: `crates/pga3-client` (binary). Procedural, data-oriented Rust; GL calls 
 | `trail.rs` | `TrailRenderer` (bullet and rocket trails) |
 | `effects.rs` | the spawned prefabs' effects: impacts (`WaitForDestroy`), the explosion (`CFX_AutoDestructShuriken`, `ExplosionDamage`), projectile trails and sounds |
 | `gui.rs` | IMGUI subset for `OnGUI`: skins, styles, boxes, labels, rich text, the built-in Arial font atlas (spec: `docs/gameplay/hud.md`) |
+| `menu.rs` | the menu flow: server window, `ConnectMenu` lobby and room creation, `LoadMap` fade, PlayerPrefs, the in-game Tab menu (spec: `docs/gameplay/menu.md`) |
+| `ui.rs` | the uGUI subset of the `Main` scene: canvas in the 3D scene, RectTransforms, Image, Text, Button animation, `TiltWindow` |
+| `layout.rs` | Unity's `GUILayout` group algorithm for the lobby |
 | `hud.rs` | ports of `AmmoDisplay`, `WeaponManager.OnGUI` and the spawn-protection label |
 | `damage.rs` | ports of `PlayerDamage`, spawn protection and the death prefab's `RagdollController` (spec: `docs/gameplay/damage.md`) |
 | `remote.rs` | another player's copy: the remote branches of `PlayerNetworkController` (serialized state, animation layers, third-person weapon), `PlayerDamage`/`HitBox` (`SendMessageUpwards` chain, `DoDamage`, hit marker), `WeaponSync`, `DrawPlayerName` (spec: `docs/gameplay/remote-players.md`) |

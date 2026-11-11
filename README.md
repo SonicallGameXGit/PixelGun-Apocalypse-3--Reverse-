@@ -40,8 +40,11 @@ Done with the [REA (Reverse Engineer Anything)](https://github.com/morluto/rea) 
 ## Build
 
 ```bash
-cargo run --release -p pga3-client -- Bridge   # any map: Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village, ZM_*
+cargo run --release -p pga3-client                # menu: server -> lobby (join or create a room) -> game; Tab in game: Leave Room
+cargo run --release -p pga3-client -- Bridge      # straight into a map: Bridge Castle Crash Fight Pete Scaz Snow Tunnels Village, ZM_*
 ```
+
+The menu connects to the live CrazyGames servers. `--menu boot|main|connecting|lobby|create|loading [--demo-rooms] --screenshot out.png` renders a menu screen offline (`docs/gameplay/menu.md`).
 
 Click to capture the mouse. Original controls: WASD/arrows move, Space jump (and let go of a ladder), Left Shift run, C crouch, Left Ctrl prone; walk into a ladder to climb it, look down to climb down. Left mouse fire, right mouse aim, R reload, 1-6 / mouse wheel / M, N select a weapon. F toggles free-fly, Tab jumps to the next spawn point, Esc releases the mouse / quits. `--team 1` plays the "German-ZM" team (the `Mercenarys` prefab, whose Sniper and Launcher are different weapons: a green-flash sniper and a grenade launcher); the default `--team 2` plays `German`. `--dummy` (with `--dummy-fire`) adds a simulated other player that can be shot and killed. `--online` plays on the real servers (`--list-rooms` shows the rooms, `--create` makes a new one, `--room TEXT` picks one). More options: [`docs/architecture.md`](docs/architecture.md).
 

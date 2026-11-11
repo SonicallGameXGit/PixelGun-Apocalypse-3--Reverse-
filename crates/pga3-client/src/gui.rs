@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
-use glam::Vec4;
+use glam::{Mat4, Vec4};
 use serde_json::Value;
 
 use crate::assets::{f32_of, load_json};
@@ -31,6 +31,9 @@ pub struct GuiQuad {
     pub rect: [f32; 4],
     pub uv: [f32; 4],
     pub color: Vec4,
+    /// Menu quads in a 3D canvas: maps `rect` (canvas units, y down) to clip space. `None` for
+    /// plain screen pixels.
+    pub mvp: Option<Mat4>,
 }
 
 impl GuiQuad {
@@ -41,6 +44,7 @@ impl GuiQuad {
             rect,
             uv: [0.0, 0.0, 1.0, 1.0],
             color,
+            mvp: None,
         }
     }
 }
@@ -53,7 +57,7 @@ fn anchor(alignment: i32) -> (f32, f32) {
 }
 
 /// A `GUIStyle` (normal state only: the HUD never hovers or presses).
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct GuiStyle {
     pub background: Option<String>,
     pub text_color: Vec4,
@@ -70,7 +74,25 @@ pub struct GuiStyle {
     pub word_wrap: bool,
     pub rich_text: bool,
     pub stretch_width: bool,
+    pub stretch_height: bool,
+    /// `GUIStyle.fixedWidth` / `fixedHeight` (0: not fixed).
+    pub fixed_width: f32,
+    pub fixed_height: f32,
+    /// `GUIStyle.contentOffset`.
+    pub content_offset: [f32; 2],
+    /// Font file under `assets/` (`fonts/...`); `None`: the built-in Arial. Only the menu skins
+    /// fill this in: the HUD's skins keep Arial (their fonts were never compared).
+    pub font: Option<String>,
+    /// `GUIStyle.overflow`: how far the background extends past the rectangle.
+    pub overflow: [f32; 4],
+    /// The hover, active and focused states: (background, text colour).
+    pub states: [(Option<String>, Vec4); 3],
 }
+
+/// `GUIStyle` state indices into `GuiStyle::states` (normal is `background` / `text_color`).
+pub const HOVER: usize = 0;
+pub const ACTIVE: usize = 1;
+pub const FOCUSED: usize = 2;
 
 fn offsets(value: &Value) -> [f32; 4] {
     ["left", "right", "top", "bottom"].map(|k| value[k].as_f64().unwrap_or(0.0) as f32)
@@ -97,8 +119,99 @@ impl GuiStyle {
             word_wrap: value["wordWrap"].as_bool().unwrap_or(false),
             rich_text: value["richText"].as_bool().unwrap_or(false),
             stretch_width: value["stretchWidth"].as_bool().unwrap_or(false),
+            ..GuiStyle::default()
         }
     }
+}
+
+impl GuiStyle {
+    /// Every field the menu's `GUILayout` needs: the four states, the font, fixed sizes.
+    pub fn from_json_full(value: &Value) -> GuiStyle {
+        let state = |name: &str| {
+            let v = &value[name];
+            let c = &v["textColor"];
+            (
+                v["background"]["asset"].as_str().map(str::to_string),
+                Vec4::new(
+                    f32_of(&c["r"]),
+                    f32_of(&c["g"]),
+                    f32_of(&c["b"]),
+                    f32_of(&c["a"]),
+                ),
+            )
+        };
+        let offset = &value["contentOffset"];
+        GuiStyle {
+            stretch_height: value["stretchHeight"].as_bool().unwrap_or(false),
+            fixed_width: f32_of(&value["fixedWidth"]),
+            fixed_height: f32_of(&value["fixedHeight"]),
+            content_offset: [f32_of(&offset["x"]), f32_of(&offset["y"])],
+            font: value["font"]["asset"].as_str().map(str::to_string),
+            overflow: offsets(&value["overflow"]),
+            states: [state("hover"), state("active"), state("focused")],
+            ..GuiStyle::from_json(value)
+        }
+    }
+}
+
+/// A whole `GUISkin` by style name (`box`, `button`, `label`, `textfield`, `window`,
+/// `scrollview`, `verticalscrollbar`, ...), with the skin's default font.
+#[derive(Clone, Debug)]
+pub struct NamedSkin {
+    pub font: Option<String>,
+    pub styles: HashMap<String, GuiStyle>,
+}
+
+impl NamedSkin {
+    /// Unity's `GUISkin.GetStyle` falls back to an empty style for unknown names.
+    pub fn style(&self, name: &str) -> GuiStyle {
+        let mut style = self.styles.get(name).cloned().unwrap_or_default();
+        if style.font.is_none() {
+            style.font.clone_from(&self.font);
+        }
+        style
+    }
+}
+
+/// Loads every standard style of a `GUISkin` (`sharedassets0.assets:141` is the lobby's).
+pub fn load_named_skin(assets: &Path, reference: &str) -> Result<NamedSkin> {
+    let dir = assets.join("data/scriptable/UnityEngine.GUISkin");
+    let suffix = format!("__{}.json", reference.replace(':', "_"));
+    let file = std::fs::read_dir(&dir)?
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .find(|p| {
+            p.file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|n| n.ends_with(&suffix))
+        })
+        .with_context(|| format!("GUISkin {reference} not found in {}", dir.display()))?;
+    let json = load_json(&file)?;
+    let f = &json["fields"];
+    let mut styles = HashMap::new();
+    for (field, name) in [
+        ("m_box", "box"),
+        ("m_button", "button"),
+        ("m_toggle", "toggle"),
+        ("m_label", "label"),
+        ("m_textField", "textfield"),
+        ("m_textArea", "textarea"),
+        ("m_window", "window"),
+        ("m_ScrollView", "scrollview"),
+        ("m_verticalScrollbar", "verticalscrollbar"),
+        ("m_verticalScrollbarThumb", "verticalscrollbarthumb"),
+        ("m_verticalScrollbarUpButton", "verticalscrollbarupbutton"),
+        (
+            "m_verticalScrollbarDownButton",
+            "verticalscrollbardownbutton",
+        ),
+    ] {
+        styles.insert(name.to_string(), GuiStyle::from_json_full(&f[field]));
+    }
+    Ok(NamedSkin {
+        font: f["m_Font"]["asset"].as_str().map(str::to_string),
+        styles,
+    })
 }
 
 /// The styles of a `GUISkin` the HUD uses.
@@ -134,19 +247,22 @@ pub fn load_skin(assets: &Path, reference: &str) -> Result<GuiSkin> {
 pub const DEFAULT_SKIN: &str = "unity_default_resources:11000";
 
 #[derive(Clone, Copy, Debug)]
-struct Glyph {
+pub(crate) struct Glyph {
     /// Atlas rectangle in pixels (x, y, w, h); empty for blank glyphs.
-    atlas: [u32; 4],
+    pub atlas: [u32; 4],
     /// Bitmap offset from the pen position: x right, y down from the baseline to the top row.
-    offset: (i32, i32),
-    advance: f32,
+    pub offset: (i32, i32),
+    pub advance: f32,
 }
 
 /// Liberation Sans rasterised on demand into an alpha atlas (rows top-down, RGBA with white
 /// colour and the coverage in alpha).
 pub struct GuiFont {
-    font: fontdue::Font,
-    glyphs: HashMap<(char, i32, bool), Option<Glyph>>,
+    assets: PathBuf,
+    /// Face 0 is the built-in Arial; menu skins add their own fonts on first use.
+    faces: Vec<Face>,
+    names: HashMap<String, usize>,
+    glyphs: HashMap<(usize, char, i32, bool), Option<Glyph>>,
     pub atlas: Vec<u8>,
     pub atlas_size: u32,
     /// Bumped when the atlas changes (re-upload).
@@ -155,14 +271,38 @@ pub struct GuiFont {
     row_height: u32,
 }
 
+struct Face {
+    font: fontdue::Font,
+    /// Line height and ascent per pixel of font size. Arial's are the `Font` object's numbers
+    /// (above); other fonts use their `hhea` metrics, which is what Unity's dynamic fonts report.
+    line_spacing: f32,
+    ascent: f32,
+}
+
+fn read_face(path: &Path, builtin: bool) -> Result<Face> {
+    let data = std::fs::read(path).with_context(|| format!("reading {}", path.display()))?;
+    let font = fontdue::Font::from_bytes(data, fontdue::FontSettings::default())
+        .map_err(|e| anyhow::anyhow!("{}: {e}", path.display()))?;
+    let (line_spacing, ascent) = if builtin {
+        (LINE_SPACING, ASCENT)
+    } else {
+        font.horizontal_line_metrics(1.0)
+            .map_or((LINE_SPACING, ASCENT), |m| (m.new_line_size, m.ascent))
+    };
+    Ok(Face {
+        font,
+        line_spacing,
+        ascent,
+    })
+}
+
 impl GuiFont {
     pub fn load(assets: &Path) -> Result<GuiFont> {
-        let path = assets.join("fonts/Arial.ttf");
-        let data = std::fs::read(&path).with_context(|| format!("reading {}", path.display()))?;
-        let font = fontdue::Font::from_bytes(data, fontdue::FontSettings::default())
-            .map_err(|e| anyhow::anyhow!("{}: {e}", path.display()))?;
+        let face = read_face(&assets.join("fonts/Arial.ttf"), true)?;
         Ok(GuiFont {
-            font,
+            assets: assets.to_path_buf(),
+            faces: vec![face],
+            names: HashMap::new(),
             glyphs: HashMap::new(),
             atlas: vec![0; ATLAS_SIZE * ATLAS_SIZE * 4],
             atlas_size: ATLAS_SIZE as u32,
@@ -172,25 +312,58 @@ impl GuiFont {
         })
     }
 
-    /// `Font.HasCharacter`: characters outside the embedded font are not drawn.
-    pub fn has_character(&self, c: char) -> bool {
-        self.font.lookup_glyph_index(c) != 0
+    /// The face of a font file under `assets/` (`fonts/Apocalypse.ttf`); `None` or a font that
+    /// cannot be read gives Arial.
+    pub fn face(&mut self, name: Option<&str>) -> usize {
+        let Some(name) = name else {
+            return 0;
+        };
+        if let Some(&face) = self.names.get(name) {
+            return face;
+        }
+        let face = match read_face(&self.assets.join(name), false) {
+            Ok(face) => {
+                self.faces.push(face);
+                self.faces.len() - 1
+            }
+            Err(error) => {
+                eprintln!("GUI font {name}: {error:#}");
+                0
+            }
+        };
+        self.names.insert(name.to_string(), face);
+        face
     }
 
-    fn glyph(&mut self, c: char, size: i32, bold: bool) -> Option<Glyph> {
-        if let Some(g) = self.glyphs.get(&(c, size, bold)) {
+    /// `Font.HasCharacter`: characters outside a font are not drawn.
+    pub fn has_character(&self, face: usize, c: char) -> bool {
+        self.faces[face].font.lookup_glyph_index(c) != 0
+    }
+
+    /// Height of a line of `size` pixels in `face`.
+    pub fn line_height(&self, face: usize, size: i32) -> f32 {
+        (size as f32 * self.faces[face].line_spacing).round()
+    }
+
+    /// Distance from the top of a line to its baseline.
+    pub fn ascent(&self, face: usize, size: i32) -> f32 {
+        (size as f32 * self.faces[face].ascent).round()
+    }
+
+    pub(crate) fn glyph(&mut self, face: usize, c: char, size: i32, bold: bool) -> Option<Glyph> {
+        if let Some(g) = self.glyphs.get(&(face, c, size, bold)) {
             return *g;
         }
-        let glyph = self.rasterize(c, size, bold);
-        self.glyphs.insert((c, size, bold), glyph);
+        let glyph = self.rasterize(face, c, size, bold);
+        self.glyphs.insert((face, c, size, bold), glyph);
         glyph
     }
 
-    fn rasterize(&mut self, c: char, size: i32, bold: bool) -> Option<Glyph> {
-        if !self.has_character(c) {
+    fn rasterize(&mut self, face: usize, c: char, size: i32, bold: bool) -> Option<Glyph> {
+        if !self.has_character(face, c) {
             return None;
         }
-        let (metrics, coverage) = self.font.rasterize(c, size as f32);
+        let (metrics, coverage) = self.faces[face].font.rasterize(c, size as f32);
         // Synthetic bold (the embedded font has no bold face): strokes widened by `extra` pixels.
         let extra = if bold {
             ((size as f32) / 24.0).ceil().max(1.0) as usize
@@ -541,7 +714,7 @@ impl Gui {
         self.color = Vec4::ONE;
     }
 
-    fn texture_size(&mut self, texture: &str) -> Option<(u32, u32)> {
+    pub(crate) fn texture_size(&mut self, texture: &str) -> Option<(u32, u32)> {
         if let Some(size) = self.texture_sizes.get(texture) {
             return *size;
         }
@@ -557,14 +730,19 @@ impl Gui {
 
     /// A style's background over `rect`, borders unscaled (9-slice).
     fn background(&mut self, rect: [f32; 4], style: &GuiStyle) {
-        let Some(texture) = style.background.clone() else {
+        self.background_of(rect, style.background.clone(), style.border);
+    }
+
+    /// A 9-slice `texture` over `rect` with the given border.
+    fn background_of(&mut self, rect: [f32; 4], texture: Option<String>, border: [f32; 4]) {
+        let Some(texture) = texture else {
             return;
         };
         let Some((tw, th)) = self.texture_size(&texture) else {
             return;
         };
         let (tw, th) = (tw as f32, th as f32);
-        let [l, r, t, b] = style.border;
+        let [l, r, t, b] = border;
         let [x, y, w, h] = rect;
         let xs = [x, x + l, x + w - r, x + w];
         let ys = [y, y + t, y + h - b, y + h];
@@ -581,6 +759,7 @@ impl Gui {
                     rect: [xs[i], ys[j], qw, qh],
                     uv: [us[i], vs[j], us[i + 1], vs[j + 1]],
                     color: self.color,
+                    mvp: None,
                 });
             }
         }
@@ -613,6 +792,7 @@ impl Gui {
             DEFAULT_FONT_SIZE
         };
         let bold = style.font_style == 1 || style.font_style == 3;
+        let face = font.face(style.font.as_deref());
         let runs = parse_rich(text, style.rich_text, size, bold);
         let mut lines = vec![Line::default()];
         for run in runs {
@@ -621,7 +801,7 @@ impl Gui {
                     lines.push(Line::default());
                 }
                 for c in part.chars() {
-                    let Some(glyph) = font.glyph(c, run.size, run.bold) else {
+                    let Some(glyph) = font.glyph(face, c, run.size, run.bold) else {
                         continue;
                     };
                     let line = lines.last_mut().unwrap_or_else(|| unreachable!());
@@ -642,24 +822,42 @@ impl Gui {
             if line.size == 0 {
                 line.size = size;
             }
-            line.height = (line.size as f32 * LINE_SPACING).round();
+            line.height = font.line_height(face, line.size);
         }
         lines
     }
 
     /// Text of `style` inside `rect` (padding applied), aligned by `style.alignment`.
     fn content(&mut self, font: &mut GuiFont, rect: [f32; 4], text: &str, style: &GuiStyle) {
+        self.content_colored(font, rect, text, style, style.text_color);
+    }
+
+    fn content_colored(
+        &mut self,
+        font: &mut GuiFont,
+        rect: [f32; 4],
+        text: &str,
+        style: &GuiStyle,
+        text_color: Vec4,
+    ) {
+        let face = font.face(style.font.as_deref());
         let [l, r, t, b] = style.padding;
-        let inner = [rect[0] + l, rect[1] + t, rect[2] - l - r, rect[3] - t - b];
+        let [ox, oy] = style.content_offset;
+        let inner = [
+            rect[0] + l + ox,
+            rect[1] + t + oy,
+            rect[2] - l - r,
+            rect[3] - t - b,
+        ];
         let lines = self.layout_lines(font, text, style, inner[2]);
         let total: f32 = lines.iter().map(|l| l.height).sum();
         let (ax, ay) = anchor(style.alignment);
         let mut y = (inner[1] + (inner[3] - total) * ay).round();
-        let base_color = style.text_color * self.color;
+        let base_color = text_color * self.color;
         let atlas = font.atlas_size as f32;
         for line in &lines {
             let x0 = (inner[0] + (inner[2] - line.width) * ax).round();
-            let baseline = y + (line.size as f32 * ASCENT).round();
+            let baseline = y + font.ascent(face, line.size);
             for &(pen, glyph, _, color) in &line.glyphs {
                 let [gx, gy, gw, gh] = glyph.atlas;
                 if gw == 0 {
@@ -678,10 +876,32 @@ impl Gui {
                         (gy + gh) as f32 / atlas,
                     ],
                     color,
+                    mvp: None,
                 });
             }
             y += line.height;
         }
+    }
+
+    /// A style drawn in `state` (`None`: normal; `HOVER`, `ACTIVE`, `FOCUSED`): its background
+    /// and text colour of that state. `GUI.Button`, `GUI.TextField` and friends all draw this.
+    pub fn styled(
+        &mut self,
+        font: &mut GuiFont,
+        rect: [f32; 4],
+        text: &str,
+        style: &GuiStyle,
+        state: Option<usize>,
+    ) {
+        let (background, color) = match state {
+            Some(i) => {
+                let (bg, c) = &style.states[i];
+                (bg.clone(), *c)
+            }
+            None => (style.background.clone(), style.text_color),
+        };
+        self.background_of(rect, background, style.border);
+        self.content_colored(font, rect, text, style, color);
     }
 
     /// `GUI.Box(rect, text)` with the skin's box style.
@@ -788,9 +1008,9 @@ mod tests {
         let default = load_skin(&assets, DEFAULT_SKIN).unwrap();
         assert_eq!(default.label.font_size, 0);
         let mut font = GuiFont::load(&assets).unwrap();
-        assert!(font.has_character('7') && font.has_character('|'));
+        assert!(font.has_character(0, '7') && font.has_character(0, '|'));
         // The knife's "∞" is not in the embedded font subset.
-        assert!(!font.has_character('\u{221e}'));
+        assert!(!font.has_character(0, '\u{221e}'));
         let mut gui = Gui::new(&assets);
         let (w, h) = gui.calc_size(&mut font, "30 | 4", &skin.box_style);
         assert!(w > 50.0 && w < 90.0, "{w}");

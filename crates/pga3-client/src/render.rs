@@ -282,10 +282,16 @@ uniform vec4 u_rect;
 uniform vec4 u_uv;
 uniform int u_flip;
 uniform vec2 u_screen;
+uniform int u_use_mvp;
+uniform mat4 u_mvp;
 out vec2 v_uv;
 void main() {
     vec2 pixel = u_rect.xy + a_position * u_rect.zw;
-    gl_Position = vec4(pixel.x / u_screen.x * 2.0 - 1.0, 1.0 - pixel.y / u_screen.y * 2.0, 0.0, 1.0);
+    if (u_use_mvp == 1) {
+        gl_Position = u_mvp * vec4(pixel, 0.0, 1.0);
+    } else {
+        gl_Position = vec4(pixel.x / u_screen.x * 2.0 - 1.0, 1.0 - pixel.y / u_screen.y * 2.0, 0.0, 1.0);
+    }
     vec2 uv = mix(u_uv.xy, u_uv.zw, a_position);
     v_uv = u_flip == 1 ? vec2(uv.x, 1.0 - uv.y) : uv;
 }
@@ -702,6 +708,8 @@ impl SceneRenderer {
                 "u_uv",
                 "u_flip",
                 "u_screen",
+                "u_use_mvp",
+                "u_mvp",
                 "u_main_tex",
                 "u_tint",
             ],
@@ -1316,6 +1324,10 @@ impl SceneRenderer {
                 let [u0, v0, u1, v1] = quad.uv;
                 gl.uniform_4_f32(p.u("u_uv"), u0, v0, u1, v1);
                 gl.uniform_1_i32(p.u("u_flip"), flip as i32);
+                gl.uniform_1_i32(p.u("u_use_mvp"), quad.mvp.is_some() as i32);
+                if let Some(mvp) = &quad.mvp {
+                    gl.uniform_matrix_4_f32_slice(p.u("u_mvp"), false, &mvp.to_cols_array());
+                }
                 let c = quad.color;
                 gl.uniform_4_f32(p.u("u_tint"), c.x, c.y, c.z, c.w);
                 gl.bind_texture(glow::TEXTURE_2D, Some(texture));
