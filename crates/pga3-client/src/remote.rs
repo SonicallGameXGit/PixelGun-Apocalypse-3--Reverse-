@@ -300,12 +300,14 @@ impl RemotePlayer {
                 }
                 _ => None,
             };
+            // The serialized values stay when `Start` finds nothing to copy.
+            let serialized = |field: &str| ref_of(&f[field]).map(|(r, _)| r.to_string());
             weapon_syncs.push(WeaponSync {
                 node,
                 gun_type: None,
                 fire_point: prefab.node_of_ref(&f["firePoint"]),
-                bullet: None,
-                projectile: None,
+                bullet: serialized("bullet"),
+                projectile: serialized("projectile"),
                 fire_audio: f["fireAudio"]["asset"].as_str().map(str::to_string),
                 muzzle_flash: prefab.node_of_ref(&f["muzzleFlash"]),
                 source,
@@ -417,8 +419,10 @@ impl RemotePlayer {
         }
     }
 
-    /// `WeaponSync.Start` (`f61818`): the muzzle flash renderer off, the shot settings copied from
-    /// the first-person weapon by its `GunType`.
+    /// `WeaponSync.Start` (`f61818`, CrazyGames `Azg`): the muzzle flash renderer off, the shot
+    /// settings copied from the first-person weapon by its `GunType`. Each value is copied only
+    /// when the first-person one is set (`if (x) field = x`), so the serialized one stays
+    /// otherwise.
     fn weapon_sync_start(&mut self, index: usize) {
         self.set_flash(index, false);
         let sync = &mut self.weapon_syncs[index];
@@ -431,20 +435,30 @@ impl RemotePlayer {
         let sound = |v: &Value| v["asset"].as_str().map(str::to_string);
         let gun_type = gun_type_of(f);
         sync.gun_type = Some(gun_type);
-        match gun_type {
-            GunType::MachineGun => {
-                sync.bullet = reference(&f["machineGun"]["bullet"]);
-                sync.fire_audio = sound(&f["machineGun"]["fireSound"]);
+        let (shot, audio) = match gun_type {
+            GunType::MachineGun => (
+                reference(&f["machineGun"]["bullet"]),
+                sound(&f["machineGun"]["fireSound"]),
+            ),
+            GunType::ShotGun => (
+                reference(&f["ShotGun"]["bullet"]),
+                sound(&f["ShotGun"]["fireSound"]),
+            ),
+            GunType::GrenadeLauncher => (
+                reference(&f["grenadeLauncher"]["projectile"]),
+                sound(&f["grenadeLauncher"]["fireSound"]),
+            ),
+            GunType::Knife => (None, sound(&f["knife"]["fireSound"])),
+        };
+        if let Some(shot) = shot {
+            if gun_type == GunType::GrenadeLauncher {
+                sync.projectile = Some(shot);
+            } else {
+                sync.bullet = Some(shot);
             }
-            GunType::ShotGun => {
-                sync.bullet = reference(&f["ShotGun"]["bullet"]);
-                sync.fire_audio = sound(&f["ShotGun"]["fireSound"]);
-            }
-            GunType::GrenadeLauncher => {
-                sync.projectile = reference(&f["grenadeLauncher"]["projectile"]);
-                sync.fire_audio = sound(&f["grenadeLauncher"]["fireSound"]);
-            }
-            GunType::Knife => sync.fire_audio = sound(&f["knife"]["fireSound"]),
+        }
+        if let Some(audio) = audio {
+            sync.fire_audio = Some(audio);
         }
     }
 
@@ -548,9 +562,10 @@ impl RemotePlayer {
     }
 
     /// `SyncWeaponsRPC(functionName, value)`: `currentActiveWeapon.SendMessage(functionName,
-    /// value, DontRequireReceiver)` on its `WeaponSync`. `syncKnife` takes no parameter, so the
-    /// one-argument `SendMessage` fails its parameter-count check and never calls it. `owner` is
-    /// this copy's index in the caller's target list (for the projectile's `IgnoreCollision`).
+    /// value, DontRequireReceiver)` on its `WeaponSync`. `WeaponSync.syncKnife(float temp)` takes
+    /// the value, so the knife arrives too and `knifeOneHit` plays `fireAudio` (CrazyGames `Jzg` /
+    /// `Kzg`; Build-7's `WeaponSync` has the same signature). `owner` is this copy's index in the
+    /// caller's target list (for the projectile's `IgnoreCollision`).
     pub fn sync_weapons_rpc(&mut self, sync: SyncFire, time: f32, owner: usize) -> Vec<SyncEvent> {
         let mut events = Vec::new();
         let Some(weapon) = self.current_active_weapon else {
@@ -570,7 +585,8 @@ impl RemotePlayer {
                 self.shots(index, fractions as i32, 3.0, time, &mut events);
             }
             SyncFire::GrenadeLauncher(speed) => self.grenade(index, speed, owner, &mut events),
-            SyncFire::Knife => {}
+            // syncKnife → knifeOneHit: `clip = fireAudio; Play()` (no StopAllCoroutines).
+            SyncFire::Knife => self.play_fire_audio(index, &mut events),
         }
         events
     }
@@ -763,14 +779,17 @@ impl RemotePlayer {
         }
     }
 
-    /// `PlayerDamage.OnGUI` (not ours): the hit marker, faded by `fadeValue`.
+    /// `PlayerDamage.OnGUI` (not ours): the hit marker, faded by `fadeValue`, at
+    /// `(Screen.width / 2 - 13, Screen.height / 2 - 13)` in integer arithmetic.
     pub fn hit_marker_gui(&self, gui: &mut Gui, w: f32, h: f32) {
         let Some(texture) = &self.damage.hit_mark_texture else {
             return;
         };
         gui.begin_script();
         gui.color = Vec4::new(1.0, 1.0, 1.0, self.damage.fade_value);
-        gui.draw_texture([w / 2.0 - 13.0, h / 2.0 - 13.0, 26.0, 26.0], texture);
+        let x = (w as i32 / 2 - 13) as f32;
+        let y = (h as i32 / 2 - 13) as f32;
+        gui.draw_texture([x, y, 26.0, 26.0], texture);
     }
 
     /// `DrawPlayerName.OnGUI` (enabled for TDM teammates only): the name over `positionDisplay`.
@@ -792,13 +811,15 @@ impl RemotePlayer {
         let s = world_to_screen_point(view, at, w, h);
         let offset = (s.z * 3.0).min(50.0);
         if s.z > 0.0 {
-            // hpStyle: a new GUIStyle with the skin's font size, white text, MiddleCenter.
+            // hpStyle: a new GUIStyle (normal weight, unlike the skin's bold label) with the
+            // skin's font, the label's font size, white text, MiddleCenter.
             let style = GuiStyle {
                 background: None,
                 text_color: Vec4::ONE,
                 border: [0.0; 4],
                 margin: [0.0; 4],
                 padding: [0.0; 4],
+                font_style: 0,
                 alignment: 4,
                 word_wrap: false,
                 stretch_width: false,
@@ -983,7 +1004,7 @@ mod tests {
     }
 
     #[test]
-    fn weapon_sync_fires_remote_bullets_and_skips_the_knife() {
+    fn weapon_sync_fires_remote_bullets_and_sets_up_the_knife() {
         let pristine = german();
         let mut remote = RemotePlayer::new(&pristine, 0, 2, Vec3::ZERO, Quat::IDENTITY, None);
         remote.receive(&state());
@@ -1020,7 +1041,37 @@ mod tests {
         remote.receive(&s);
         remote.update(0.02, 0.1, DM);
         remote.update(0.02, 0.12, DM);
-        assert!(remote.sync_weapons_rpc(SyncFire::Knife, 0.12, 0).is_empty());
+        // Start replaced the serialized fireAudio (SuperPunch) by the first-person knife's
+        // fireSound.
+        assert_eq!(
+            remote.weapon_syncs[0].fire_audio.as_deref(),
+            Some("audio/fire melee_fire.m4a")
+        );
+    }
+
+    #[test]
+    fn remote_knife_plays_its_sound() {
+        let assets = find_assets_dir().unwrap();
+        let mut audio = Audio::silent(&assets);
+        let pristine = german();
+        let mut remote = RemotePlayer::new(
+            &pristine,
+            0,
+            2,
+            Vec3::ZERO,
+            Quat::IDENTITY,
+            Some(&mut audio),
+        );
+        let mut s = state();
+        s.weapon = "Machete".to_string();
+        remote.receive(&s);
+        remote.update(0.02, 0.02, DM);
+        remote.update(0.02, 0.04, DM);
+        let events = remote.sync_weapons_rpc(SyncFire::Knife, 0.04, 0);
+        assert!(matches!(
+            events.as_slice(),
+            [SyncEvent::Sound { clip, .. }] if clip == "audio/fire melee_fire.m4a"
+        ));
     }
 
     #[test]

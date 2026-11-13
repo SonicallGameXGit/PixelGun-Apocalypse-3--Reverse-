@@ -59,6 +59,9 @@ pub fn prefab_kind(name: &str) -> Option<usize> {
 /// PUN's `sendIntervalOnSerialize` (100 ms, set in the `PhotonNetwork` constructor).
 pub const SERIALIZE_INTERVAL: f32 = 0.1;
 
+/// `WhoKilledWho.networkAddMessage`: the timer of a new kill feed entry (s).
+pub const FEED_LIFETIME: f32 = 30.0;
+
 /// `RoomMultiplayerMenu.team_1` / `team_2`.
 #[derive(Clone, Debug)]
 pub struct Team {
@@ -177,7 +180,8 @@ impl Room {
         (Some(list[index]), kind)
     }
 
-    /// `networkAddMessage(killer, killed, middleText, teamName)` (an RPC to all).
+    /// `networkAddMessage(killer, killed, middleText, teamName)` (an RPC to all). An entry lives
+    /// 30 s in the CrazyGames build (`rBg`); Build-7 used 5 s.
     pub fn add_message(&mut self, killer: &str, killed: &str, middle: &str, team: &str) {
         let (killer_color, killed_color) = if self.game_mode == "TDM" {
             if team.is_empty() {
@@ -196,7 +200,7 @@ impl Room {
             middle: middle.to_string(),
             killer_color,
             killed_color,
-            timer: 5.0,
+            timer: FEED_LIFETIME,
         });
         if self.feed.len() > 5 {
             self.feed.remove(0);
@@ -628,11 +632,13 @@ mod tests {
         assert_eq!(r.feed.len(), 5);
         assert_eq!(r.feed[0].killer, "P1");
         assert_eq!(r.feed[0].killer_color, Vec4::ONE);
-        r.update(5.0);
+        r.update(29.0);
+        assert_eq!(r.feed.len(), 5, "entries live 30 s");
+        r.update(1.0);
         // Removing index 0 skips the next entry for this frame.
         assert_eq!(r.feed.len(), 2);
         r.update(0.01);
         assert_eq!(r.feed.len(), 2, "the skipped entries keep running");
-        assert!((r.feed[0].timer - 4.99).abs() < 1e-5);
+        assert!((r.feed[0].timer - 0.99).abs() < 1e-4);
     }
 }

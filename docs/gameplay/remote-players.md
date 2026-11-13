@@ -4,7 +4,9 @@ Client: `remote.rs` (another player's copy), `room.rs` (`RoomMultiplayerMenu` te
 
 Every player exists once per client. The owner runs the `PhotonView.isMine` branch of the scripts; every other client runs the remote branch on a **copy**, driven only by the serialized stream and the RPCs. This page is that remote side. Its inputs come from Photon with `--online` (`online.rs`, `docs/protocol.md` "Playing online"), or from the in-process `--dummy` client.
 
-Evidence: decompiled with `tools/re/` (function numbers below are wasm2c indices), field data in `assets/data/prefabs/resources/{german,mercenarys}.json`. **Observed** = read from code or data; **assumed** = marked as such.
+Evidence: decompiled with `tools/re/` (function numbers below are Build-7 wasm2c indices), field data in `assets/data/prefabs/resources/{german,mercenarys}.json`. **Observed** = read from code or data; **assumed** = marked as such.
+
+Every script on this page was compared with its CrazyGames body (the online target) on 2026-11-13: `PlayerNetworkController`, `CharacterAnimation`, `WeaponSync`, `WeaponSync_Catcher`, `HitBox`, `PlayerDamage`, `DrawPlayerName`, `RagdollController`, `WhoKilledWho`, `RoomMultiplayerMenu.Awake` / `SpawnPlayer` (asm.js in `research/notes/crazygames/rp_*.js` and `whokilledwho.js`). The differences from what was ported first are listed in "CrazyGames comparison" at the end; the client follows the CrazyGames code.
 
 ## Teams, spawn points, prefabs (`RoomMultiplayerMenu`)
 
@@ -28,6 +30,9 @@ Evidence: decompiled with `tools/re/` (function numbers below are wasm2c indices
 **Awake (`f37893`, not mine):**
 - Every child of the `WeaponManager` is deactivated, so no first-person weapon runs.
 - `remoteObjectsToDeactivate` is applied: in `german`, `LookObject`, `SpawnObject` and the root-level `Base_mesh` (node 483). The owner's `localObjectsToDeactivate` hides the other `Base_mesh`, `Root_jnt` and `Terrorist_02_mesh`.
+- `remoteScriptsToDeactivate` are destroyed: `FPSMouseLook`, `FPScontroller`, `FPSinput`, `FPSSoundController`, `LadderPlayer`, `WeaponPickUp`, `EnableHelper` and the body's `CharacterAnimation` (all three prefabs). Because `FPSSoundController` is gone, **a copy makes no footstep sounds**; the client creates no footstep source for copies.
+- The root's tag becomes `"Remote"` (from `Player`). Only triggers (`Ladder`, `WeaponItem`, `TriggerActivate`) and `Bullet` (its `tag != "Player"` test, applied to the hit bone, never the root) read that tag, and none of them reacts to a copy, so the client does not model it.
+- `objectsToShiftOnEnterExitVehicle` collects the hit-box GameObjects; only the vehicle RPCs (`SetOnVehicle`, `TeleportPosition`) use it, and no map has vehicles.
 - `lookTarget` is activated.
 - `PlayerDamage.Awake` adds a `HitBox` to each `hitBoxes` entry's collider (12 per prefab, `damage = 1` each). The owner destroys them instead.
 - The body under `mercenary_minecraft`, with its `Animation`, `CharacterAnimation` and `HeadLookController`, stays visible.
@@ -46,6 +51,8 @@ Evidence: decompiled with `tools/re/` (function numbers below are wasm2c indices
 11. `IsSpawnProtected`
 
 PUN sends it every 100 ms (`sendIntervalOnSerialize`).
+
+**Start** (both sides) makes the root collider ignore the colliders of `SpawnProtection` objects (same team in TDM, all in DM). No scene has a `SpawnProtection` object, so it does nothing.
 
 **Update (`f37896`, remote branch), every frame:**
 1. Position and rotation lerp to the received values at `dt·8`. So does `lookTarget`'s world position; its rotation is set directly.
@@ -88,14 +95,14 @@ The client's `WeaponEvent::SyncFire` is that call. It is ignored locally because
 | machine gun | `syncMachineGun` | the current error angle |
 | shotgun | `syncShotGun` | `fractions` |
 | grenade launcher | `syncGrenadeLauncher` | `initialSpeed` |
-| knife | `syncKnife` | — |
+| knife | `syncKnife` | `0` |
 
 **Unity `SendMessage` (native `f5630`):**
 - It converts a boxed int to float, so the int values arrive as float.
-- When the parameter count does not match, it logs an error and calls nothing. `syncKnife()` takes no parameter but is always sent one value, so **a remote knife never plays** (observed).
+- `WeaponSync.syncKnife(float temp)` takes the value (in both builds), so the knife arrives like the others. The first port read the sender `PlayerNetworkController.syncKnife()`, which has no parameter, as the receiver and concluded that a remote knife never plays; that was wrong.
 
 **On the copy:**
-- **`Start` (`f61818`)** runs on the first frame the weapon is active. It turns the muzzle-flash renderer off and copies the shot settings from the matching first-person weapon by `GunType`.
+- **`Start` (`f61818`, CrazyGames `Azg`)** runs on the first frame the weapon is active. It turns the muzzle-flash renderer off, sets `playOnAwake = false` and copies the shot settings from the matching first-person weapon by `GunType`. Each value (`bullet`, `projectile`, `fireAudio`) is copied only when the first-person one is set, so the `WeaponSync`'s serialized value stays otherwise (the `Machete`'s serialized `fireAudio` is `SuperPunch.m4a`; its first-person knife replaces it with `fire melee_fire.m4a`).
 - **`syncMachineGun(err)` / `syncShotGun(n)`:**
   - `StopAllCoroutines`;
   - 1 or `n` bullets from the fire point, spread by `err` or 3. The bullet is `Instantiate`d with `doDamage = false`; impacts only;
@@ -107,6 +114,7 @@ The client's `WeaponEvent::SyncFire` is that call. It is ignored locally because
   - the sound.
 
   A remote rocket explodes visually, but its `ExplosionDamage` does nothing (`isRemote`).
+- **`syncKnife(temp)` → `knifeOneHit`:** `clip = fireAudio; Play()` on the weapon's AudioSource. No coroutine is stopped and nothing is spawned: a remote knife hit is only its sound.
 
 ## Damage to another player: `HitBox` → `DoDamage`
 
@@ -137,7 +145,11 @@ The client's `WeaponEvent::SyncFire` is that call. It is ignored locally because
 - the team score + 1;
 - a persistent `PlayerPrefs` "Kills" counter (kept in `prefs.json`, `docs/gameplay/settings.md`).
 
-**`PlayerDamage.OnGUI` on a copy** draws only the hit marker: `textures/hitmarker_red.png`, 26 × 26 at the screen centre, alpha `fadeValue`, which fades at `dt·2`.
+**`PlayerDamage.OnGUI` on a copy** draws only the hit marker: `textures/hitmarker_red.png`, 26 × 26 at `(Screen.width / 2 - 13, Screen.height / 2 - 13)` (integer division), alpha `fadeValue`, which fades at `dt·2`. There are no floating damage numbers: the only damage display is the owner's `HP | n` box.
+
+**`PlayerDamage.Update` on a copy** also slerps `Camera.main` (this client's camera) towards the copy's `camRot` at `dt·15`. The copy never sets `camRot`, which stays the zero quaternion, and the normalising Slerp leaves the rotation unchanged (`docs/gameplay/damage.md`).
+
+**Death prefab on a copy.** `DoDamage` instantiates the `PlayerDamage.ragdoll` prefab at the copy's transform and sends it `clearCamera`, which destroys its camera. The prefab is an animated body (clip `resources.assets:198`, played automatically), with every weapon child inactive, a play-on-awake 2D `death.m4a` (so every client hears a death at full volume) and `WaitForDestroy` 4 s. `RagdollController.sleepRigidbody` makes rigidbodies kinematic after `timer` seconds; the prefabs have none.
 
 ## DrawPlayerName
 
@@ -145,12 +157,13 @@ The client's `WeaponEvent::SyncFire` is that call. It is ignored locally because
 - `OnGUI` at depth 2:
   - `GUI.color = (0.1, 0.9, 0.5, 1)`;
   - `p = WorldToScreenPoint(positionDisplay)`, `offset = min(p.z·3, 50)`;
-  - if `p.z > 0`, a label with the skin's font size, white, centred, at `(p.x-100, H-p.y-5-offset, 200, 30)`.
+  - if `p.z > 0`, a label in `hpStyle` at `(p.x-100, H-p.y-5-offset, 200, 30)`. `hpStyle` is a `new GUIStyle()` with the skin's font (Arial), the skin label's font size (15), white text and `MiddleCenter`: normal weight, not the skin label's bold;
+  - then `GUI.color` is set from the HP (green above 60, yellow above 30, else red) with nothing drawn after it.
 
 ## Kill feed: `WhoKilledWho` (`f61870`..`f61887`)
 
 - **Skin:** `WhoKilledWho.guiSkin` on `__Room` in every scene: `resources.assets:40925` ("1 win  rom_who kiled who 1") in the CrazyGames build (Build-7: 40955). The client reads it from the scene (`Scene::kill_feed_skin`).
-- **`networkAddMessage(killer, killed, middle, team)`** is an RPC to all. It appends an entry with a 5 s timer and keeps at most 5 entries.
+- **`networkAddMessage(killer, killed, middle, team)`** is an RPC to all. It appends an entry with a **30 s** timer (CrazyGames `rBg`; Build-7 used 5 s) and keeps at most 5 entries.
 - **Colours:**
   - TDM, no team: both names white;
   - TDM, a team: the killer's team colour and the other team's colour;
@@ -192,3 +205,17 @@ The dummy does not simulate hit detection against this client's player. Only thi
 `--camera x,y,z,yaw,pitch --walk` puts the local player at a camera position, for screenshots of shooting the dummy. Fly mode also draws the local player's own copy (the "mirror"), fed by its serialized state.
 
 **Assumption:** the first serialized state arrives with the instantiation, so the copy does not lerp from the constructor's `(0, -100, 0)` (`docs/unknowns.md`).
+
+## CrazyGames comparison (2026-11-13)
+
+Method by method against the asm.js of the CrazyGames build (**observed**). Same as ported: the remote branch of `PlayerNetworkController.Awake`/`Update`/`OnPhotonSerializeView` (stream order, lerps, animation layers and mixing, weapon switch by name), `CharacterAnimation` (`configureAnimations`, `LateUpdate`, `ThirdPersonWeaponControl`, same `FPScontroller` fields), the `WeaponSync` coroutines (spread, `doDamage = false`, flash 0.04 s, sound), `WeaponSync_Catcher.Fire` (values sent), `HitBox.ApplyDamage`, `PlayerDamage.TotalDamage`/`DoDamage`, `RagdollController`, team names and colours (`Color.yellow`, `Color.red`), `SpawnPlayer` naming the object after the Photon player, the kill-feed colours and layout. Fixed in the client:
+
+| | was | now |
+|---|---|---|
+| remote knife | silent (wrong `SendMessage` reasoning) | `knifeOneHit` plays `fireAudio` |
+| `WeaponSync.Start` | overwrote `fireAudio` / `bullet` / `projectile` with nothing when the first-person value was missing | keeps the serialized value |
+| kill feed lifetime | 5 s (Build-7) | 30 s |
+| teammate name | bold (inherited the skin label's style) | normal weight (`new GUIStyle()`) |
+| copy's hit marker | `W/2 - 13` in floats | integer division |
+
+Not modelled because they have no effect here: the `"Remote"` tag, `SpawnProtection` (no such objects), the vehicle RPCs, the copy's `camRot` slerp, `sleepRigidbody`.

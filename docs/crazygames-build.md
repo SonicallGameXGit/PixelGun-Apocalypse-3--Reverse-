@@ -66,6 +66,7 @@ Compared method by method, CrazyGames asm.js (`tools/re/asmjs_func.py`, output i
 - **`ExplosionDamage.Start`** (`Fbg`): damage (`SendMessageUpwards("ApplyDamage")` unless `isRemote`) and `AddExplosionForce(power, position, radius, 3)` as in Build-7; then, if the object has a legacy `ParticleEmitter`, `emit = true` for 0.5 s, and `Destroy(gameObject, explosionTimeout)`. It never stops or plays the Shuriken systems, so **the explosion is visible** in this build (Build-7 stopped them before their first update and `CheckIfAlive` destroyed the object at 0.5 s).
 - **`CFX_AutoDestructShuriken`:** same (`CheckIfAlive` every 0.5 s on `GetComponent<ParticleSystem>().IsAlive(true)`).
 - **`Bullet`, `SniperScope`:** identical.
+- **Remote-player scripts** (2026-11-13; `PlayerNetworkController`, `CharacterAnimation`, `WeaponSync`, `WeaponSync_Catcher`, `HitBox`, `PlayerDamage`, `DrawPlayerName`, `RagdollController`, `WhoKilledWho`): the same as Build-7 except the kill feed's entry lifetime, 30 s here and 5 s in Build-7. Comparing them with the port also corrected four port errors that both builds share: the remote knife sound, the `WeaponSync.Start` fallbacks, the teammate name's weight and the hit marker's rounding. Details are in `docs/gameplay/remote-players.md`, "CrazyGames comparison".
 
 The client follows this build (`docs/gameplay/weapons.md`, `docs/gameplay/particles.md`, `docs/gameplay/hud.md`).
 
