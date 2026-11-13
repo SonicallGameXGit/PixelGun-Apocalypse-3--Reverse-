@@ -211,10 +211,22 @@ enum Gain {
     Stereo { pan: f32, volume: f32 },
 }
 
-#[derive(Default)]
 struct Mixer {
     voices: Vec<Voice>,
     output_rate: u32,
+    /// `AudioListener.volume` (the project's `AudioManager.m_Volume`) times the client's own
+    /// master volume (`docs/gameplay/settings.md`, "Volume").
+    master: f32,
+}
+
+impl Default for Mixer {
+    fn default() -> Mixer {
+        Mixer {
+            voices: Vec::new(),
+            output_rate: 0,
+            master: 1.0,
+        }
+    }
 }
 
 impl Mixer {
@@ -273,7 +285,16 @@ impl Mixer {
         }
         self.voices
             .retain(|v| (v.position as usize) < v.clip.frames());
+        if self.master != 1.0 {
+            out.iter_mut().for_each(|s| *s *= self.master);
+        }
     }
+}
+
+/// `AudioManager.m_Volume` (the project's initial `AudioListener.volume`).
+fn project_volume(assets: &Path) -> f32 {
+    crate::assets::load_json(&assets.join("data/settings/AudioManager.json"))
+        .map_or(1.0, |json| json["m_Volume"].as_f64().unwrap_or(1.0) as f32)
 }
 
 struct Source {
@@ -293,6 +314,8 @@ pub struct Audio {
     sources: HashMap<u64, Source>,
     next_id: u64,
     listener: (Vec3, Quat),
+    /// `AudioManager.m_Volume`.
+    project_volume: f32,
 }
 
 impl Audio {
@@ -314,6 +337,7 @@ impl Audio {
             sources: HashMap::new(),
             next_id: 1,
             listener: (Vec3::ZERO, Quat::IDENTITY),
+            project_volume: project_volume(assets),
         }
     }
 
@@ -327,6 +351,15 @@ impl Audio {
             sources: HashMap::new(),
             next_id: 1,
             listener: (Vec3::ZERO, Quat::IDENTITY),
+            project_volume: project_volume(assets),
+        }
+    }
+
+    /// The client-only master volume (0..1) on top of `AudioListener.volume`.
+    pub fn set_volume(&mut self, volume: f32) {
+        let master = self.project_volume * volume.clamp(0.0, 1.0);
+        if let Ok(mut mixer) = self.mixer.lock() {
+            mixer.master = master;
         }
     }
 

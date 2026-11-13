@@ -53,4 +53,4 @@ Client: `damage.rs` (`PlayerDamage`, spawn protection, `RagdollController`), dri
 
 - Deaths + 1 (the player property); a death from the player's own fall also sends `networkAddMessage(name, "", "fell down", "")`.
 - `RoomMultiplayerMenu.SpawnPlayer(team)` instantiates a fresh player prefab of the team at one of its spawn points (rules in `docs/gameplay/remote-players.md`). The client instantiates a fresh copy (new `PlayerDamage`, weapons, spawn protection).
-- The per-death `PlayerPrefs` statistics (persistent counters) are not kept.
+- The owner's death prefab (`RagdollController.Start` with `gui && cam`) adds 1 to the persistent `PlayerPrefs` "Deaths" counter (`docs/gameplay/settings.md`, "PlayerPrefs").

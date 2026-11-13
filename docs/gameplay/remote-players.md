@@ -134,7 +134,7 @@ The client's `WeaponEvent::SyncFire` is that call. It is ignored locally because
 - the feed message `killer killed killed`;
 - the killer's `Kills` + 1;
 - the team score + 1;
-- a persistent `PlayerPrefs` "Kills" counter, which the client does not keep.
+- a persistent `PlayerPrefs` "Kills" counter (kept in `prefs.json`, `docs/gameplay/settings.md`).
 
 **`PlayerDamage.OnGUI` on a copy** draws only the hit marker: `textures/hitmarker_red.png`, 26 × 26 at the screen centre, alpha `fadeValue`, which fades at `dt·2`.
 

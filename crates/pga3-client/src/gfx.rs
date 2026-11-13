@@ -192,6 +192,21 @@ pub fn upload_texture(
     }
 }
 
+/// `QualitySettings.masterTextureLimit` on one mipmapped texture: sampling starts `limit` levels
+/// down (never past the last level, `levels - 1`).
+pub fn set_base_level(gl: &glow::Context, texture: glow::Texture, limit: u32, levels: u32) {
+    let level = limit.min(levels.saturating_sub(1));
+    unsafe {
+        gl.bind_texture(glow::TEXTURE_2D, Some(texture));
+        gl.tex_parameter_i32(glow::TEXTURE_2D, glow::TEXTURE_BASE_LEVEL, level as i32);
+    }
+}
+
+/// The number of mip levels of a full chain for a `width` x `height` texture.
+pub fn mip_levels(width: u32, height: u32) -> u32 {
+    32 - width.max(height).max(1).leading_zeros()
+}
+
 /// Reads the back buffer as top-down RGBA8 rows.
 pub fn read_framebuffer(gl: &glow::Context, width: u32, height: u32) -> Vec<u8> {
     let mut pixels = vec![0u8; (width * height * 4) as usize];

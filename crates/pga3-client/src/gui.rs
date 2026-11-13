@@ -85,14 +85,16 @@ pub struct GuiStyle {
     pub font: Option<String>,
     /// `GUIStyle.overflow`: how far the background extends past the rectangle.
     pub overflow: [f32; 4],
-    /// The hover, active and focused states: (background, text colour).
-    pub states: [(Option<String>, Vec4); 3],
+    /// The hover, active, focused and on-normal states: (background, text colour).
+    pub states: [(Option<String>, Vec4); 4],
 }
 
 /// `GUIStyle` state indices into `GuiStyle::states` (normal is `background` / `text_color`).
 pub const HOVER: usize = 0;
 pub const ACTIVE: usize = 1;
 pub const FOCUSED: usize = 2;
+/// `onNormal`: a toggle that is on, or the focused window.
+pub const ON_NORMAL: usize = 3;
 
 fn offsets(value: &Value) -> [f32; 4] {
     ["left", "right", "top", "bottom"].map(|k| value[k].as_f64().unwrap_or(0.0) as f32)
@@ -148,7 +150,12 @@ impl GuiStyle {
             content_offset: [f32_of(&offset["x"]), f32_of(&offset["y"])],
             font: value["font"]["asset"].as_str().map(str::to_string),
             overflow: offsets(&value["overflow"]),
-            states: [state("hover"), state("active"), state("focused")],
+            states: [
+                state("hover"),
+                state("active"),
+                state("focused"),
+                state("onNormal"),
+            ],
             ..GuiStyle::from_json(value)
         }
     }
@@ -689,6 +696,12 @@ fn parse_rich(text: &str, rich: bool, size: i32, bold: bool) -> Vec<Run> {
     runs
 }
 
+/// IMGUI vertices carry 8-bit colours: `GUI.color` times the style colour is clamped to [0, 1]
+/// per component (inferred; `GUI.color = (0, 20, 20)` turns a grey button cyan).
+fn vertex_color(color: Vec4) -> Vec4 {
+    color.clamp(Vec4::ZERO, Vec4::ONE)
+}
+
 /// Builds one frame's `OnGUI` quads.
 pub struct Gui {
     assets: PathBuf,
@@ -725,7 +738,8 @@ impl Gui {
 
     /// `GUI.DrawTexture(rect, texture)` (`ScaleToFit.StretchToFill`).
     pub fn draw_texture(&mut self, rect: [f32; 4], texture: &str) {
-        self.quads.push(GuiQuad::texture(texture, rect, self.color));
+        self.quads
+            .push(GuiQuad::texture(texture, rect, vertex_color(self.color)));
     }
 
     /// A style's background over `rect`, borders unscaled (9-slice).
@@ -758,7 +772,7 @@ impl Gui {
                     texture: texture.clone(),
                     rect: [xs[i], ys[j], qw, qh],
                     uv: [us[i], vs[j], us[i + 1], vs[j + 1]],
-                    color: self.color,
+                    color: vertex_color(self.color),
                     mvp: None,
                 });
             }
@@ -863,7 +877,7 @@ impl Gui {
                 if gw == 0 {
                     continue;
                 }
-                let color = color.map_or(base_color, |c| c * self.color);
+                let color = vertex_color(color.map_or(base_color, |c| c * self.color));
                 let px = x0 + pen + glyph.offset.0 as f32;
                 let py = baseline + glyph.offset.1 as f32;
                 self.quads.push(GuiQuad {

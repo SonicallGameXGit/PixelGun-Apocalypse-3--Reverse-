@@ -17,8 +17,6 @@ use crate::assets::{f32_of, load_json};
 use crate::physics::{CharacterController, CollisionWorld, ControllerHit, capsule_overlaps_box};
 use crate::scene::LadderInstance;
 
-/// `RoomMultiplayerMenu.sens` default (`.cctor`), saved in PlayerPrefs as "sens".
-pub const DEFAULT_MOUSE_SENSITIVITY: f32 = 1.8;
 /// `Time.fixedDeltaTime` (TimeManager "Fixed Timestep").
 pub const FIXED_DELTA_TIME: f32 = 0.02;
 /// `Time.maximumDeltaTime` (TimeManager "Maximum Allowed Timestep").
@@ -243,7 +241,14 @@ pub struct Player {
     pub weapon_local_position: Vec3,
     /// `CharacterController.velocity`: displacement of the last `Move` / its delta time.
     pub controller_velocity: Vec3,
-    pub mouse_sensitivity: f32,
+    /// `FPSMouseLook.sensitivityX` of the root (axes 1) and `sensitivityY` of `LookObject`
+    /// (axes 2): the prefab's values on the first frame, then `currentSensitivity`.
+    pub sensitivity_x: f32,
+    pub sensitivity_y: f32,
+    /// Both `FPSMouseLook`s are enabled (`EnableHelper` disables them while the menu is open).
+    pub look_enabled: bool,
+    /// `FPSMouseLook.weapScript`: the weapon node whose `WeaponScript` was cached.
+    pub look_weapon: Option<usize>,
     /// Main Camera field of view (degrees), near and far planes.
     pub camera_fov: f32,
     pub camera_near: f32,
@@ -442,6 +447,7 @@ impl Player {
 
         let ladder = &component(nodes, &root, "LadderPlayer")?["fields"];
         let look = &component(nodes, "LookObject", "FPSMouseLook")?["fields"];
+        let root_look = &component(nodes, &root, "FPSMouseLook")?["fields"];
         let bob = &component(nodes, "Main Camera", "CameraBob")?["fields"];
         let camera_local_position = local_position(nodes, "Main Camera")?;
         let walk_sway = component(nodes, "WeaponManager", "WalkSway").ok();
@@ -462,7 +468,10 @@ impl Player {
             camera_local_rotation: local_rotation(nodes, "Main Camera")?,
             weapon_local_position,
             controller_velocity: Vec3::ZERO,
-            mouse_sensitivity: DEFAULT_MOUSE_SENSITIVITY,
+            sensitivity_x: f32_of(&root_look["sensitivityX"]),
+            sensitivity_y: f32_of(&look["sensitivityY"]),
+            look_enabled: true,
+            look_weapon: None,
             camera_fov: f32_of(&camera["field of view"]),
             camera_near: f32_of(&camera["near clip plane"]),
             camera_far: f32_of(&camera["far clip plane"]),
@@ -634,7 +643,9 @@ impl Player {
             }
         }
 
-        self.mouse_look(input);
+        if self.look_enabled {
+            self.mouse_look(input);
+        }
     }
 
     /// `FPSinput.LateUpdate`.
@@ -654,15 +665,40 @@ impl Player {
         self.input_prone = input.prone_down;
     }
 
-    /// `FPSMouseLook.Update` on the root (axes 1: yaw) and on LookObject (axes 2: pitch). The
-    /// sensitivity is `RoomMultiplayerMenu.sens`, x0.25 while the cached `weapScript.aimed`; that
-    /// cache is the first selected weapon's script and is never refreshed, and the first weapon
-    /// (the Machete) cannot aim, so the factor never applies (docs/gameplay/weapons.md).
+    /// `FPSMouseLook.Update` on the root (axes 1: yaw) and on LookObject (axes 2: pitch), turning
+    /// with the sensitivities the previous frame left (`docs/gameplay/settings.md`).
     fn mouse_look(&mut self, input: &FrameInput) {
-        let sensitivity = self.mouse_sensitivity;
-        self.rotation *= Quat::from_rotation_y((input.mouse_x * sensitivity).to_radians());
-        self.rotation_y =
-            (self.rotation_y + input.mouse_y * sensitivity).clamp(self.minimum_y, self.maximum_y);
+        self.rotation *= Quat::from_rotation_y((input.mouse_x * self.sensitivity_x).to_radians());
+        self.rotation_y = (self.rotation_y + input.mouse_y * self.sensitivity_y)
+            .clamp(self.minimum_y, self.maximum_y);
+    }
+
+    /// The end of `FPSMouseLook.Update`: `weapScript` is cached from the first selected weapon
+    /// (cleared without one) and `currentSensitivity = RoomMultiplayerMenu.sens`, x0.25 while
+    /// that cached script is aimed, becomes both sensitivities for the next frame. The first
+    /// weapon (the Machete) cannot aim, so in practice the factor never applies.
+    /// `aimed_of(node)` is `weapScript.aimed` of the weapon at `node`.
+    pub fn update_look_sensitivity(
+        &mut self,
+        sens: f32,
+        selected: Option<usize>,
+        aimed_of: impl Fn(usize) -> bool,
+    ) {
+        if !self.look_enabled {
+            return;
+        }
+        match selected {
+            Some(node) => {
+                if self.look_weapon.is_none() {
+                    self.look_weapon = Some(node);
+                }
+            }
+            None => self.look_weapon = None,
+        }
+        let aimed = self.look_weapon.is_some_and(aimed_of);
+        let current = if aimed { sens * 0.25 } else { sens };
+        self.sensitivity_x = current;
+        self.sensitivity_y = current;
     }
 
     // -----------------------------------------------------------------------------------------
@@ -1230,6 +1266,33 @@ mod tests {
     use crate::assets::find_assets_dir;
     use crate::scene::LadderInstance;
     use glam::Mat4;
+
+    #[test]
+    fn mouse_look_sensitivity_follows_the_menu_a_frame_later() {
+        let assets = find_assets_dir().unwrap();
+        let mut player = Player::from_prefab(&assets, "german").unwrap();
+        // The prefab's values on the first frame.
+        assert_eq!((player.sensitivity_x, player.sensitivity_y), (4.0, 3.5));
+        let input = FrameInput {
+            mouse_x: 1.0,
+            mouse_y: 1.0,
+            ..FrameInput::default()
+        };
+        player.mouse_look(&input);
+        assert!((player.rotation_y - 3.5).abs() < 1e-6);
+        // Then `RoomMultiplayerMenu.sens`, x0.25 while the first cached weapon is aimed.
+        player.update_look_sensitivity(1.8, Some(7), |_| false);
+        assert_eq!((player.sensitivity_x, player.sensitivity_y), (1.8, 1.8));
+        player.update_look_sensitivity(2.0, Some(9), |node| node == 7);
+        assert_eq!(player.look_weapon, Some(7));
+        assert_eq!(player.sensitivity_x, 0.5);
+        // No selected weapon clears the cache; a disabled look changes nothing.
+        player.update_look_sensitivity(2.0, None, |_| true);
+        assert_eq!((player.look_weapon, player.sensitivity_x), (None, 2.0));
+        player.look_enabled = false;
+        player.update_look_sensitivity(3.0, Some(1), |_| false);
+        assert_eq!(player.sensitivity_x, 2.0);
+    }
 
     fn flat_world() -> CollisionWorld {
         let mut world = CollisionWorld::new();

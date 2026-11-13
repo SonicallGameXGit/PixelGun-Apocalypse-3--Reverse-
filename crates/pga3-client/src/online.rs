@@ -87,7 +87,21 @@ pub enum NetIn {
         team1: Option<i32>,
         team2: Option<i32>,
     },
+    /// `DoSwapTeams` on another player's object: its death prefab, camera cleared.
+    SwapTeams {
+        actor: ActorId,
+    },
     Disconnected(String),
+}
+
+/// The custom properties of a player the room menu lists (`None`: not set).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct ActorProps {
+    pub name: String,
+    pub team: Option<String>,
+    pub kills: Option<i32>,
+    pub deaths: Option<i32>,
+    pub ping: Option<i32>,
 }
 
 pub struct Online {
@@ -96,6 +110,10 @@ pub struct Online {
     /// The player object (view id) of each actor that has one.
     views: HashMap<ActorId, i32>,
     names: HashMap<ActorId, String>,
+    /// Every actor's properties as the server reported them.
+    players: HashMap<ActorId, ActorProps>,
+    /// The `Ping` this client last set on itself.
+    pub local_ping: Option<i32>,
     /// This client's player object.
     local_view: Option<i32>,
     last_view: i32,
@@ -247,6 +265,8 @@ impl Online {
             room_props: Value::Hashtable(Vec::new()),
             views: HashMap::new(),
             names: HashMap::new(),
+            players: HashMap::new(),
+            local_ping: None,
             local_view: None,
             last_view: 0,
             last_state: None,
@@ -301,13 +321,49 @@ impl Online {
         self.room_props.get_str(key).and_then(Value::as_i32)
     }
 
+    pub fn room_float(&self, key: &str) -> Option<f32> {
+        self.room_props.get_str(key).and_then(Value::as_f32)
+    }
+
     fn update_names(&mut self, actor: ActorId, props: &Value) {
+        let player = self.players.entry(actor).or_default();
         if let Some(name) = props
             .get_byte(crate::net::photon::PLAYER_NAME_KEY)
             .and_then(Value::as_str)
         {
             self.names.insert(actor, name.to_string());
+            player.name = name.to_string();
         }
+        if let Some(team) = props.get_str("TeamName").and_then(Value::as_str) {
+            player.team = Some(team.to_string());
+        }
+        let int = |key: &str| props.get_str(key).and_then(Value::as_i32);
+        for (key, field) in [
+            ("Kills", &mut player.kills),
+            ("Deaths", &mut player.deaths),
+            ("Ping", &mut player.ping),
+        ] {
+            if let Some(value) = int(key) {
+                *field = Some(value);
+            }
+        }
+    }
+
+    /// The other players in the room by actor number, with their properties.
+    pub fn players(&self) -> Vec<(ActorId, ActorProps)> {
+        let mut players: Vec<(ActorId, ActorProps)> = self
+            .players
+            .iter()
+            .filter(|(actor, _)| **actor != self.actor())
+            .map(|(actor, props)| (*actor, props.clone()))
+            .collect();
+        players.sort_by_key(|(actor, _)| *actor);
+        players
+    }
+
+    /// The room's full name.
+    pub fn room_name(&self) -> &str {
+        &self.client.room_name
     }
 
     fn timestamp(&self) -> i32 {
@@ -352,7 +408,7 @@ impl Online {
     }
 
     /// `PhotonNetwork.time`: the server clock in seconds, `(uint)ServerTimestamp / 1000.0`.
-    fn photon_time(&self) -> f64 {
+    pub fn photon_time(&self) -> f64 {
         self.timestamp() as u32 as f64 / 1000.0
     }
 
@@ -445,6 +501,14 @@ impl Online {
         }
     }
 
+    /// `PlayerDamage.SwapTeams`: `RpcSecure("DoSwapTeams", All)` on this client's player (the
+    /// caller runs it locally).
+    pub fn swap_teams(&self) {
+        if let Some(view_id) = self.local_view {
+            self.rpc(view_id, "DoSwapTeams", Vec::new());
+        }
+    }
+
     /// `HitBox.TotalDamage`: `DoDamage(amount, PhotonNetwork.player)` on `target`'s player object.
     pub fn do_damage(&self, target: ActorId, amount: f32) {
         if let Some(&view_id) = self.views.get(&target) {
@@ -470,6 +534,7 @@ impl Online {
             self.ping_property_at = time + PING_PROPERTY_INTERVAL;
             let ping = self.client.ping();
             self.set_score("Ping", ping);
+            self.local_ping = Some(ping);
         }
         for event in self.client.poll() {
             match event {
@@ -487,6 +552,7 @@ impl Online {
                 }
                 ClientEvent::ActorLeft { actor } => {
                     self.names.remove(&actor);
+                    self.players.remove(&actor);
                     if self.views.remove(&actor).is_some() {
                         out.push(NetIn::Destroy { actor });
                     }
@@ -584,6 +650,11 @@ impl Online {
                             amount,
                             damager,
                         });
+                    }
+                }
+                "DoSwapTeams" => {
+                    if let Some(actor) = self.actor_of_view(view_id) {
+                        out.push(NetIn::SwapTeams { actor });
                     }
                 }
                 "networkAddMessage" => {

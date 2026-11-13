@@ -7,7 +7,9 @@ Evidence: decompiled with `tools/re/asmjs_func.py` into `research/notes/crazygam
 `serverchose.js`, `roommultiplayermenu.js`; gitignored); scene data `assets/data/scenes/Main.json`;
 the lobby skin `assets/data/scriptable/UnityEngine.GUISkin/1 lobby swat__sharedassets0.assets_141.json`;
 button clips `assets/data/animations/AnimationClip/*sharedassets0.assets_11x/12x*`.
-Code: `menu.rs` (flow), `ui.rs` (uGUI subset), `layout.rs` (`GUILayout`), `gui.rs` (skins, fonts), `main.rs` (screens).
+Code: `menu.rs` (flow), `ui.rs` (uGUI subset), `layout.rs` (`GUILayout`), `imgui.rs` (`GUILayout` widgets, scroll views and
+windows shared with the room menu), `gui.rs` (skins, fonts), `room_menu.rs` (the in-room menu), `prefs.rs` (PlayerPrefs),
+`main.rs` (screens).
 
 ## Flow
 
@@ -113,7 +115,8 @@ Skin styles (**observed**, JSON keys are lowercase):
 own Photon connection replaces this**); `MyLevel` from the `Level` list's kills thresholds
 (0,10,30,40,50,60,70,80,90,100,150,200,...,2600: 50 levels) against PlayerPrefs `Kills`.
 **Client:** PlayerPrefs are a JSON file `$XDG_DATA_HOME/pga3-client/prefs.json` (`PlayerName`, `Clan`, `Kills`,
-`Deaths`, `GamePlays`); the kills and deaths are not yet updated by the game (`docs/unknowns.md` #18).
+`Deaths`, `GamePlays`), typed as Unity types them and written on each change; the game counts kills and deaths into it
+(`docs/gameplay/settings.md`, "PlayerPrefs").
 
 `OnGUI`: draws `Top.png` (fully transparent, a no-op), then `BeginArea(Rect(W/2-370, H/2-237, 750, 475),
 "Rooms: N                              Players: N", window style)` around `ShowConnectMenu`; the style's overflow
@@ -194,11 +197,13 @@ For example the label (stretch) and the fixed 390 px field of "Player Name:" put
 "Left Ctrl - prone", "LMB - fire", "RMB - aim", "R - reload", "Left Shift - run", "Space - jump",
 "Buttons 1,2,3,4,5,6,7,8 - weapon change".
 
-**Client (reduced):** when the game was started from the menu, Tab opens a window with "Room: <name>", `Resume`, `Leave Room`
-and the controls list (lobby skin); the game keeps running without input. `Leave Room` drops the game and the connection
-and shows the lobby again while a new connection is made (the original stays on the master server). The player list, the
-scoreboard, sensitivity and the rest of the menu are `docs/parity-checklist.md` rank 1 and not done. GL objects of the left game
-are not freed (`SceneRenderer` has no `Drop`): each round trip leaks the previous map's GPU memory.
+The full menu (team selection, player list, controls, sensitivity, resolutions, quality, round timer, scores) is
+specified in `docs/gameplay/settings.md` and ported in `room_menu.rs`.
+
+**Client:** `Leave Room` drops the game and the connection and shows the lobby again while a new connection is made (the
+original stays on the master server). GL objects of the left game are not freed (`SceneRenderer` has no `Drop`): each round
+trip leaks the previous map's GPU memory. The window title of the lobby and the room menu now applies the style padding once
+(as `GUIStyle.Draw` does), which moved the lobby title by the padding compared with the first version.
 
 ## Running and verifying
 
@@ -209,8 +214,10 @@ are not freed (`SceneRenderer` has no `Drop`): each round trip leaks the previou
 |---|---|
 | `--menu boot\|main\|connecting\|lobby\|create\|loading` | show that screen (screenshots) |
 | `--demo-rooms` | three sample rooms in the lobby while offline (one with a password) |
-| `--menu-auto` | connects to `--region` and creates a default room without input |
+| `--menu-auto` | connects to `--region` and creates a default room without input (offline with `--demo-rooms`), then presses the `--team` button |
 | `--pause` (with a scene) | opens the in-game Tab menu on start |
+| `--volume 0..1` | the client's master volume, saved in PlayerPrefs (`docs/gameplay/settings.md`) |
+| `--quality N` | the quality level for this session (0 Fastest .. 5 Fantastic; default 3 Good) |
 
 Screenshots taken for this document (1920x1080, `--screenshot`): every `--menu` screen and `--pause`. `--menu-auto` was run
 against the live servers (menu, Europe, lobby, create, fade, map with the player spawned, `MenuTest` in the kill feed).

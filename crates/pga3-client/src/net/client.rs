@@ -131,6 +131,8 @@ pub struct Client {
     pub rooms: Vec<RoomInfo>,
     pub actor: ActorId,
     pub in_room: bool,
+    /// The room being joined or created (its full name).
+    pub room_name: String,
     epoch: Instant,
 }
 
@@ -142,6 +144,7 @@ impl Client {
             profile,
             region: region.to_string(),
             player_name: player_name.to_string(),
+            room_name: String::new(),
             socket: Some(Socket::open(profile.name_server, epoch)),
             server: Server::Name,
             secret: None,
@@ -392,6 +395,11 @@ impl Client {
             Value::Byte(photon::PLAYER_NAME_KEY),
             Value::str(&self.player_name),
         )]);
+        match &self.pending {
+            Some(Pending::Join(name)) => self.room_name = name.clone(),
+            Some(Pending::Create(room)) => self.room_name = room.name.clone(),
+            None => {}
+        }
         let message = match &self.pending {
             Some(Pending::Join(name)) => Message::request(
                 op::JOIN_GAME,

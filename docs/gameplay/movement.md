@@ -64,8 +64,11 @@ Labels: **observed** = read from decompiled code or extracted data; **inferred**
 - Mouse look (`FPSMouseLook.Update`, skipped while `timeScale < 0.01`):
   - Root (axes 1): `Rotate(0, MouseX·sensX, 0)`.
   - LookObject (axes 2): `rotationY = clamp(rotationY + MouseY·sensY, -80, 80)`, `localEulerAngles = (-rotationY, y, 0)`.
-  - Afterwards `sensX = sensY = currentSensitivity = RoomMultiplayerMenu.sens`, ×0.25 while the weapon is aiming.
-  - `sens` comes from PlayerPrefs `"sens"`, default **1.8** (`.cctor`).
+  - Afterwards `sensX = sensY = currentSensitivity = RoomMultiplayerMenu.sens`, ×0.25 while the first weapon the script
+    cached is aiming. So the first frame turns with the prefab values (root `sensitivityX` 4.0, LookObject `sensitivityY`
+    3.5) and every later frame with the previous frame's menu value (`docs/gameplay/settings.md`, "FPSMouseLook").
+  - `sens` comes from PlayerPrefs `"sens"`, default **1.8** (`.cctor`); the room menu's `<`/`>` change it.
+  - `EnableHelper` turns both scripts off (and `canControl`) while the room menu is open.
   - Mouse axes have sensitivity 0.1, so the client turns 0.1 × 1.8 = 0.18° per pixel. **Inferred**: Unity WebGL reports raw pointer-lock pixels; needs measuring.
 
 ## FPScontroller.Update (observed)
@@ -229,7 +232,7 @@ Unity's `CharacterController` is the PhysX 3.4 capsule controller. `physics.rs` 
 ## Not ported yet
 
 - Moving platforms (disabled in the prefab).
-- Aim sensitivity (weapons), `PlayerDamage`, footstep/jump sounds (`FPSSoundController` receives `OnJump` / `OnLand` / `OnFall`), and network sync of the movement.
+- `PlayerDamage`, footstep/jump sounds (`FPSSoundController` receives `OnJump` / `OnLand` / `OnFall`), and network sync of the movement.
 
 ## Tests
 

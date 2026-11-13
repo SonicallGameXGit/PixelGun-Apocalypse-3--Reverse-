@@ -11,7 +11,7 @@
 //!
 //! Usage: `pga3-client [Scene] [--spawn N | --camera x,y,z,yaw,pitch [--walk]] [--fly] [--stats]
 //! [--weapon KEY] [--fire] [--aim] [--screenshot out.png [--wait SECONDS]]
-//! [--mode DM|TDM] [--team 1|2] [--name NAME]
+//! [--mode DM|TDM] [--team 1|2] [--name NAME] [--volume 0..1] [--quality 0..5] [--pause]
 //! [--dummy [--dummy-team 1|2] [--dummy-spawn N] [--dummy-weapon SLOT] [--dummy-fire]]
 //! [--online [--region eu] [--room TEXT | --create]] [--list-rooms [--region eu]]`
 //! (`--online` joins the most populated room of the live CrazyGames build on the original Photon
@@ -35,6 +35,7 @@ mod footsteps;
 mod gfx;
 mod gui;
 mod hud;
+mod imgui;
 mod layout;
 mod legacy_particles;
 mod menu;
@@ -45,11 +46,13 @@ mod particles;
 mod physics;
 mod player;
 mod prefab;
+mod prefs;
 mod primitives;
 mod projectiles;
 mod remote;
 mod render;
 mod room;
+mod room_menu;
 mod scene;
 mod skin;
 mod trail;
@@ -82,7 +85,7 @@ use winit::event::{
 };
 use winit::event_loop::{ActiveEventLoop, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
-use winit::window::{CursorGrabMode, Window, WindowId};
+use winit::window::{CursorGrabMode, Fullscreen, Window, WindowId};
 
 use anim::{ClipLibrary, Trs};
 use audio::{Audio, SourceSettings};
@@ -96,10 +99,12 @@ use online::{NetIn, Online, OnlineOptions};
 use physics::CollisionWorld;
 use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
 use prefab::PrefabInstance;
+use prefs::{PlayerPrefs, Settings, SharedSettings};
 use projectiles::{ProjectileEvent, Projectiles, SpawnFlags, Targets, Templates};
 use remote::{ActorId, LocalView, RemoteDeath, RemotePlayer, SyncEvent};
 use render::{PrefabModels, SceneRenderer, View};
 use room::{DummyOwner, DummyWeapon, OwnerEvent, PlayerProps, Room, SERIALIZE_INTERVAL};
+use room_menu::{PlayerRow, RoomAction, RoomMenu, RoomView, SPECTATORS};
 use scene::Scene;
 use weapons::{SoundSource, SyncFire, WeaponContext, WeaponEvent, WeaponInput, WeaponManager};
 
@@ -158,6 +163,10 @@ struct Args {
     menu_auto: bool,
     /// Open the in-game Tab menu on start (screenshots).
     pause: bool,
+    /// The client's master volume, saved in PlayerPrefs.
+    volume: Option<f32>,
+    /// The starting quality level (the room menu's list; not saved), for screenshots.
+    quality: Option<usize>,
     /// A scene was named: skip the menu.
     scene_given: bool,
 }
@@ -211,6 +220,8 @@ fn parse_args() -> Result<Args> {
         demo_rooms: false,
         menu_auto: false,
         pause: false,
+        volume: None,
+        quality: None,
         scene_given: false,
     };
     let team = |text: String| -> Result<u8> {
@@ -272,6 +283,16 @@ fn parse_args() -> Result<Args> {
             "--demo-rooms" => args.demo_rooms = true,
             "--menu-auto" => args.menu_auto = true,
             "--pause" => args.pause = true,
+            "--quality" => {
+                args.quality = Some(iter.next().context("--quality 0..5")?.parse()?);
+            }
+            "--volume" => {
+                let volume: f32 = iter.next().context("--volume 0..1")?.parse()?;
+                if !(0.0..=1.0).contains(&volume) {
+                    bail!("--volume is between 0 and 1");
+                }
+                args.volume = Some(volume);
+            }
             "--region" => args.region = iter.next().context("--region us|eu|asia|jp|au|ru")?,
             "--room" => args.room = Some(iter.next().context("--room TEXT")?),
             other if other.starts_with("--") => bail!("unknown option {other}"),
@@ -467,15 +488,34 @@ struct Running {
     stats_frames: u32,
     stats_max: f32,
     stats_cpu: f32,
-    /// Started from the menu: Tab opens the pause menu with "Leave Room".
+    /// Started from the menu: "Leave Room" goes back to the lobby.
     from_menu: bool,
-    paused: bool,
-    /// The room's name for the pause menu.
-    room_title: String,
+    /// Tab and P are the room menu's keys (else the test keys: next spawn, print the camera).
+    room_keys: bool,
+    /// `RoomMultiplayerMenu` (the Tab menu).
+    room_menu: Option<RoomMenu>,
+    /// The room's full name.
+    room_name: String,
+    /// The map's `roomCamera` renders until the first `SpawnPlayer` deactivates it.
+    room_camera: bool,
+    /// The `EnableHelper` object's active state, as the room menu's last `Update` left it.
+    helper_active: bool,
+    /// `roundDuration` (s), `referenceTime`, `currentRoundTime`, and when `WaitBeforeCheck`
+    /// clears `delayAction` (`Time.time`).
+    round_duration: i32,
+    reference_time: f32,
+    round_time: f32,
+    round_check_at: f32,
+    /// `Screen.resolutions`.
+    resolutions: Vec<(u32, u32)>,
     cursor: Vec2,
-    pause_press: Option<bool>,
-    /// The lobby skin of the pause menu's buttons.
-    menu_skin: Option<gui::NamedSkin>,
+    /// The left button went down / up and the wheel turned since the last frame (room menu).
+    menu_down: bool,
+    menu_up: bool,
+    menu_wheel: f32,
+    /// `--menu-auto`: the team button pressed one second into the room (tests).
+    auto_team: Option<u8>,
+    settings: SharedSettings,
     gl: Rc<glow::Context>,
     window: Rc<Window>,
 }
@@ -507,6 +547,7 @@ enum Screen {
 /// Field order is drop order: the screens release their GL objects before the platform.
 struct App {
     args: Args,
+    settings: SharedSettings,
     online: Option<Online>,
     screen: Option<Screen>,
     /// The menu while a game runs, for the way back.
@@ -579,11 +620,18 @@ fn create_platform(event_loop: &ActiveEventLoop, args: &Args) -> Result<Platform
     })
 }
 
-fn create_menu(platform: &Platform, args: &Args) -> Result<MenuScreen> {
+fn create_menu(platform: &Platform, args: &Args, settings: &SharedSettings) -> Result<MenuScreen> {
     let assets = assets::find_assets_dir()?;
     let scene = scene::load_scene(&assets, "Main")?;
-    let renderer = SceneRenderer::new(&platform.gl, &assets, &scene)?;
-    let mut menu = menu::Menu::new(&assets, args.demo_rooms, &args.name, &args.region)?;
+    let mut renderer = SceneRenderer::new(&platform.gl, &assets, &scene)?;
+    renderer.set_texture_limit(&platform.gl, settings.borrow().texture_limit());
+    let mut menu = menu::Menu::new(
+        &assets,
+        settings.clone(),
+        args.demo_rooms,
+        &args.name,
+        &args.region,
+    )?;
     menu.screenshot = args.screenshot.is_some();
     menu.auto = args.menu_auto;
     if let Some(screen) = &args.menu
@@ -602,13 +650,49 @@ fn create_menu(platform: &Platform, args: &Args) -> Result<MenuScreen> {
     })
 }
 
-fn create(platform: &Platform, args: &Args, mut online: Option<Online>) -> Result<Running> {
+/// How a game starts.
+struct GameStart {
+    /// The original flow: the room menu is open and no player exists until a team is chosen.
+    from_menu: bool,
+    /// The room's full name (offline: the menu's).
+    room_name: String,
+    /// `RoundDuration` (s) when no room property gives it.
+    round_duration: i32,
+}
+
+/// `Screen.resolutions`: the monitor's video modes, unique sizes in ascending order.
+fn screen_resolutions(window: &Window) -> Vec<(u32, u32)> {
+    let mut sizes: Vec<(u32, u32)> = window
+        .current_monitor()
+        .map(|m| {
+            m.video_modes()
+                .map(|v| (v.size().width, v.size().height))
+                .collect()
+        })
+        .unwrap_or_default();
+    sizes.sort_unstable();
+    sizes.dedup();
+    if sizes.is_empty() {
+        let size = window.inner_size();
+        sizes.push((size.width, size.height));
+    }
+    sizes
+}
+
+fn create(
+    platform: &Platform,
+    args: &Args,
+    mut online: Option<Online>,
+    settings: &SharedSettings,
+    start: &GameStart,
+) -> Result<Running> {
     let gl = platform.gl.clone();
     let window = platform.window.clone();
     let assets = assets::find_assets_dir()?;
     let loading = Instant::now();
     let scene = scene::load_scene(&assets, &args.scene)?;
     let mut renderer = SceneRenderer::new(&gl, &assets, &scene)?;
+    renderer.set_texture_limit(&gl, settings.borrow().texture_limit());
     let world = physics::build_world(&assets, &scene)?;
     // Screenshot runs stay silent.
     let mut audio = if args.screenshot.is_some() {
@@ -616,6 +700,14 @@ fn create(platform: &Platform, args: &Args, mut online: Option<Online>) -> Resul
     } else {
         Audio::new(&assets)
     };
+    audio.set_volume(settings.borrow().volume);
+    {
+        // RoomMultiplayerMenu.Start: the saved sensitivity.
+        let mut s = settings.borrow_mut();
+        if s.prefs.has_key("sens") {
+            s.sens = s.prefs.get_float("sens", s.sens);
+        }
+    }
     let mut meshes = MeshCache::new(&assets);
     let mut clips = ClipLibrary::new(&assets)?;
     let kinds = load_kinds(&gl, &assets, &mut renderer, &mut clips)?;
@@ -624,19 +716,50 @@ fn create(platform: &Platform, args: &Args, mut online: Option<Online>) -> Resul
         room.team1_score = online.room_int("Team1Score").unwrap_or(0);
         room.team2_score = online.room_int("Team2Score").unwrap_or(0);
     }
+    let team = if start.from_menu {
+        SPECTATORS.to_string()
+    } else {
+        team_name(&room, args.team)
+    };
     let props = PlayerProps {
         actor: online.as_ref().map_or(LOCAL_ACTOR, Online::actor),
         name: args.name.clone(),
-        team: team_name(&room, args.team),
+        team,
         kills: 0,
         deaths: 0,
     };
-    // WhoKilledWho.Start (PlayerJoinedRoom), then the team menu's PlayerJoinedTeam.
+    // WhoKilledWho.Start (PlayerJoinedRoom), then (test starts) the team menu's PlayerJoinedTeam.
     room.add_message(&props.name, "", "connected", "");
-    room.add_message(&props.name, "", &format!("joined {}", props.team), "");
+    if !start.from_menu {
+        room.add_message(&props.name, "", &format!("joined {}", props.team), "");
+    }
     if let Some(online) = &mut online {
         online.joined(&props.name);
     }
+    let round_duration = online
+        .as_ref()
+        .and_then(|o| o.room_int("RoundDuration"))
+        .unwrap_or(start.round_duration);
+    let reference_time = online
+        .as_ref()
+        .and_then(|o| o.room_float("RefTime"))
+        .unwrap_or(0.0);
+    let room_name = match online.as_ref().map(Online::room_name) {
+        Some(name) if !name.is_empty() => name.to_string(),
+        _ => start.room_name.clone(),
+    };
+    let resolutions = screen_resolutions(&window);
+    let room_menu = match gui::load_named_skin(&assets, room_menu::ROOM_SKIN) {
+        Ok(skin) => {
+            let mut menu = RoomMenu::new(skin, resolutions.len());
+            menu.paused = start.from_menu || args.pause;
+            Some(menu)
+        }
+        Err(error) => {
+            eprintln!("room menu: {error:#}");
+            None
+        }
+    };
     // SpawnPlayer(team): the spawn point and the prefab of the team.
     let (team_spawn, team_1) = room.spawn_point(&props.team);
     let kind = if team_1 { 0 } else { 1 };
@@ -745,16 +868,26 @@ fn create(platform: &Platform, args: &Args, mut online: Option<Online>) -> Resul
         dummies.push(DummyOwner::new(props, args.dummy_fire));
     }
 
-    let menu_skin = gui::load_named_skin(&assets, "sharedassets0.assets:141").ok();
     let mut running = Running {
         window,
         gl,
-        from_menu: false,
-        paused: false,
-        room_title: String::new(),
+        from_menu: start.from_menu,
+        room_keys: start.from_menu || args.pause,
+        room_menu,
+        room_name,
+        room_camera: false,
+        helper_active: !(start.from_menu || args.pause),
+        round_duration,
+        reference_time,
+        round_time: 0.0,
+        round_check_at: room_menu::ROUND_DELAY,
+        resolutions,
         cursor: Vec2::ZERO,
-        pause_press: None,
-        menu_skin,
+        menu_down: false,
+        menu_up: false,
+        menu_wheel: 0.0,
+        auto_team: None,
+        settings: settings.clone(),
         scene,
         renderer,
         kinds,
@@ -803,11 +936,18 @@ fn create(platform: &Platform, args: &Args, mut online: Option<Online>) -> Resul
         dummy_weapon: args.dummy_weapon,
     };
     running.sync_local_avatar();
-    running.create_mirror();
-    running.instantiate_online();
-    if let Some(online) = &running.online {
-        let name = running.props.name.clone();
-        online.send_message(&name, "", &format!("joined {}", running.props.team), "");
+    if start.from_menu {
+        // `Awake`: no player yet; the room camera shows the map.
+        running.local.scripts.destroyed = true;
+        running.local.scripts.remove_sources(&mut running.audio);
+        running.room_camera = true;
+    } else {
+        running.create_mirror();
+        running.instantiate_online();
+        if let Some(online) = &running.online {
+            let name = running.props.name.clone();
+            online.send_message(&name, "", &format!("joined {}", running.props.team), "");
+        }
     }
     for index in 0..running.dummies.len() {
         running.spawn_dummy(index);
@@ -1250,6 +1390,13 @@ impl Running {
             self.fixed_time -= FIXED_DELTA_TIME;
             self.fixed_clock += FIXED_DELTA_TIME;
             if alive {
+                // EnableHelper.FixedUpdate: the room menu's last Update decides.
+                let active = self.helper_active;
+                self.player.can_control = active;
+                self.player.look_enabled = active;
+                if let Some(weapons) = &mut local.weapons {
+                    weapons.enable_helper(active);
+                }
                 self.player
                     .fixed_update(&self.world, &self.scene.ladders, input);
                 // FPSSoundController.FixedUpdate.
@@ -1272,6 +1419,15 @@ impl Running {
         }
         if alive {
             self.player.update(&self.world, dt, input.vertical, input);
+            // The end of FPSMouseLook.Update: the sensitivity of the next frame.
+            let sens = self.settings.borrow().sens;
+            let weapons = local.weapons.as_ref();
+            let selected = weapons.and_then(|w| w.selected_weapon);
+            self.player.update_look_sensitivity(sens, selected, |node| {
+                weapons
+                    .and_then(|w| w.script_of(node))
+                    .is_some_and(|s| s.aimed)
+            });
         }
         let time = self.player.time;
         if alive {
@@ -1393,21 +1549,17 @@ impl Running {
                 ProjectileEvent::Damage { target: None, .. } => {}
             }
         }
+        let mut destroyed = false;
         if alive {
             let scripts = &mut local.scripts;
             scripts.protection.update(dt);
             if let Some(damage) = &mut scripts.damage {
                 damage.update(dt, &mut self.player.camera_local_rotation);
-                if damage.run_coroutines(time) == Some(DamageEvent::Destroyed) {
-                    // `PhotonNetwork.Destroy(gameObject)`.
-                    scripts.destroyed = true;
-                    if let Some(online) = &mut self.online {
-                        online.destroy();
-                    }
-                    scripts.remove_sources(&mut self.audio);
-                    self.mirror = None;
-                }
+                destroyed = damage.run_coroutines(time) == Some(DamageEvent::Destroyed);
             }
+        }
+        if destroyed {
+            self.destroy_local();
         }
         let local = &mut self.local;
         local.projectiles.end_frame(world_time);
@@ -1481,6 +1633,253 @@ impl Running {
         }
         self.update_ragdolls(world_time);
         self.room.update(dt);
+        self.room_update();
+    }
+
+    /// `PhotonNetwork.Destroy` of this client's player object.
+    fn destroy_local(&mut self) {
+        let scripts = &mut self.local.scripts;
+        scripts.destroyed = true;
+        if let Some(online) = &mut self.online {
+            online.destroy();
+        }
+        scripts.remove_sources(&mut self.audio);
+        self.mirror = None;
+    }
+
+    /// `RoomMultiplayerMenu.Update` / `FixedUpdate`: the `EnableHelper` object follows the
+    /// menu, and the round timer runs once `WaitBeforeCheck` cleared `delayAction`.
+    fn room_update(&mut self) {
+        let paused = self.room_menu.as_ref().is_some_and(|m| m.paused);
+        self.helper_active = !paused;
+        if self.time >= self.round_check_at {
+            let now = match &self.online {
+                Some(online) => online.photon_time() as f32,
+                None => self.time,
+            };
+            self.round_time = (self.round_duration as f32 - (now - self.reference_time)).max(0.0);
+        }
+    }
+
+    /// The owner's death prefab: `RagdollController.Start` (with `gui` from `RespawnAfter` and
+    /// its camera) counts a death in PlayerPrefs.
+    fn add_owner_ragdoll(&mut self, ragdoll: Ragdoll) {
+        if ragdoll
+            .controller
+            .as_ref()
+            .is_some_and(|c| c.gui && c.cam.is_some())
+        {
+            self.settings.borrow_mut().prefs.increment("Deaths");
+        }
+        self.ragdolls.push(ragdoll);
+    }
+
+    /// `RoomMultiplayerMenu.SpawnPlayer(team)` from the menu: `TeamName`, the `EnableHelper`
+    /// object on, the player at a spawn point of the team, the room camera off.
+    fn spawn_player(&mut self, team: &str) {
+        self.props.team = team.to_string();
+        self.helper_active = true;
+        self.room_camera = false;
+        self.respawn();
+    }
+
+    /// `RoomMultiplayerMenu.SwapTeams(team)`: `TeamName`, then `PlayerDamage.SwapTeams` sends
+    /// `DoSwapTeams` to all; on the owner it instantiates the death prefab with `RespawnAfter`
+    /// and destroys the player (the respawn uses the new team).
+    fn swap_teams(&mut self, team: &str) {
+        self.props.team = team.to_string();
+        if let Some(online) = &self.online {
+            online.choose_team(team);
+            online.swap_teams();
+        }
+        if let Some(ragdoll) = spawn_ragdoll(
+            &self.kinds,
+            self.local.kind,
+            self.player.position,
+            self.player.rotation,
+            self.time,
+            true,
+            &mut self.audio,
+        ) {
+            self.add_owner_ragdoll(ragdoll);
+        }
+        self.destroy_local();
+    }
+
+    /// The room menu's open state (Tab, Resume, a team button): `Screen.lockCursor` follows.
+    fn set_menu_open(&mut self, open: bool) {
+        let Some(menu) = &mut self.room_menu else {
+            return;
+        };
+        menu.paused = open;
+        self.set_grab(!open);
+        if open {
+            self.input.fire_held = false;
+        }
+    }
+
+    /// `Screen.fullScreen` (P): going fullscreen uses the selected resolution's video mode
+    /// (borderless where exclusive modes do not exist, as on Wayland).
+    fn set_fullscreen(&self, on: bool) {
+        if !on {
+            self.window.set_fullscreen(None);
+            return;
+        }
+        let wayland = matches!(
+            self.window.window_handle().map(|h| h.as_raw()),
+            Ok(RawWindowHandle::Wayland(_))
+        );
+        let size = self
+            .room_menu
+            .as_ref()
+            .and_then(|m| self.resolutions.get(m.resolution_index))
+            .copied();
+        let mode = self.window.current_monitor().and_then(|monitor| {
+            monitor
+                .video_modes()
+                .filter(|v| Some((v.size().width, v.size().height)) == size)
+                .max_by_key(|v| v.refresh_rate_millihertz())
+        });
+        let fullscreen = match mode {
+            Some(mode) if !wayland => Fullscreen::Exclusive(mode),
+            _ => Fullscreen::Borderless(None),
+        };
+        self.window.set_fullscreen(Some(fullscreen));
+    }
+
+    /// `PhotonNetwork.playerList` as the menu lists it: this client, then the others.
+    fn room_players(&self) -> Vec<PlayerRow> {
+        let mut rows = vec![PlayerRow {
+            name: self.props.name.clone(),
+            team: Some(self.props.team.clone()),
+            kills: Some(self.props.kills),
+            deaths: Some(self.props.deaths),
+            ping: self.online.as_ref().and_then(|o| o.local_ping),
+        }];
+        if let Some(online) = &self.online {
+            for (_, p) in online.players() {
+                rows.push(PlayerRow {
+                    name: p.name,
+                    team: p.team,
+                    kills: p.kills,
+                    deaths: p.deaths,
+                    ping: p.ping,
+                });
+            }
+        }
+        for dummy in &self.dummies {
+            rows.push(PlayerRow {
+                name: dummy.props.name.clone(),
+                team: Some(dummy.props.team.clone()),
+                kills: Some(dummy.props.kills),
+                deaths: Some(dummy.props.deaths),
+                ping: None,
+            });
+        }
+        rows
+    }
+
+    /// The room menu's `OnGUI` (`draw`) or its mouse handling: the clicked button.
+    fn room_gui(&mut self, w: f32, h: f32, draw: bool) -> Option<RoomAction> {
+        let players = self.room_players();
+        let settings = self.settings.clone();
+        let settings = settings.borrow();
+        let (Some(menu), Some(font)) = (&mut self.room_menu, &mut self.font) else {
+            return None;
+        };
+        let view = RoomView {
+            size: (w, h),
+            room_name: &self.room_name,
+            game_mode: &self.room.game_mode,
+            team_1: &self.room.team_1,
+            team_2: &self.room.team_2,
+            team1_score: self.room.team1_score,
+            team2_score: self.room.team2_score,
+            round_time: self.round_time,
+            players: &players,
+            local_name: &self.props.name,
+            local_team: &self.props.team,
+            player_exists: !self.local.scripts.destroyed,
+            resolutions: &self.resolutions,
+            quality_levels: &settings.quality_levels,
+            quality: settings.quality,
+            sens: settings.sens,
+        };
+        if draw {
+            menu.on_gui(&mut self.gui, font, &view, self.cursor);
+            return None;
+        }
+        let events = room_menu::MouseEvents {
+            position: self.cursor,
+            down: self.menu_down,
+            up: self.menu_up,
+            wheel: self.menu_wheel,
+        };
+        self.menu_down = false;
+        self.menu_up = false;
+        self.menu_wheel = 0.0;
+        let action = menu.input(&mut self.gui, font, &view, events);
+        // Layout measured text only: nothing of it is drawn.
+        self.gui.quads.clear();
+        action
+    }
+
+    /// What a room menu button does. Returns true for "Leave Room".
+    fn room_action(&mut self, action: RoomAction) -> bool {
+        match action {
+            RoomAction::Resolution(index) => {
+                if let Some(menu) = &mut self.room_menu {
+                    menu.resolution_index = index;
+                }
+                if self.window.fullscreen().is_some() {
+                    self.set_fullscreen(true);
+                }
+            }
+            RoomAction::Quality(index) => {
+                let limit = {
+                    let mut settings = self.settings.borrow_mut();
+                    settings.quality = index;
+                    settings.texture_limit()
+                };
+                self.renderer.set_texture_limit(&self.gl, limit);
+            }
+            RoomAction::Team(team) => {
+                let team = team_name(&self.room, team);
+                if self.local.scripts.destroyed {
+                    self.spawn_player(&team);
+                } else {
+                    self.swap_teams(&team);
+                }
+                self.set_menu_open(false);
+                // WhoKilledWho.PlayerJoinedTeam.
+                let joined = if self.room.game_mode == "TDM" {
+                    format!("joined {team}")
+                } else {
+                    "joined battle".to_string()
+                };
+                let name = self.props.name.clone();
+                self.room.add_message(&name, "", &joined, "");
+                if let Some(online) = &self.online {
+                    online.send_message(&name, "", &joined, "");
+                }
+            }
+            RoomAction::Resume => self.set_menu_open(false),
+            RoomAction::Leave => return true,
+            RoomAction::SensitivityDown | RoomAction::SensitivityUp => {
+                let up = action == RoomAction::SensitivityUp;
+                let mut settings = self.settings.borrow_mut();
+                if let Some(sens) = room_menu::step_sensitivity(settings.sens, up) {
+                    settings.sens = sens;
+                    settings.prefs.set_float("sens", sens);
+                }
+            }
+            RoomAction::PlayerList | RoomAction::Controls => {
+                if let Some(menu) = &mut self.room_menu {
+                    menu.select_tab(&action);
+                }
+            }
+        }
+        false
     }
 
     /// `SendMessageUpwards("ApplyDamage", amount)` from a node of another player's copy: every
@@ -1531,6 +1930,8 @@ impl Running {
         }
         if death.killed_by_local {
             self.room.kill_notification(&mut self.props, &death.name);
+            // AddKillNotification: PlayerPrefs "Kills" + 1.
+            self.settings.borrow_mut().prefs.increment("Kills");
             if let Some(online) = &mut self.online {
                 // AddKillNotification: the feed message to all, Kills + 1, the team's score.
                 online.send_message(&self.props.name, &death.name, "killed", &self.props.team);
@@ -1777,6 +2178,25 @@ impl Running {
                     self.room.team2_score = score;
                 }
             }
+            NetIn::SwapTeams { actor } => {
+                // DoSwapTeams on another player's copy: its death prefab, camera cleared.
+                if let Some(r) = remote(&self.remotes, actor) {
+                    let kind = self.remotes[r].kind;
+                    let (_, rotation, position) =
+                        self.remotes[r].prefab.world[0].to_scale_rotation_translation();
+                    if let Some(ragdoll) = spawn_ragdoll(
+                        &self.kinds,
+                        kind,
+                        position,
+                        rotation,
+                        time,
+                        false,
+                        &mut self.audio,
+                    ) {
+                        self.ragdolls.push(ragdoll);
+                    }
+                }
+            }
             NetIn::Disconnected(reason) => {
                 eprintln!("online: disconnected: {reason}");
                 self.online = None;
@@ -1829,7 +2249,7 @@ impl Running {
             true,
             &mut self.audio,
         ) {
-            self.ragdolls.push(ragdoll);
+            self.add_owner_ragdoll(ragdoll);
         }
         self.props.deaths += 1;
         if let Some(online) = &self.online {
@@ -2070,6 +2490,17 @@ impl Running {
                         };
                     }
                 }
+                if self.room_camera
+                    && let Some(c) = &self.scene.camera
+                {
+                    return View {
+                        position: c.position,
+                        rotation: c.rotation,
+                        fov_y_degrees: c.fov_y_degrees,
+                        near: c.near,
+                        far: c.far,
+                    };
+                }
                 View {
                     position: self.player.camera_position(),
                     rotation: self.player.camera_rotation(),
@@ -2215,6 +2646,7 @@ impl Running {
                         .draw_dynamic(&self.gl, &weapon_view, w, h, &batches, true);
                 }
                 self.draw_hud(w as f32, h as f32, &view);
+                self.room_gui(w as f32, h as f32, true);
                 self.renderer
                     .draw_gui(&self.gl, &self.gui.quads, self.font.as_ref(), w, h);
                 self.gui.quads.clear();
@@ -2291,20 +2723,6 @@ impl Running {
         if let Some(skin) = &self.feed_skin {
             self.room.feed_gui(gui, font, skin, w);
         }
-        if self.paused
-            && let Some(skin) = &self.menu_skin
-        {
-            let pressed = self.pause_press.is_some();
-            menu::pause_gui(
-                gui,
-                font,
-                skin,
-                (w, h),
-                self.cursor,
-                pressed,
-                &self.room_title,
-            );
-        }
     }
 }
 
@@ -2325,10 +2743,14 @@ impl App {
         let Some(platform) = &self.platform else {
             return;
         };
-        match create(platform, &self.args, launch.online) {
+        let start = GameStart {
+            from_menu: true,
+            room_name: launch.room_name,
+            round_duration: launch.round_duration,
+        };
+        match create(platform, &self.args, launch.online, &self.settings, &start) {
             Ok(mut running) => {
-                running.from_menu = true;
-                running.room_title = launch.room_name;
+                running.auto_team = self.args.menu_auto.then_some(self.args.team);
                 let menu = self.screen.take();
                 if let Some(Screen::Menu(menu)) = menu {
                     self.stash = Some(menu);
@@ -2339,17 +2761,24 @@ impl App {
         }
     }
 
-    /// "Leave Room": the game ends and the lobby comes back (`OnLeftRoom` loads `Main`).
-    fn leave_room(&mut self) {
+    /// "Leave Room": the game ends and the lobby comes back (`OnLeftRoom` loads `Main`); a game
+    /// started without the menu ends the program.
+    fn leave_room(&mut self, event_loop: &ActiveEventLoop) {
         if let Some(Screen::Game(game)) = &mut self.screen {
             game.set_grab(false);
         }
         self.screen = None;
-        if let Some(mut menu) = self.stash.take() {
-            menu.menu.return_from_game(&self.args.region);
-            menu.last_frame = Instant::now();
-            self.screen = Some(Screen::Menu(menu));
+        let Some(mut menu) = self.stash.take() else {
+            event_loop.exit();
+            return;
+        };
+        if let Some(platform) = &self.platform {
+            let limit = self.settings.borrow().texture_limit();
+            menu.renderer.set_texture_limit(&platform.gl, limit);
         }
+        menu.menu.return_from_game(&self.args.region);
+        menu.last_frame = Instant::now();
+        self.screen = Some(Screen::Menu(menu));
     }
 
     fn menu_event(&mut self, event_loop: &ActiveEventLoop, event: WindowEvent) {
@@ -2416,8 +2845,10 @@ impl App {
                     size.height,
                 );
                 screen.frames += 1;
-                let ready =
-                    screen.frames >= 3 && screen.started.elapsed().as_secs_f32() >= self.args.wait;
+                // `--menu-auto` runs take the screenshot in the room (`--wait` from its start).
+                let ready = screen.frames >= 3
+                    && screen.started.elapsed().as_secs_f32() >= self.args.wait
+                    && !self.args.menu_auto;
                 if let (Some(path), true) = (&self.args.screenshot, ready) {
                     save_screenshot(platform, path);
                     event_loop.exit();
@@ -2452,21 +2883,13 @@ impl App {
             }
             WindowEvent::MouseInput { state, button, .. } => {
                 let pressed = state == ElementState::Pressed;
-                if app.paused {
+                let menu_open = app.room_menu.as_ref().is_some_and(|m| m.paused);
+                if menu_open {
                     if button == MouseButton::Left {
-                        let size = app.window.inner_size();
-                        let size = (size.width as f32, size.height as f32);
                         if pressed {
-                            app.pause_press = menu::pause_hit(size, app.cursor);
+                            app.menu_down = true;
                         } else {
-                            let hit = menu::pause_hit(size, app.cursor);
-                            if hit.is_some() && hit == app.pause_press.take() {
-                                if hit == Some(true) {
-                                    app.paused = false;
-                                } else {
-                                    leave = true;
-                                }
-                            }
+                            app.menu_up = true;
                         }
                     }
                 } else {
@@ -2487,6 +2910,14 @@ impl App {
                         }
                     }
                 }
+            }
+            WindowEvent::MouseWheel { delta, .. }
+                if app.room_menu.as_ref().is_some_and(|m| m.paused) =>
+            {
+                app.menu_wheel += match delta {
+                    MouseScrollDelta::LineDelta(_, y) => y,
+                    MouseScrollDelta::PixelDelta(p) => p.y as f32 / 40.0,
+                };
             }
             WindowEvent::MouseWheel { delta, .. } if app.input.grabbed => {
                 // Unity reports one wheel notch as 0.1 on the "Mouse ScrollWheel" axis; only the
@@ -2509,20 +2940,20 @@ impl App {
             } => {
                 let pressed = state == ElementState::Pressed;
                 let down = pressed && !repeat;
-                if code == KeyCode::Tab && down && app.from_menu {
-                    // RoomMultiplayerMenu: Tab toggles the menu.
-                    app.paused = !app.paused;
-                    if app.paused {
-                        app.set_grab(false);
-                        app.input.fire_held = false;
+                if app.room_keys && down {
+                    match code {
+                        // RoomMultiplayerMenu.Update: Tab toggles the menu, P fullscreen.
+                        KeyCode::Tab => {
+                            let open = app.room_menu.as_ref().is_some_and(|m| !m.paused);
+                            app.set_menu_open(open);
+                            return;
+                        }
+                        KeyCode::KeyP => {
+                            app.set_fullscreen(app.window.fullscreen().is_none());
+                            return;
+                        }
+                        _ => {}
                     }
-                    return;
-                }
-                if app.paused {
-                    if code == KeyCode::Escape && pressed {
-                        app.paused = false;
-                    }
-                    return;
                 }
                 let i = &mut app.input;
                 match code {
@@ -2564,7 +2995,7 @@ impl App {
                     KeyCode::ControlLeft => i.prone_pressed |= down,
                     KeyCode::ShiftLeft => i.run = pressed,
                     KeyCode::ShiftRight => i.fast = pressed,
-                    KeyCode::KeyF if down && !app.from_menu => {
+                    KeyCode::KeyF if down && !app.room_keys => {
                         app.mode = match app.mode {
                             Mode::Walk => Mode::Fly,
                             Mode::Fly => {
@@ -2573,7 +3004,7 @@ impl App {
                             }
                         };
                     }
-                    KeyCode::Tab if down => {
+                    KeyCode::Tab if down && !app.room_keys => {
                         app.spawn_index += 1;
                         place_at_spawn(
                             &mut app.player,
@@ -2582,7 +3013,7 @@ impl App {
                             app.spawn_index,
                         );
                     }
-                    KeyCode::KeyP if pressed && !repeat => {
+                    KeyCode::KeyP if down && !app.room_keys => {
                         let c = &app.camera;
                         println!(
                             "--camera {},{},{},{},{}",
@@ -2617,13 +3048,14 @@ impl App {
                     // Single-fire weapons need clicks.
                     app.input.fire_pressed |= app.frames % 30 == 0;
                 }
-                if app.paused {
-                    // The game keeps running (the network does) but gets no input.
-                    let keep = app.input.grabbed;
-                    app.input = Input {
-                        grabbed: keep,
-                        ..Input::default()
-                    };
+                let size = app.window.inner_size();
+                if let Some(action) = app.room_gui(size.width as f32, size.height as f32, false) {
+                    leave |= app.room_action(action);
+                }
+                if app.started.elapsed().as_secs_f32() >= 1.0
+                    && let Some(team) = app.auto_team.take()
+                {
+                    leave |= app.room_action(RoomAction::Team(team));
                 }
                 app.update(dt);
                 app.render();
@@ -2662,7 +3094,7 @@ impl App {
             _ => {}
         }
         if leave {
-            self.leave_room();
+            self.leave_room(event_loop);
         }
     }
 }
@@ -2693,16 +3125,25 @@ impl ApplicationHandler for App {
             Err(error) => return self.fail(event_loop, error),
         };
         let screen = if self.args.use_menu() {
-            create_menu(&platform, &self.args).map(|m| Screen::Menu(Box::new(m)))
+            create_menu(&platform, &self.args, &self.settings).map(|m| Screen::Menu(Box::new(m)))
         } else {
-            create(&platform, &self.args, self.online.take()).map(|mut g| {
-                if self.args.pause {
-                    g.from_menu = true;
-                    g.paused = true;
-                    g.room_title = "Room 4721: TDM".to_string();
-                }
-                Screen::Game(Box::new(g))
-            })
+            let start = GameStart {
+                from_menu: false,
+                room_name: format!(
+                    "Room 4721: {}[WEP02][WEP03][WEP04][WEP05][WEP06]{}",
+                    self.args.mode,
+                    online::ROOM_MARKER
+                ),
+                round_duration: 1200,
+            };
+            create(
+                &platform,
+                &self.args,
+                self.online.take(),
+                &self.settings,
+                &start,
+            )
+            .map(|g| Screen::Game(Box::new(g)))
         };
         match screen {
             Ok(screen) => self.screen = Some(screen),
@@ -2788,8 +3229,23 @@ fn main() -> Result<()> {
         }
         online = Some(session);
     }
+    let assets = assets::find_assets_dir()?;
+    let mut settings = Settings::new(&assets, PlayerPrefs::load(prefs::default_path()));
+    if let Some(volume) = args.volume {
+        settings.set_volume(volume);
+    }
+    if let Some(quality) = args.quality {
+        if quality >= settings.quality_levels.len() {
+            bail!(
+                "--quality is 0..{}",
+                settings.quality_levels.len().saturating_sub(1)
+            );
+        }
+        settings.quality = quality;
+    }
     let mut app = App {
         args,
+        settings: Rc::new(std::cell::RefCell::new(settings)),
         online,
         screen: None,
         stash: None,

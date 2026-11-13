@@ -220,6 +220,9 @@ pub struct WeaponScript {
     pub sync_catcher: bool,
     /// `Start` has run (on the first frame the GameObject is active).
     pub started: bool,
+    /// `Behaviour.enabled` (`EnableHelper` disables the selected weapon's script while the room
+    /// menu is open; its coroutines keep running).
+    pub enabled: bool,
 }
 
 /// What a resumed coroutine continues with.
@@ -284,6 +287,8 @@ pub struct WeaponContext<'a> {
 
 /// `WeaponManager` and the weapons under it.
 pub struct WeaponManager {
+    /// `Behaviour.enabled` (`EnableHelper`): `Update` and `OnGUI` run only when set.
+    pub enabled: bool,
     pub switch_time: f32,
     pub take_in_audio: Option<String>,
     /// `allWeapons`: the weapon GameObjects.
@@ -504,6 +509,7 @@ impl WeaponScript {
             scope,
             sync_catcher: prefab.scripts(node, "WeaponSync_Catcher").next().is_some(),
             started: false,
+            enabled: true,
         }
     }
 
@@ -1314,6 +1320,7 @@ pub fn weapon_manager_awake(prefab: &mut PrefabInstance) -> Option<WeaponManager
         random: Random::new(1),
         events: Vec::new(),
         coroutines: Vec::new(),
+        enabled: true,
     };
     // TakeFirstWeapon: takeInAudio, SetActive(true), SendMessage("selectWeapon").
     if let Some(&weapon) = manager.all_weapons.get(index) {
@@ -1357,6 +1364,35 @@ impl WeaponManager {
         self.scripts.get(self.index)?.as_ref()
     }
 
+    /// The `WeaponScript` on the weapon GameObject `node`.
+    pub fn script_of(&self, node: usize) -> Option<&WeaponScript> {
+        self.scripts.iter().flatten().find(|s| s.node == node)
+    }
+
+    /// `EnableHelper.FixedUpdate`'s weapon part: with the helper object active, a disabled
+    /// manager and selected script are both enabled; inactive, both are disabled when enabled.
+    pub fn enable_helper(&mut self, active: bool) {
+        // `SelectedWeapon` as the last `WeaponManager.Update` set it.
+        let Some(selected) = self.selected_weapon else {
+            return;
+        };
+        let Some(script) = self
+            .scripts
+            .iter_mut()
+            .flatten()
+            .find(|s| s.node == selected)
+        else {
+            return;
+        };
+        if active && !self.enabled && !script.enabled {
+            self.enabled = true;
+            script.enabled = true;
+        } else if !active && self.enabled && script.enabled {
+            self.enabled = false;
+            script.enabled = false;
+        }
+    }
+
     fn has_token(&self, number: usize) -> bool {
         self.room_name.contains(&format!("[WEP{number:02}]"))
     }
@@ -1367,16 +1403,18 @@ impl WeaponManager {
     pub fn update(&mut self, ctx: &mut WeaponContext) {
         // Pending `Start`s run before any `Update` of the frame.
         for script in self.scripts.iter_mut().flatten() {
-            if !script.started && ctx.prefab.active_in_hierarchy(script.node) {
+            if !script.started && script.enabled && ctx.prefab.active_in_hierarchy(script.node) {
                 script.start(ctx);
             }
         }
-        self.manager_update(ctx);
+        if self.enabled {
+            self.manager_update(ctx);
+        }
         for slot in 0..self.scripts.len() {
             let Some(mut script) = self.scripts[slot].take() else {
                 continue;
             };
-            if ctx.prefab.active_in_hierarchy(script.node) {
+            if script.enabled && ctx.prefab.active_in_hierarchy(script.node) {
                 let mut q = Queue {
                     slot,
                     time: ctx.time,

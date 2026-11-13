@@ -15,7 +15,9 @@ use glow::HasContext;
 use crate::assets::{
     Material, ParticleShader, ShaderKind, TextureInfo, load_materials, load_texture_infos,
 };
-use crate::gfx::{DynamicMesh, GpuMesh, compile_program, upload_mesh, upload_texture};
+use crate::gfx::{
+    DynamicMesh, GpuMesh, compile_program, mip_levels, set_base_level, upload_mesh, upload_texture,
+};
 use crate::gui::{FONT_ATLAS, GuiFont, GuiQuad};
 use crate::obj::{MeshData, parse_obj};
 use crate::prefab::{MeshSource, PrefabInstance};
@@ -470,6 +472,9 @@ struct Resources {
     skinned_meshes: HashMap<String, (GpuMesh, Vec<Mat4>)>,
     white: glow::Texture,
     missing_textures: usize,
+    /// Mipmapped textures with their level count, for `QualitySettings.masterTextureLimit`.
+    mipmapped: Vec<(glow::Texture, u32)>,
+    texture_limit: u32,
 }
 
 fn interleave(data: &MeshData, skin: Option<&SkinData>) -> Vec<f32> {
@@ -500,8 +505,17 @@ impl Resources {
             Ok(img) => {
                 // PNGs are top-down; GL (like Unity) samples row 0 at v = 0, the bottom.
                 let rgba = image::imageops::flip_vertical(&img.to_rgba8());
-                upload_texture(gl, rgba.width(), rgba.height(), rgba.as_raw(), &info)
-                    .unwrap_or(self.white)
+                match upload_texture(gl, rgba.width(), rgba.height(), rgba.as_raw(), &info) {
+                    Ok(texture) => {
+                        if info.mipmaps {
+                            let levels = mip_levels(rgba.width(), rgba.height());
+                            set_base_level(gl, texture, self.texture_limit, levels);
+                            self.mipmapped.push((texture, levels));
+                        }
+                        texture
+                    }
+                    Err(_) => self.white,
+                }
             }
             Err(error) => {
                 eprintln!("texture {path}: {error}");
@@ -732,6 +746,8 @@ impl SceneRenderer {
             skinned_meshes: HashMap::new(),
             white,
             missing_textures: 0,
+            mipmapped: Vec::new(),
+            texture_limit: 0,
         };
         let mut stats = Stats::default();
         let mut draws = Vec::new();
@@ -1275,6 +1291,16 @@ impl SceneRenderer {
             }
             self.font_texture = Some((texture, font.version));
             Some(texture)
+        }
+    }
+
+    /// `QualitySettings.masterTextureLimit`: every mipmapped texture, loaded or still to load,
+    /// skips its first `limit` levels.
+    pub fn set_texture_limit(&mut self, gl: &glow::Context, limit: u32) {
+        let resources = &mut self.resources;
+        resources.texture_limit = limit;
+        for &(texture, levels) in &resources.mipmapped {
+            set_base_level(gl, texture, limit, levels);
         }
     }
 
