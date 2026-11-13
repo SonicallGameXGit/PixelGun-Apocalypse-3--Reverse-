@@ -90,8 +90,14 @@ pub enum ClientEvent {
     },
     /// Another player entered the room (event `Join`).
     ActorJoined { actor: ActorId, props: Value },
-    /// A player left the room (event `Leave`).
-    ActorLeft { actor: ActorId },
+    /// A player left the room (event `Leave`); `master` is the new master client when the
+    /// server sent one (parameter 203).
+    ActorLeft {
+        actor: ActorId,
+        master: Option<ActorId>,
+    },
+    /// The answer to `OpLeave`: this client is out of the room (`OnLeftRoom`).
+    LeftRoom,
     /// Changed player properties (event `PropertiesChanged` with a target actor).
     PlayerProps { actor: ActorId, props: Value },
     /// Changed room properties.
@@ -208,6 +214,33 @@ impl Client {
         self.pending = Some(Pending::Create(room));
         self.send(Message::request(op::CREATE_GAME, params));
         Ok(())
+    }
+
+    /// A client that never connects, in a room as `actor` (tests of the layers above).
+    #[cfg(test)]
+    pub fn offline(actor: ActorId) -> Client {
+        Client {
+            profile: super::pun::CRAZYGAMES,
+            region: "eu".to_string(),
+            player_name: String::new(),
+            socket: None,
+            server: Server::Game,
+            secret: None,
+            master_address: None,
+            pending: None,
+            rooms: Vec::new(),
+            actor,
+            in_room: true,
+            room_name: String::new(),
+            epoch: Instant::now(),
+        }
+    }
+
+    /// `PhotonNetwork.LeaveRoom()`: `OpLeave` to the game server; the answer is `LeftRoom`.
+    pub fn leave_room(&mut self) {
+        if self.server == Server::Game && self.in_room {
+            self.send(Message::request(op::LEAVE, vec![]));
+        }
     }
 
     /// `PhotonPlayer.SetCustomProperties` of this client's player.
@@ -365,6 +398,10 @@ impl Client {
                 self.switch_to(Server::Game, &address);
             }
             (Server::Game, op::AUTHENTICATE) => self.enter_room(),
+            (Server::Game, op::LEAVE) => {
+                self.in_room = false;
+                out.push(ClientEvent::LeftRoom);
+            }
             (Server::Game, op::JOIN_GAME | op::CREATE_GAME) => {
                 self.actor = photon::get(&params, param::ACTOR_NR)
                     .and_then(Value::as_i32)
@@ -424,7 +461,7 @@ impl Client {
         self.send(message);
     }
 
-    fn event(&mut self, code: u8, params: Params, out: &mut Vec<ClientEvent>) {
+    pub(crate) fn event(&mut self, code: u8, params: Params, out: &mut Vec<ClientEvent>) {
         let actor_of = |params: &Params| {
             photon::get(params, param::ACTOR_NR)
                 .and_then(Value::as_i32)
@@ -465,6 +502,9 @@ impl Client {
             }
             (Server::Game, event::LEAVE) => out.push(ClientEvent::ActorLeft {
                 actor: actor_of(&params),
+                master: photon::get(&params, param::MASTER_CLIENT_ID)
+                    .and_then(Value::as_i32)
+                    .filter(|&m| m != 0),
             }),
             (Server::Game, event::PROPERTIES_CHANGED) => {
                 let props = photon::get(&params, param::PROPERTIES)
@@ -520,4 +560,42 @@ fn game_properties(room: &NewRoom) -> Value {
         entries.push((Value::String(key.clone()), value.clone()));
     }
     Value::Hashtable(entries)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn leave_event_carries_the_new_master() {
+        let mut client = Client::offline(2);
+        let mut out = Vec::new();
+        client.event(
+            event::LEAVE,
+            vec![
+                (param::ACTOR_NR, Value::Int(1)),
+                (param::MASTER_CLIENT_ID, Value::Int(2)),
+            ],
+            &mut out,
+        );
+        client.event(
+            event::LEAVE,
+            vec![(param::ACTOR_NR, Value::Int(3))],
+            &mut out,
+        );
+        assert!(matches!(
+            out[0],
+            ClientEvent::ActorLeft {
+                actor: 1,
+                master: Some(2)
+            }
+        ));
+        assert!(matches!(
+            out[1],
+            ClientEvent::ActorLeft {
+                actor: 3,
+                master: None
+            }
+        ));
+    }
 }

@@ -87,7 +87,7 @@ The ctor sets `sensfix = "1.8"` and `finalText = "......"`.
   (`B.Kills - A.Kills`, 0 when either has no `Kills`: descending kills) and `leadingPlayer` = the first name.
   `List.Sort` is not stable; **client:** stable sort, ties by actor number (**inferred**).
 - Round timer: unless `delayAction`, `currentRoundTime = max(0, roundDuration - (PhotonNetwork.time - referenceTime))`;
-  at 0 the `RoundEnded` coroutine starts (round end is not ported: `docs/unknowns.md` #32).
+  at 0 the `RoundEnded` coroutine starts (the round end and restart: `docs/gameplay/match-flow.md`).
 - `team1Score` / `team2Score` from the room properties.
 
 ### OnGUI (observed)
@@ -304,5 +304,5 @@ the original.
       "sens": 2.3
   }
   ```
-- Not ported: the round end (`RoundEnded`, `Restart`, `finalText`), the leave fade (`FadeScreen` with `fadeDir == 1`),
-  realtime shadows of Fantastic.
+- Not ported: realtime shadows of Fantastic. The round end (`RoundEnded`, `Restart`, `finalText`) and the leave fade
+  (`FadeScreen` with `fadeDir == 1`) are in `docs/gameplay/match-flow.md`.

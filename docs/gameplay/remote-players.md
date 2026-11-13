@@ -20,6 +20,7 @@ Evidence: decompiled with `tools/re/` (function numbers below are wasm2c indices
 **`SpawnPlayer(team)`:**
 - Team 1 spawns at a random team-1 point in TDM, or at any point in DM, as `playerPrefab`. That is `mercenarys`, despite the team name.
 - Any other team spawns at a random team-2 point as `playerPrefabTwo` (`german`).
+- The 9 `ZM_*` maps set other prefabs (observed in their scene data): `playerPrefab` = `Zombie` (`resources.assets:9329`, 1300 HP, melee only) and `playerPrefabTwo` = `Mercenarys`. The client reads both from the scene (`Scene::room_prefabs`) and accepts the three names `Mercenarys`, `German` and `Zombie` in instantiations (`room::PLAYER_PREFABS`; `docs/gameplay/match-flow.md`, "Game modes").
 - The client's `--team 1|2` selects the team. The default is 2, which plays `german` as before.
 
 ## The copy: `PlayerNetworkController` remote branch

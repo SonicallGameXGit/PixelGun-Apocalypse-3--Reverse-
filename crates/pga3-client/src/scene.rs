@@ -102,6 +102,8 @@ pub struct Scene {
     pub skipped_renderers: usize,
     /// `WhoKilledWho.guiSkin` of the `__Room` object (the kill feed's GUISkin ref).
     pub kill_feed_skin: Option<String>,
+    /// `RoomMultiplayerMenu.playerPrefab` / `playerPrefabTwo` of the `__Room` object (refs).
+    pub room_prefabs: [Option<String>; 2],
 }
 
 struct Node<'a> {
@@ -226,6 +228,7 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
         spawn_points: Vec::new(),
         skipped_renderers: 0,
         kill_feed_skin: None,
+        room_prefabs: [None, None],
     };
 
     for node in nodes_json {
@@ -250,6 +253,11 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<Scene> {
             if script["script"] == "WhoKilledWho" {
                 scene.kill_feed_skin =
                     ref_of(&script["fields"]["guiSkin"]).map(|(r, _)| r.to_string());
+            }
+            if script["script"] == "RoomMultiplayerMenu" {
+                let fields = &script["fields"];
+                scene.room_prefabs = ["playerPrefab", "playerPrefabTwo"]
+                    .map(|key| ref_of(&fields[key]).map(|(r, _)| r.to_string()));
             }
         }
         if !active {

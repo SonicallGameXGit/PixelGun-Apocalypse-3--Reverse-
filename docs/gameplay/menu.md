@@ -16,7 +16,8 @@ windows shared with the room menu), `gui.rs` (skins, fonts), `room_menu.rs` (the
 ```
 boot picture -> Main: "Choose Server" -> (connected) lobby: room list <-> create room
    -> JoinRoom / CreateRoom -> OnJoinedRoom -> fade + 1 s -> map scene (the game)
-   -> Tab: "Leave Room" -> OnLeftRoom -> Main (already connected: straight to the lobby)
+   -> Tab: "Leave Room" -> OnLeftRoom -> fade + 1 s -> Main (already connected: straight to the lobby)
+   -> connection lost -> OnDisconnectedFromPhoton -> fade + 1 s -> Main (not connected: "Choose Server")
 ```
 
 - **Observed:** `Main` (level 0) is the first scene. The build has no loading screen of its own: in the CrazyGames embed
@@ -200,8 +201,10 @@ For example the label (stretch) and the fixed 390 px field of "Player Name:" put
 The full menu (team selection, player list, controls, sensitivity, resolutions, quality, round timer, scores) is
 specified in `docs/gameplay/settings.md` and ported in `room_menu.rs`.
 
-**Client:** `Leave Room` drops the game and the connection and shows the lobby again while a new connection is made (the
-original stays on the master server). GL objects of the left game are not freed (`SceneRenderer` has no `Drop`): each round
+**Client:** `Leave Room` sends OpLeave; on the answer (`OnLeftRoom`) the room camera comes on and the black "Loading..."
+fade of `RoomMultiplayerMenu.FadeScreen` runs for 1 s (`docs/gameplay/match-flow.md`, "Leaving and kicks"). Then the game
+and the connection are dropped and the lobby comes back while a new connection is made (the original stays on the master
+server). A lost connection fades the same way and returns to the "Choose Server" window. GL objects of the left game are not freed (`SceneRenderer` has no `Drop`): each round
 trip leaks the previous map's GPU memory. The window title of the lobby and the room menu now applies the style padding once
 (as `GUIStyle.Draw` does), which moved the lobby title by the padding compared with the first version.
 

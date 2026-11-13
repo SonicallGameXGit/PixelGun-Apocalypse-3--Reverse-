@@ -19,10 +19,11 @@ Existing:
 - `gameplay/hud.md`: the IMGUI model, font, `AmmoDisplay`, `WeaponManager.OnGUI`, the spawn-protection label.
 - `gameplay/damage.md`: damage sources, `PlayerDamage`, death prefab, respawn.
 - `gameplay/remote-players.md`: other players' copies, teams, the kill feed, the `--dummy` client.
+- `gameplay/match-flow.md`: the room lifecycle: modes and zombie maps, round timer, round end and restart, kill feed, respawns, late join, master client, leaving, kicks, disconnects.
 
 Planned:
 
-- `gameplay/`: modes, progression, balance tables, zombies, remote players.
+- `gameplay/`: progression, balance tables, chat.
 
 Tooling for reading the original code (wasm2c, or asm.js for the CrazyGames build, + IL2CPP names): `tools/re/README.md`.
 - `gameplay/menu.md`: boot, server window, lobby, room creation, loading fade and the in-room Tab menu of the CrazyGames build, with the client's implementation.

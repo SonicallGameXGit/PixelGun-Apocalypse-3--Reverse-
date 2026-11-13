@@ -403,6 +403,20 @@ impl Menu {
 
     /// Back from a game: the connection is re-established and the lobby shown (the original
     /// stays connected to the master and loads `Main`, whose `ServerChose` skips the dialog).
+    /// The menu scene after `OnDisconnectedFromPhoton`: not connected, so `ServerChose` shows the
+    /// server dialog again (`ServerChose.OnDisconnectedFromPhoton` also clears the region).
+    pub fn return_disconnected(&mut self) {
+        self.client = None;
+        self.phase = Phase::Servers;
+        self.connecting = false;
+        self.fade = 0.0;
+        self.joined = None;
+        self.boot_timer = BOOT_TIME;
+        self.pressed = None;
+        self.focus = None;
+        self.start();
+    }
+
     pub fn return_from_game(&mut self, region: &str) {
         self.region = region.to_string();
         self.client = Some(Client::connect(

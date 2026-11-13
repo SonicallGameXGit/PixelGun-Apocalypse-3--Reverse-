@@ -21,6 +21,8 @@ const ENCRYPTED: u8 = 0x80;
 pub mod op {
     /// Internal: the ping (`PhotonPeer` keep-alive and time sync).
     pub const PING: u8 = 1;
+    /// `OpLeave`: leave the room (no parameters in PUN 1.60).
+    pub const LEAVE: u8 = 254;
     pub const JOIN_GAME: u8 = 226;
     pub const CREATE_GAME: u8 = 227;
     pub const JOIN_LOBBY: u8 = 229;
@@ -31,6 +33,8 @@ pub mod op {
 
 /// Photon LoadBalancing parameter codes.
 pub mod param {
+    /// The room's master client (in `Leave` events when the server picked a new one).
+    pub const MASTER_CLIENT_ID: u8 = 203;
     pub const REGION: u8 = 210;
     pub const APP_VERSION: u8 = 220;
     pub const SECRET: u8 = 221;
@@ -68,6 +72,8 @@ pub mod game_key {
     pub const PLAYER_COUNT: u8 = 252;
     pub const REMOVED: u8 = 251;
     pub const PROPS_LISTED_IN_LOBBY: u8 = 250;
+    /// The actor number of the master client (a server-side master client).
+    pub const MASTER_CLIENT_ID: u8 = 248;
 }
 
 /// Byte key of the player name in player properties.

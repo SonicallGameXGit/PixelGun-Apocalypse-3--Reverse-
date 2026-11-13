@@ -9,6 +9,7 @@
 //!   (short) 2+n: {0: viewID, 1: object[] stream}}`
 //! - 202 instantiation, cached: `{0: prefab, 1: position, [2: rotation], 6: timestamp,
 //!   7: instantiation id = first view id}`
+//! - 203 close connection: the master client asks the target to leave (`PhotonNetwork.CloseConnection`)
 //! - 204 destroy: `{0: viewID}`
 
 use glam::{Quat, Vec3};
@@ -30,6 +31,7 @@ pub const CRAZYGAMES: AppProfile = AppProfile {
 pub const RPC: u8 = 200;
 pub const SEND_SERIALIZE: u8 = 201;
 pub const INSTANTIATION: u8 = 202;
+pub const CLOSE_CONNECTION: u8 = 203;
 pub const DESTROY: u8 = 204;
 pub const SEND_SERIALIZE_RELIABLE: u8 = 206;
 pub const DESTROY_PLAYER: u8 = 207;
@@ -213,6 +215,9 @@ pub enum PunEvent {
     DestroyPlayer {
         actor: i32,
     },
+    /// Event 203: `NetworkingPeer.OnEvent` leaves the room when the sender is the master client
+    /// (decompiled from the CrazyGames build, `docs/gameplay/match-flow.md`).
+    CloseConnection,
 }
 
 /// The actor that owns `view_id` (0 = a scene object).
@@ -253,9 +258,11 @@ pub fn decode(code: u8, content: &Value) -> Vec<PunEvent> {
             });
         }
         SEND_SERIALIZE | SEND_SERIALIZE_RELIABLE => {
+            // `OnEvent` reads the views from short key 2 on when the level prefix (byte key 1)
+            // is present, else from short key 1.
             for (key, view) in content.entries().unwrap_or_default() {
                 let Value::Short(index) = key else { continue };
-                if *index < 2 {
+                if *index < 1 {
                     continue;
                 }
                 let (Some(view_id), Some(data)) =
@@ -294,6 +301,7 @@ pub fn decode(code: u8, content: &Value) -> Vec<PunEvent> {
                 out.push(PunEvent::Destroy { view_id });
             }
         }
+        CLOSE_CONNECTION => out.push(PunEvent::CloseConnection),
         DESTROY_PLAYER => {
             if let Some(actor) = int_at(content, 0) {
                 out.push(PunEvent::DestroyPlayer { actor });

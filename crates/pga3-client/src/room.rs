@@ -19,6 +19,43 @@ use crate::scene::{LadderInstance, Scene};
 use crate::unity::Random;
 use crate::weapons::SyncFire;
 
+/// A player prefab `RoomMultiplayerMenu.SpawnPlayer` instantiates.
+#[derive(Clone, Copy, Debug)]
+pub struct PlayerPrefab {
+    /// Its `Resources` path (the file under `assets/data/prefabs/resources/`).
+    pub resources: &'static str,
+    /// Its root GameObject in `resources.assets`.
+    pub root: &'static str,
+    /// The name `PhotonNetwork.Instantiate` sends (the prefab's `name`).
+    pub name: &'static str,
+}
+
+/// Every player prefab of the CrazyGames build, by kind index. The normal maps spawn
+/// `Mercenarys` (team 1) and `German` (team 2); the `ZM_*` maps `Zombie` (team 1) and
+/// `Mercenarys` (team 2) (`docs/gameplay/match-flow.md`, "Game modes").
+pub const PLAYER_PREFABS: [PlayerPrefab; 3] = [
+    PlayerPrefab {
+        resources: "mercenarys",
+        root: "resources.assets:9330",
+        name: "Mercenarys",
+    },
+    PlayerPrefab {
+        resources: "german",
+        root: "resources.assets:3439",
+        name: "German",
+    },
+    PlayerPrefab {
+        resources: "zombie",
+        root: "resources.assets:9329",
+        name: "Zombie",
+    },
+];
+
+/// The kind of a prefab name received with `PhotonNetwork.Instantiate`.
+pub fn prefab_kind(name: &str) -> Option<usize> {
+    PLAYER_PREFABS.iter().position(|p| p.name == name)
+}
+
 /// PUN's `sendIntervalOnSerialize` (100 ms, set in the `PhotonNetwork` constructor).
 pub const SERIALIZE_INTERVAL: f32 = 0.1;
 
@@ -61,6 +98,8 @@ pub struct Room {
     pub team_2: Team,
     /// `allSpawnPoints`: team 1's then team 2's.
     pub all_spawn_points: Vec<usize>,
+    /// The kinds (`PLAYER_PREFABS` indices) of `playerPrefab` and `playerPrefabTwo`.
+    pub prefabs: [usize; 2],
     /// Room properties `Team1Score` / `Team2Score`.
     pub team1_score: i32,
     pub team2_score: i32,
@@ -95,11 +134,22 @@ impl Room {
             .chain(&team_2.spawn_points)
             .copied()
             .collect();
+        let kind_of = |reference: &Option<String>, default: usize| {
+            reference
+                .as_deref()
+                .and_then(|r| PLAYER_PREFABS.iter().position(|p| p.root == r))
+                .unwrap_or(default)
+        };
+        let prefabs = [
+            kind_of(&scene.room_prefabs[0], 0),
+            kind_of(&scene.room_prefabs[1], 1),
+        ];
         Room {
             game_mode: game_mode.to_string(),
             team_1,
             team_2,
             all_spawn_points,
+            prefabs,
             team1_score: 0,
             team2_score: 0,
             feed: Vec::new(),
@@ -108,9 +158,9 @@ impl Room {
     }
 
     /// `SpawnPlayer(team)`: team 1 spawns at a random team-1 point in TDM, anywhere in DM, as
-    /// `playerPrefab` (Mercenarys); any other team at a random team-2 point as
-    /// `playerPrefabTwo` (German). Returns (spawn point, is `playerPrefab`).
-    pub fn spawn_point(&mut self, team: &str) -> (Option<usize>, bool) {
+    /// `playerPrefab`; any other team at a random team-2 point as `playerPrefabTwo`. Returns
+    /// (spawn point, prefab kind).
+    pub fn spawn_point(&mut self, team: &str) -> (Option<usize>, usize) {
         let team_1 = team == self.team_1.name;
         let list = if !team_1 {
             &self.team_2.spawn_points
@@ -119,11 +169,12 @@ impl Room {
         } else {
             &self.all_spawn_points
         };
+        let kind = self.prefabs[if team_1 { 0 } else { 1 }];
         if list.is_empty() {
-            return (None, team_1);
+            return (None, kind);
         }
         let index = self.random.range_int(0, list.len() as i32) as usize;
-        (Some(list[index]), team_1)
+        (Some(list[index]), kind)
     }
 
     /// `networkAddMessage(killer, killed, middleText, teamName)` (an RPC to all).
@@ -252,11 +303,11 @@ pub fn owner_state(
 /// What the dummy's client sent this frame, in order.
 #[derive(Clone, Debug, PartialEq)]
 pub enum OwnerEvent {
-    /// `PhotonNetwork.Instantiate` of its player prefab (`mercenarys` when `team_1_prefab`).
+    /// `PhotonNetwork.Instantiate` of its player prefab (a `PLAYER_PREFABS` kind).
     Instantiate {
         position: Vec3,
         rotation: Quat,
-        team_1_prefab: bool,
+        kind: usize,
     },
     Serialize(NetState),
     /// `SyncWeaponsRPC` to the others.
@@ -365,7 +416,7 @@ impl DummyOwner {
         weapon: Option<DummyWeapon>,
         position: Vec3,
         rotation: Quat,
-        team_1_prefab: bool,
+        kind: usize,
         time: f32,
     ) -> Vec<OwnerEvent> {
         let mut events = Vec::new();
@@ -403,7 +454,7 @@ impl DummyOwner {
         events.push(OwnerEvent::Instantiate {
             position,
             rotation,
-            team_1_prefab,
+            kind,
         });
         // Assumed: the first `OnPhotonSerializeView` reaches the others with the instantiation,
         // so the copy never lerps from the constructor's position (docs/unknowns.md).
@@ -512,8 +563,8 @@ mod tests {
         assert_eq!(dm.team_2.spawn_points.len(), 4);
         let mut seen = std::collections::HashSet::new();
         for _ in 0..200 {
-            let (point, team_1) = dm.spawn_point("German-ZM");
-            assert!(team_1);
+            let (point, kind) = dm.spawn_point("German-ZM");
+            assert_eq!(PLAYER_PREFABS[kind].name, "Mercenarys");
             seen.insert(point.unwrap());
         }
         assert_eq!(seen.len(), 8, "DM: team 1 spawns anywhere");
@@ -521,9 +572,32 @@ mod tests {
         for _ in 0..100 {
             let (point, _) = tdm.spawn_point("German-ZM");
             assert!(tdm.team_1.spawn_points.contains(&point.unwrap()));
-            let (point, team_1) = tdm.spawn_point("Mercenary");
-            assert!(!team_1 && tdm.team_2.spawn_points.contains(&point.unwrap()));
+            let (point, kind) = tdm.spawn_point("Mercenary");
+            assert_eq!(PLAYER_PREFABS[kind].name, "German");
+            assert!(tdm.team_2.spawn_points.contains(&point.unwrap()));
         }
+    }
+
+    #[test]
+    fn zombie_maps_spawn_zombies_and_mercenaries() {
+        let assets = find_assets_dir().unwrap();
+        for map in ["ZM_Bridge", "ZM_Castle", "ZM_Village"] {
+            let scene = crate::scene::load_scene(&assets, map).unwrap();
+            let mut room = Room::new(&scene, "TDM");
+            let names = room.prefabs.map(|k| PLAYER_PREFABS[k].name);
+            assert_eq!(names, ["Zombie", "Mercenarys"], "{map}");
+            assert_eq!(
+                PLAYER_PREFABS[room.spawn_point("German-ZM").1].name,
+                "Zombie"
+            );
+        }
+        let scene = crate::scene::load_scene(&assets, "Castle").unwrap();
+        let names = Room::new(&scene, "DM")
+            .prefabs
+            .map(|k| PLAYER_PREFABS[k].name);
+        assert_eq!(names, ["Mercenarys", "German"]);
+        assert_eq!(prefab_kind("Zombie"), Some(2));
+        assert_eq!(prefab_kind("zombie"), None);
     }
 
     #[test]

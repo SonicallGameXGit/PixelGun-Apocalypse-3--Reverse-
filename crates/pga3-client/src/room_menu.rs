@@ -15,6 +15,8 @@ use crate::room::Team;
 pub const ROOM_SKIN: &str = "resources.assets:40924";
 /// `TeamName` of a player who has not chosen a team.
 pub const SPECTATORS: &str = "Spectators";
+/// `RoomMultiplayerMenu.blackScreen` (the same texture in every map).
+const BLACK_SCREEN: &str = "textures/BlackScreen.png";
 /// `WaitBeforeCheck`: the round timer starts 0.3 s after `Awake`.
 pub const ROUND_DELAY: f32 = 0.3;
 const SCROLL_STEP: f32 = 40.0;
@@ -85,6 +87,11 @@ pub struct RoomView<'a> {
     pub team1_score: i32,
     pub team2_score: i32,
     pub round_time: f32,
+    /// `roundEnded` and `finalText`: the winner box.
+    pub round_ended: bool,
+    pub final_text: &'a str,
+    /// `fadeValue` while `LoadMap` runs (`fadeDir == 1`).
+    pub fade: Option<f32>,
     /// `PhotonNetwork.playerList`.
     pub players: &'a [PlayerRow],
     pub local_name: &'a str,
@@ -394,6 +401,28 @@ impl RoomMenu {
         if view.game_mode == "TDM" {
             self.score_box(gui, font, view, 1);
             self.score_box(gui, font, view, 2);
+        }
+        gui.color = Vec4::ONE;
+        if view.round_ended {
+            gui.box_(
+                font,
+                [w / 2.0 - 200.0, h / 2.0 - 100.0, 400.0, 30.0],
+                view.final_text,
+                &boxed,
+            );
+        }
+        if let Some(fade) = view.fade {
+            // `FadeScreen`: the black texture at `fadeValue`, then "Loading..." in white.
+            gui.color = Vec4::new(1.0, 1.0, 1.0, fade);
+            gui.draw_texture([0.0, 0.0, w, h], BLACK_SCREEN);
+            gui.color = Vec4::ONE;
+            let (cx, cy) = ((w as i32 / 2) as f32, (h as i32 / 2) as f32);
+            gui.label(
+                font,
+                [cx - 75.0, cy - 15.0, 150.0, 30.0],
+                "Loading...",
+                &label,
+            );
         }
         if self.paused {
             let frame = self.frame(gui, font, view);

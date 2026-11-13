@@ -190,7 +190,10 @@ Everything below was **observed** in the recorded session (`research/captures/cr
 | SetProperties 252 | game server | player: `{251 props, 254 actor, 250 true}`; room: `{251 props, 250 true}` | event 253 `{253 target actor (players only), 251 props}` |
 | RaiseEvent 253 | game server | `{244 code, 245 content, [247 cache], [252 target actors]}` | the event, with `254 sender actor` |
 
-The game server's events 255 Join (`{254 actor, 249 props, 252 actors}`) and 254 Leave (`{254 actor}`) maintain the player list.
+The game server's events 255 Join (`{254 actor, 249 props, 252 actors}`) and 254 Leave (`{254 actor}`, optionally `203` the new master actor) maintain the player list. OpLeave 254 (`{}`) leaves the room; its answer makes PUN call `OnLeftRoom`.
+
+- **Cached events come with the join answer.** The server sends the room's cached events (the players' `202` instantiations) in the same WebSocket batch as the JoinGame answer. A client must process the whole batch: this client used to drop it, so the players already in the room were invisible to it (**observed** live, fixed: `docs/gameplay/match-flow.md`, "Late join").
+- **A Join resets every view's stream** (`ResetPhotonViewsOnSerialize`, decompiled): each owner sends its full state on the next tick, even when nothing changed.
 
 ### PUN 1.60 events (`RaiseEvent` codes)
 
@@ -199,6 +202,7 @@ The game server's events 255 Join (`{254 actor, 249 props, 252 actors}`) and 254
 | 200 | RPC | `{0: Int viewID, 2: Int timestamp, 5: Byte RpcList index (3: method name when not in the list), 4: ObjectArray args}` |
 | 201 / 206 | serialize (unreliable / reliable) | `{0: Int timestamp, 1: Short 0, Short(2+n): {0: Int viewID, 1: ObjectArray stream}}` |
 | 202 | instantiate, cached (cache 4) | `{0: prefab, 1: V3 position, [2: Q rotation if not identity], 6: Int timestamp, 7: Int viewID}` |
+| 203 | close connection (kick) | `{}`; obeyed only when sent by the master client: the receiver leaves the room |
 | 204 | destroy | `{0: Int viewID}` |
 | 207 | destroy player | `{0: Int actor}` (sent by the master client for leaving players) |
 
@@ -236,6 +240,7 @@ The game server's events 255 Join (`{254 actor, 249 props, 252 actors}`) and 254
 When the scene loads, `RoomMultiplayerMenu.Awake` on the master client (the lowest actor number) sets the room properties `RefTime = (float)PhotonNetwork.time`, `Team1Score = 0` and `Team2Score = 0` (decompiled from the CrazyGames build, `docs/crazygames-build.md`).
 - Every other client reads `RefTime` in its own `Awake`. If it is missing, the unboxing throws and `Awake` stops. **Observed** by the user: the original client showed no menu in a room created by this client before it sent `RefTime`. That this was the cause is inferred from the code, and the user still has to confirm it.
 - This client now does the same when it is the master at join time. A second instance of this client then received all three properties.
+- **Who is master** (PUN 1.60, decompiled): the room property byte `248` when the server sends it; otherwise the lowest actor number. A Leave event's param `203` names the new master; without it, `CheckMasterClient` picks the lowest remaining actor when the master left. The master also restarts rounds (`Restart`: new `RefTime`, scores 0), sends the "left" kill-feed message, and is the only sender whose event 203 is obeyed (`docs/gameplay/match-flow.md`).
 
 ### Rooms
 
@@ -246,5 +251,5 @@ When the scene loads, `RoomMultiplayerMenu.Awake` on the master client (the lowe
 
 ## Open
 
-- How the room scripts react to the remaining RPCs (`DoSwapTeams`, chat), and the round timer and round end (`RefTime` is only sent, not used yet).
+- The chat RPCs (`MultiplayerChat`). The round timer, round end and restart are done (`docs/gameplay/match-flow.md`).
 - GameArter (`Garter`) backend calls of Build-7 (auth, progress, ranks). Not needed on the CrazyGames build, which plays without them.

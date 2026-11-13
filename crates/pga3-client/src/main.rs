@@ -13,6 +13,7 @@
 //! [--weapon KEY] [--fire] [--aim] [--screenshot out.png [--wait SECONDS]]
 //! [--mode DM|TDM] [--team 1|2] [--name NAME] [--volume 0..1] [--quality 0..5] [--pause]
 //! [--dummy [--dummy-team 1|2] [--dummy-spawn N] [--dummy-weapon SLOT] [--dummy-fire]]
+//! [--round-time SECONDS]
 //! [--online [--region eu] [--room TEXT | --create]] [--list-rooms [--region eu]]`
 //! (`--online` joins the most populated room of the live CrazyGames build on the original Photon
 //! servers, or `--room`'s, or creates one on the given map; the room's map is loaded.)
@@ -38,6 +39,7 @@ mod hud;
 mod imgui;
 mod layout;
 mod legacy_particles;
+mod match_flow;
 mod menu;
 mod net;
 mod obj;
@@ -95,6 +97,7 @@ use effects::{EffectEvent, Effects, MeshCache, explosion_damage};
 use footsteps::FpsSoundController;
 use gui::{Gui, GuiFont, GuiSkin};
 use hud::{AmmoDisplay, DefaultSkin};
+use match_flow::{MatchEvent, MatchFlow, Ranked, Teams};
 use online::{NetIn, Online, OnlineOptions};
 use physics::CollisionWorld;
 use player::{FIXED_DELTA_TIME, FrameInput, KeyAxis, MAXIMUM_DELTA_TIME, Player};
@@ -103,14 +106,12 @@ use prefs::{PlayerPrefs, Settings, SharedSettings};
 use projectiles::{ProjectileEvent, Projectiles, SpawnFlags, Targets, Templates};
 use remote::{ActorId, LocalView, RemoteDeath, RemotePlayer, SyncEvent};
 use render::{PrefabModels, SceneRenderer, View};
-use room::{DummyOwner, DummyWeapon, OwnerEvent, PlayerProps, Room, SERIALIZE_INTERVAL};
+use room::{
+    DummyOwner, DummyWeapon, OwnerEvent, PLAYER_PREFABS, PlayerProps, Room, SERIALIZE_INTERVAL,
+};
 use room_menu::{PlayerRow, RoomAction, RoomMenu, RoomView, SPECTATORS};
 use scene::Scene;
 use weapons::{SoundSource, SyncFire, WeaponContext, WeaponEvent, WeaponInput, WeaponManager};
-
-/// The player prefabs `RoomMultiplayerMenu.SpawnPlayer` instantiates: `playerPrefab`
-/// ("Mercenarys", for team 1) and `playerPrefabTwo` ("German", any other team).
-const PLAYER_KINDS: [&str; 2] = ["mercenarys", "german"];
 
 /// This client's Photon actor number (the dummies take the next ones).
 const LOCAL_ACTOR: ActorId = 1;
@@ -147,6 +148,9 @@ struct Args {
     dummy_spawn: Option<usize>,
     dummy_weapon: usize,
     dummy_fire: bool,
+    /// The round duration of a game started without the menu or the network (tests of the
+    /// round end; the original offers 5 to 20 minutes).
+    round_time: i32,
     /// Play on the original servers (the CrazyGames build's Photon application).
     online: bool,
     region: String,
@@ -211,6 +215,7 @@ fn parse_args() -> Result<Args> {
         dummy_spawn: None,
         dummy_weapon: 2,
         dummy_fire: false,
+        round_time: 1200,
         online: false,
         region: "eu".to_string(),
         room: None,
@@ -276,6 +281,9 @@ fn parse_args() -> Result<Args> {
                 args.dummy_weapon = iter.next().context("--dummy-weapon SLOT")?.parse()?
             }
             "--dummy-fire" => args.dummy_fire = true,
+            "--round-time" => {
+                args.round_time = iter.next().context("--round-time SECONDS")?.parse()?
+            }
             "--online" => args.online = true,
             "--list-rooms" => args.list_rooms = true,
             "--create" => args.create = true,
@@ -500,12 +508,13 @@ struct Running {
     room_camera: bool,
     /// The `EnableHelper` object's active state, as the room menu's last `Update` left it.
     helper_active: bool,
-    /// `roundDuration` (s), `referenceTime`, `currentRoundTime`, and when `WaitBeforeCheck`
-    /// clears `delayAction` (`Time.time`).
-    round_duration: i32,
-    reference_time: f32,
-    round_time: f32,
-    round_check_at: f32,
+    /// The round: timer, winner text, restart (`match_flow.rs`).
+    round: MatchFlow,
+    /// `LoadMap("Main")` after leaving the room or losing the connection: the fade runs, then
+    /// the menu comes back.
+    leaving: Option<Leaving>,
+    /// Set when the game is over and the menu should take over (`Some(true)`: disconnected).
+    exit_to_menu: Option<bool>,
     /// `Screen.resolutions`.
     resolutions: Vec<(u32, u32)>,
     cursor: Vec2,
@@ -679,6 +688,16 @@ fn screen_resolutions(window: &Window) -> Vec<(u32, u32)> {
     sizes
 }
 
+/// `RoomMultiplayerMenu.LoadMap("Main")` in progress (`FadeScreen` with `fadeDir == 1`).
+struct Leaving {
+    /// `Time.time` the scene changes at (`WaitForSeconds(1)`).
+    at: f32,
+    /// `fadeValue`.
+    fade: f32,
+    /// `OnDisconnectedFromPhoton` (else `OnLeftRoom`).
+    disconnected: bool,
+}
+
 fn create(
     platform: &Platform,
     args: &Args,
@@ -761,8 +780,7 @@ fn create(
         }
     };
     // SpawnPlayer(team): the spawn point and the prefab of the team.
-    let (team_spawn, team_1) = room.spawn_point(&props.team);
-    let kind = if team_1 { 0 } else { 1 };
+    let (team_spawn, kind) = room.spawn_point(&props.team);
     let custom_tags = assets::load_tags(&assets)?;
     let refs: Vec<String> = kinds
         .iter()
@@ -774,7 +792,7 @@ fn create(
         .iter()
         .map(|t| renderer.prepare_prefab(&gl, &t.prefab))
         .collect::<Result<Vec<_>>>()?;
-    let mut player = Player::from_prefab(&assets, PLAYER_KINDS[kind])?;
+    let mut player = Player::from_prefab(&assets, PLAYER_PREFABS[kind].resources)?;
     let local = instantiate_local(
         &kinds,
         kind,
@@ -877,10 +895,9 @@ fn create(
         room_name,
         room_camera: false,
         helper_active: !(start.from_menu || args.pause),
-        round_duration,
-        reference_time,
-        round_time: 0.0,
-        round_check_at: room_menu::ROUND_DELAY,
+        round: MatchFlow::new(round_duration, reference_time, 0.0),
+        leaving: None,
+        exit_to_menu: None,
         resolutions,
         cursor: Vec2::ZERO,
         menu_down: false,
@@ -963,7 +980,8 @@ fn load_kinds(
     clips: &mut ClipLibrary,
 ) -> Result<Vec<PlayerKind>> {
     let mut kinds = Vec::new();
-    for name in PLAYER_KINDS {
+    for prefab in PLAYER_PREFABS {
+        let name = prefab.resources;
         let pristine = PrefabInstance::load(assets, name, clips)?;
         let models = renderer.prepare_prefab(gl, &pristine)?;
         let ragdoll_ref = pristine
@@ -1386,7 +1404,9 @@ impl Running {
         let alive = !self.local.scripts.destroyed;
         let local = &mut self.local;
         self.fixed_time += dt;
+        let mut fixed_steps = 0;
         while self.fixed_time >= FIXED_DELTA_TIME {
+            fixed_steps += 1;
             self.fixed_time -= FIXED_DELTA_TIME;
             self.fixed_clock += FIXED_DELTA_TIME;
             if alive {
@@ -1633,7 +1653,7 @@ impl Running {
         }
         self.update_ragdolls(world_time);
         self.room.update(dt);
-        self.room_update();
+        self.room_update(fixed_steps);
     }
 
     /// `PhotonNetwork.Destroy` of this client's player object.
@@ -1647,17 +1667,161 @@ impl Running {
         self.mirror = None;
     }
 
-    /// `RoomMultiplayerMenu.Update` / `FixedUpdate`: the `EnableHelper` object follows the
-    /// menu, and the round timer runs once `WaitBeforeCheck` cleared `delayAction`.
-    fn room_update(&mut self) {
+    /// `RoomMultiplayerMenu.Update` / `FixedUpdate` and its coroutines: the `EnableHelper`
+    /// object follows the menu; the round timer, the round end and the restart
+    /// (`match_flow.rs`); the leave fade.
+    fn room_update(&mut self, fixed_steps: u32) {
         let paused = self.room_menu.as_ref().is_some_and(|m| m.paused);
         self.helper_active = !paused;
-        if self.time >= self.round_check_at {
-            let now = match &self.online {
-                Some(online) => online.photon_time() as f32,
-                None => self.time,
+        // `PhotonNetwork.time`; offline, the game's own clock stands in for the server's.
+        let photon_time = match &self.online {
+            Some(online) => online.photon_time(),
+            None => self.time as f64,
+        };
+        let mut events = Vec::new();
+        // Every FixedUpdate of a frame sees the same clock: running it once is the same.
+        if fixed_steps > 0 {
+            let players = self.room_players_ranked();
+            let ranked: Vec<Ranked> = players
+                .iter()
+                .map(|(actor, name, kills)| Ranked {
+                    actor: *actor,
+                    name,
+                    kills: *kills,
+                })
+                .collect();
+            let teams = Teams {
+                game_mode: &self.room.game_mode,
+                team_1: &self.room.team_1.name,
+                team_2: &self.room.team_2.name,
+                team1_score: self.room.team1_score,
+                team2_score: self.room.team2_score,
             };
-            self.round_time = (self.round_duration as f32 - (now - self.reference_time)).max(0.0);
+            events.extend(
+                self.round
+                    .fixed_update(self.time, photon_time, paused, &ranked, &teams),
+            );
+        }
+        let is_master = self.online.as_ref().is_none_or(Online::is_master);
+        let room_reference = match &self.online {
+            Some(online) => online.room_float("RefTime"),
+            None => Some(self.round.reference_time),
+        };
+        events.extend(
+            self.round
+                .update(self.time, photon_time, is_master, room_reference),
+        );
+        for event in events {
+            self.match_event(event);
+        }
+        if let Some(leaving) = &mut self.leaving {
+            // `FadeScreen` raises `fadeValue` by `dt·15` per `OnGUI` call (two per frame).
+            leaving.fade = (leaving.fade + self.last_dt * 30.0).min(1.0);
+            if self.time >= leaving.at {
+                self.exit_to_menu = Some(leaving.disconnected);
+            }
+        }
+    }
+
+    /// `PhotonNetwork.playerList` for `SortPlayers`: actor, name, `Kills`.
+    fn room_players_ranked(&self) -> Vec<(ActorId, String, Option<i32>)> {
+        let mut players = vec![(
+            self.props.actor,
+            self.props.name.clone(),
+            Some(self.props.kills),
+        )];
+        if let Some(online) = &self.online {
+            for (actor, p) in online.players() {
+                players.push((actor, p.name, p.kills));
+            }
+        }
+        for dummy in &self.dummies {
+            let p = &dummy.props;
+            players.push((p.actor, p.name.clone(), Some(p.kills)));
+        }
+        players
+    }
+
+    /// What the round asks for (`RoundEnded`, `Restart`); the dummies' clients restart with
+    /// this one (they share its clock).
+    fn match_event(&mut self, event: MatchEvent) {
+        match event {
+            MatchEvent::RoundEnded => {
+                if self.room_menu.as_ref().is_some_and(|m| m.paused) {
+                    self.set_menu_open(false);
+                }
+            }
+            MatchEvent::ResetScores => {
+                self.props.kills = 0;
+                self.props.deaths = 0;
+                if let Some(online) = &self.online {
+                    online.set_score("Kills", 0);
+                    online.set_score("Deaths", 0);
+                }
+                for dummy in &mut self.dummies {
+                    dummy.props.kills = 0;
+                    dummy.props.deaths = 0;
+                }
+            }
+            MatchEvent::NewRound { reference_time } => {
+                self.room.team1_score = 0;
+                self.room.team2_score = 0;
+                if let Some(online) = &mut self.online {
+                    online.start_round(reference_time);
+                }
+            }
+            MatchEvent::DestroyPlayer => {
+                if !self.local.scripts.destroyed {
+                    self.destroy_local();
+                }
+                for index in 0..self.dummies.len() {
+                    if self.dummies[index].player.take().is_some() {
+                        self.owner_events(index, vec![OwnerEvent::Destroy], self.time);
+                    }
+                }
+            }
+            MatchEvent::Respawn => {
+                if self.props.team != SPECTATORS {
+                    let team = self.props.team.clone();
+                    self.spawn_player(&team);
+                }
+                for index in 0..self.dummies.len() {
+                    self.spawn_dummy(index);
+                }
+            }
+        }
+    }
+
+    /// `RoomMultiplayerMenu.LoadMap("Main")` from `OnLeftRoom` / `OnDisconnectedFromPhoton`:
+    /// the menu closes, the network stops (`isMessageQueueRunning = false`), the screen fades
+    /// to black with "Loading..." for 1 s, then the menu scene comes back.
+    fn load_main(&mut self, disconnected: bool) {
+        if self.leaving.is_some() {
+            return;
+        }
+        if self.room_menu.as_ref().is_some_and(|m| m.paused) {
+            self.set_menu_open(false);
+        }
+        if !disconnected {
+            // `OnLeftRoom`: `roomCamera.SetActive(true)`; `WhoKilledWho.OnLeftRoom` clears the
+            // feed and disables itself.
+            self.room_camera = true;
+            self.room.feed.clear();
+        }
+        self.online = None;
+        self.leaving = Some(Leaving {
+            at: self.time + 1.0,
+            fade: 0.0,
+            disconnected,
+        });
+    }
+
+    /// "Leave Room": `PhotonNetwork.LeaveRoom()` when connected; `OnLeftRoom` follows the
+    /// server's answer. Offline the room is left at once.
+    fn leave_room(&mut self) {
+        match &mut self.online {
+            Some(online) => online.leave_room(),
+            None => self.load_main(false),
         }
     }
 
@@ -1795,7 +1959,10 @@ impl Running {
             team_2: &self.room.team_2,
             team1_score: self.room.team1_score,
             team2_score: self.room.team2_score,
-            round_time: self.round_time,
+            round_time: self.round.current_round_time,
+            round_ended: self.round.round_ended,
+            final_text: &self.round.final_text,
+            fade: self.leaving.as_ref().map(|l| l.fade),
             players: &players,
             local_name: &self.props.name,
             local_team: &self.props.team,
@@ -1864,7 +2031,14 @@ impl Running {
                 }
             }
             RoomAction::Resume => self.set_menu_open(false),
-            RoomAction::Leave => return true,
+            RoomAction::Leave => {
+                if self.from_menu || self.online.is_some() {
+                    self.leave_room();
+                } else {
+                    // A test game without the menu: nothing to go back to.
+                    return true;
+                }
+            }
             RoomAction::SensitivityDown | RoomAction::SensitivityUp => {
                 let up = action == RoomAction::SensitivityUp;
                 let mut settings = self.settings.borrow_mut();
@@ -1970,14 +2144,13 @@ impl Running {
     /// `SpawnPlayer` on a dummy's client.
     fn spawn_dummy(&mut self, index: usize) {
         let team = self.dummies[index].props.team.clone();
-        let (point, team_1) = self.room.spawn_point(&team);
+        let (point, kind) = self.room.spawn_point(&team);
         let point = self.dummy_spawn.or(point).unwrap_or(0);
-        let kind = if team_1 { 0 } else { 1 };
         let Some(spawn) = self.scene.spawn_points.get(point) else {
             return;
         };
         let (position, rotation) = (spawn.position, spawn.rotation);
-        let player = match Player::from_prefab(&self.assets, PLAYER_KINDS[kind]) {
+        let player = match Player::from_prefab(&self.assets, PLAYER_PREFABS[kind].resources) {
             Ok(player) => player,
             Err(error) => {
                 eprintln!("dummy: {error:#}");
@@ -2000,12 +2173,12 @@ impl Running {
             weapon,
             position,
             rotation,
-            team_1,
+            kind,
             self.time,
         );
         println!(
             "dummy {} ({}, {}) at spawn point {point}",
-            self.dummies[index].props.name, team, PLAYER_KINDS[kind]
+            self.dummies[index].props.name, team, PLAYER_PREFABS[kind].resources
         );
         self.owner_events(index, events, self.time);
     }
@@ -2019,12 +2192,11 @@ impl Running {
                 OwnerEvent::Instantiate {
                     position,
                     rotation,
-                    team_1_prefab,
+                    kind,
                 } => {
                     if let Some(old) = remote {
                         self.remove_remote(old);
                     }
-                    let kind = if team_1_prefab { 0 } else { 1 };
                     self.remotes.push(RemotePlayer::new(
                         &self.kinds[kind].pristine,
                         kind,
@@ -2101,11 +2273,11 @@ impl Running {
     /// `SpawnPlayer` on the network: `TeamName`, then `PhotonNetwork.Instantiate` of the team's
     /// player prefab at the spawn point.
     fn instantiate_online(&mut self) {
-        let team_1 = self.local.kind == 0;
+        let kind = self.local.kind;
         let (position, rotation) = (self.player.position, self.player.rotation);
         if let Some(online) = &mut self.online {
             online.choose_team(&self.props.team);
-            online.spawn(team_1, position, rotation);
+            online.spawn(kind, position, rotation);
         }
     }
 
@@ -2117,14 +2289,13 @@ impl Running {
         match event {
             NetIn::Instantiate {
                 actor,
-                team_1_prefab,
+                kind,
                 position,
                 rotation,
             } => {
                 if let Some(old) = remote(&self.remotes, actor) {
                     self.remove_remote(old);
                 }
-                let kind = if team_1_prefab { 0 } else { 1 };
                 self.remotes.push(RemotePlayer::new(
                     &self.kinds[kind].pristine,
                     kind,
@@ -2197,9 +2368,25 @@ impl Running {
                     }
                 }
             }
+            NetIn::PlayerLeft { name } => {
+                // `WhoKilledWho.OnPhotonPlayerDisconnected`: the master client announces it
+                // (`PlayerLeftRoom`, an RPC to all).
+                if let Some(online) = &self.online
+                    && online.is_master()
+                {
+                    online.send_message(&name, "", "left", "");
+                    self.room.add_message(&name, "", "left", "");
+                }
+            }
+            NetIn::LeftRoom => {
+                println!("online: left the room");
+                self.load_main(false);
+            }
             NetIn::Disconnected(reason) => {
                 eprintln!("online: disconnected: {reason}");
-                self.online = None;
+                // `OnDisconnectedFromPhoton`: prints "Disconnected from Photon", back to `Main`.
+                println!("Disconnected from Photon");
+                self.load_main(true);
             }
         }
     }
@@ -2289,10 +2476,13 @@ impl Running {
     /// `RoomMultiplayerMenu.SpawnPlayer(team)`: a new player prefab of the team at one of its
     /// spawn points.
     fn respawn(&mut self) {
+        // `if (Player) PhotonNetwork.Destroy(Player)`: a living player is replaced.
+        if !self.local.scripts.destroyed {
+            self.destroy_local();
+        }
         self.local.scripts.remove_sources(&mut self.audio);
-        let (point, team_1) = self.room.spawn_point(&self.props.team);
-        let kind = if team_1 { 0 } else { 1 };
-        match Player::from_prefab(&self.assets, PLAYER_KINDS[kind]) {
+        let (point, kind) = self.room.spawn_point(&self.props.team);
+        match Player::from_prefab(&self.assets, PLAYER_PREFABS[kind].resources) {
             Ok(player) => self.player = player,
             Err(error) => eprintln!("respawn: {error:#}"),
         }
@@ -2761,9 +2951,10 @@ impl App {
         }
     }
 
-    /// "Leave Room": the game ends and the lobby comes back (`OnLeftRoom` loads `Main`); a game
-    /// started without the menu ends the program.
-    fn leave_room(&mut self, event_loop: &ActiveEventLoop) {
+    /// The game ends after `LoadMap("Main")`: the lobby comes back (`OnLeftRoom`; still
+    /// connected), or the server dialog (`disconnected`); a game started without the menu ends
+    /// the program.
+    fn leave_room(&mut self, event_loop: &ActiveEventLoop, disconnected: bool) {
         if let Some(Screen::Game(game)) = &mut self.screen {
             game.set_grab(false);
         }
@@ -2776,7 +2967,11 @@ impl App {
             let limit = self.settings.borrow().texture_limit();
             menu.renderer.set_texture_limit(&platform.gl, limit);
         }
-        menu.menu.return_from_game(&self.args.region);
+        if disconnected {
+            menu.menu.return_disconnected();
+        } else {
+            menu.menu.return_from_game(&self.args.region);
+        }
         menu.last_frame = Instant::now();
         self.screen = Some(Screen::Menu(menu));
     }
@@ -3093,8 +3288,12 @@ impl App {
             }
             _ => {}
         }
-        if leave {
-            self.leave_room(event_loop);
+        if let Some(Screen::Game(app)) = &self.screen
+            && let Some(disconnected) = app.exit_to_menu
+        {
+            self.leave_room(event_loop, disconnected);
+        } else if leave {
+            self.leave_room(event_loop, false);
         }
     }
 }
@@ -3134,7 +3333,7 @@ impl ApplicationHandler for App {
                     self.args.mode,
                     online::ROOM_MARKER
                 ),
-                round_duration: 1200,
+                round_duration: self.args.round_time,
             };
             create(
                 &platform,
